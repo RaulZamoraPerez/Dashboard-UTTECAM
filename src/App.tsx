@@ -19,6 +19,14 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 
+// UTTECAM Pages
+import { 
+  Organigrama, 
+  Directorio, 
+  GestionCarreras, 
+  GestionNoticias 
+} from "./pages/UTTECAM";
+
 export default function App() {
   return (
     <>
@@ -28,6 +36,12 @@ export default function App() {
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
             <Route index path="/" element={<Home />} />
+
+            {/* UTTECAM Pages */}
+            <Route path="/uttecam/organigrama" element={<Organigrama />} />
+            <Route path="/uttecam/directorio" element={<Directorio />} />
+            <Route path="/uttecam/carreras" element={<GestionCarreras />} />
+            <Route path="/uttecam/noticias" element={<GestionNoticias />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />

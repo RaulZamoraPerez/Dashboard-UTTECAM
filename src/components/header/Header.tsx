@@ -79,14 +79,10 @@ const Header: React.FC<HeaderProps> = ({ onClick, onToggle }) => {
           </button>
 
           <Link to="/" className="lg:hidden">
+           
             <img
-              className="dark:hidden"
-              src="./images/logo/logo.svg"
-              alt="Logo"
-            />
-            <img
-              className="hidden dark:block"
-              src="./images/logo/logo-dark.svg"
+            
+              src="./images/logo/logo_uttecam.png"
               alt="Logo"
             />
           </Link>
@@ -110,7 +106,7 @@ const Header: React.FC<HeaderProps> = ({ onClick, onToggle }) => {
               />
             </svg>
           </button>
-
+ 
           <div className="hidden lg:block">
             <form action="https://formbold.com/s/unique_form_id" method="POST">
               <div className="relative">
@@ -143,7 +139,7 @@ const Header: React.FC<HeaderProps> = ({ onClick, onToggle }) => {
                 </button>
               </div>
             </form>
-          </div>
+          </div> 
         </div>
         <div
           className={`${

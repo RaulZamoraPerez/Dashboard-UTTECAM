@@ -84,19 +84,18 @@ const AppHeader: React.FC = () => {
           </button>
 
 {/*  logos en reponsivo*/}
-          <Link to="/" className="lg:hidden">
+         <div>
+           <Link to="/" className="lg:hidden ">
+          
             <img
-              className="dark:hidden"
-              src="./images/logo/logo.svg"
+              className="w-32 h-auto"
+              src="./images/logo/logo_uttecam.png"
               alt="Logo"
-            />
-            <img
-              className="hidden dark:block"
-              src="./images/logo/logo-dark.svg"
-              alt="Logo"
+
             />
           </Link>
 
+         </div>
           <button
             onClick={toggleApplicationMenu}
             className="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg z-99999 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
