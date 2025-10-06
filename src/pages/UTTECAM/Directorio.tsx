@@ -213,9 +213,9 @@ export default function Directorio() {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <ComponentCard title="Total Contactos">
             <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold text-primary">{directorio.length}</div>
+              <div className="text-2xl font-bold text-primary dark:text-white">{directorio.length}</div>
               <div className="rounded-full bg-primary/10 p-2">
-                <svg className="size-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="size-6 text-primary dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
@@ -224,9 +224,9 @@ export default function Directorio() {
 
           <ComponentCard title="Personal Activo">
             <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold text-success">{directorio.filter(d => d.activo).length}</div>
+              <div className="text-2xl font-bold text-success dark:text-white">{directorio.filter(d => d.activo).length}</div>
               <div className="rounded-full bg-success/10 p-2">
-                <svg className="size-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="size-6 text-success dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -235,9 +235,9 @@ export default function Directorio() {
 
           <ComponentCard title="Áreas Registradas">
             <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold text-info">{[...new Set(directorio.map(d => d.area))].length}</div>
+              <div className="text-2xl font-bold text-info dark:text-white">{[...new Set(directorio.map(d => d.area))].length}</div>
               <div className="rounded-full bg-info/10 p-2">
-                <svg className="size-6 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="size-6 text-info dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
@@ -246,9 +246,9 @@ export default function Directorio() {
 
           <ComponentCard title="Con Extensión">
             <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold text-warning">{directorio.filter(d => d.extension).length}</div>
+              <div className="text-2xl font-bold text-warning dark:text-white">{directorio.filter(d => d.extension).length}</div>
               <div className="rounded-full bg-warning/10 p-2">
-                <svg className="size-6 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="size-6 text-warning dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
               </div>
@@ -299,7 +299,7 @@ export default function Directorio() {
 
                 <div className="mt-4 space-y-3">
                   <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
-                    <svg className="size-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="size-4 flex-shrink-0 " fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                     </svg>
                     <a
