@@ -194,7 +194,7 @@ const ServiciosGestion : NavItem[] = [
   {
     icon: <PieChartIcon />,
     name: "Finanzas",
-    path: "/finanzas",
+    path: "/ServiciosGestion/Finanzas",
   },
   {
     icon: (
@@ -203,7 +203,7 @@ const ServiciosGestion : NavItem[] = [
       </svg>
     ),
     name: "Recursos Humanos",
-    path: "/recursos-humanos",
+    path: "/ServiciosGestion/RecursosHumanos",
   },
   {
     icon: (
@@ -212,17 +212,17 @@ const ServiciosGestion : NavItem[] = [
       </svg>
     ),
     name: "Información y estadia",
-    path: "/informacion-estadia",
+    path: "/ServiciosGestion/InformacionEstadia",
   },
   {
     icon: <ShootingStarIcon />,
     name: "Sistema de gestion ambiental",
-    path: "/sistema-gestion-ambiental",
+    path: "/ServiciosGestion/GestionAmbiental",
   },
   {
     icon: <CheckLineIcon />,
     name: "Sistema de gestion de la calidad",
-    path: "/sistema-gestion-calidad",
+    path: "/ServiciosGestion/GestionCalidad",
   },
   {
     icon: (
@@ -230,8 +230,8 @@ const ServiciosGestion : NavItem[] = [
         <path d="M10 20h4"/><path d="M12 16v6"/><path d="M17 2h4v4"/><path d="m21 2-5.46 5.46"/><circle cx="12" cy="11" r="5"/>
       </svg>
     ),
-    name: "Coordinación de genero",
-    path: "/coordinacion-genero",
+    name: "Coordinación de género",
+    path: "/ServiciosGestion/CordinacionGenero",
   }
 ];
 

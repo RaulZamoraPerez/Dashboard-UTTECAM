@@ -27,6 +27,17 @@ import {
   GestionNoticias 
 } from "./pages/UTTECAM";
 
+// Servicios y Gestión Pages
+import {
+  Finanzas,
+  RecursosHumanos,
+  GestionAmbiental,
+  InformacionEstadia,
+  GestionCalidad,
+  CordinacionGenero
+} from "./pages/ServiciosGestion";
+
+
 export default function App() {
   return (
     <>
@@ -42,6 +53,14 @@ export default function App() {
             <Route path="/uttecam/directorio" element={<Directorio />} />
             <Route path="/uttecam/carreras" element={<GestionCarreras />} />
             <Route path="/uttecam/noticias" element={<GestionNoticias />} />
+
+            {/* Servicios y Gestión Pages */}
+            <Route path="/ServiciosGestion/Finanzas" element={<Finanzas />} />
+            <Route path="/ServiciosGestion/RecursosHumanos" element={<RecursosHumanos />} />
+            <Route path="/ServiciosGestion/InformacionEstadia" element={<InformacionEstadia />} />
+            <Route path="/ServiciosGestion/GestionAmbiental" element={<GestionAmbiental />} />
+            <Route path="/ServiciosGestion/GestionCalidad" element={<GestionCalidad />} />
+            <Route path="/ServiciosGestion/CordinacionGenero" element={<CordinacionGenero />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
