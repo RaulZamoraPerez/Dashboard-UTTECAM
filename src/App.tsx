@@ -24,7 +24,8 @@ import {
   Organigrama, 
   Directorio, 
   GestionCarreras, 
-  GestionNoticias 
+  GestionNoticias,
+  CalendarioAcademico 
 } from "./pages/UTTECAM";
 
 export default function App() {
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/uttecam/directorio" element={<Directorio />} />
             <Route path="/uttecam/carreras" element={<GestionCarreras />} />
             <Route path="/uttecam/noticias" element={<GestionNoticias />} />
+            <Route path="/uttecam/calendario" element={<CalendarioAcademico />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
