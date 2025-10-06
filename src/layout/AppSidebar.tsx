@@ -3,16 +3,20 @@ import { Link, useLocation } from "react-router";
 
 // Assume these icons are imported from an icon library
 import {
+  BoltIcon,
   BoxCubeIcon,
+  BoxIconLine,
   CalenderIcon,
+  CheckLineIcon,
   ChevronDownIcon,
   GridIcon,
+  GroupIcon,
   HorizontaLDots,
   ListIcon,
   PageIcon,
   PieChartIcon,
   PlugInIcon,
-  TableIcon,
+  ShootingStarIcon,
   UserCircleIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
@@ -29,35 +33,53 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Inicio",
-    subItems: [{ name: "Ecommerce", path: "/", pro: false }],
-  },
-  {
-    icon: <CalenderIcon />,
-    name: "Calendar",
-    path: "/calendar",
+    subItems: [{ name: "Pagína principal", path: "/", pro: false }],
   },
   {
     icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/profile",
-  },
-  {
-    name: "Forms",
-    icon: <ListIcon />,
-    subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
-  },
-  {
-    name: "Tables",
-    icon: <TableIcon />,
-    subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-  },
-  {
-    name: "Pages",
-    icon: <PageIcon />,
+    name: "Quienes somos",
     subItems: [
-      { name: "Blank Page", path: "/blank", pro: false },
-      { name: "404 Error", path: "/error-404", pro: false },
+      { name: "Nosotros", path: "/Nosotros", pro: false },
+      { name: "Directorio", path: "/Directorio", pro: false },
+      { name: "Organigrama", path: "/Organigrama", pro: false },
+      { name: "Calendario", path: "/calendar", pro: false },
+      { name: "Disposición Juridica", path: "/disposicion-juridica", pro: false },
+      { name: "Programas de desarrollo", path: "/programas-desarrollo", pro: false },
     ],
+  },
+  {
+    icon: <GroupIcon />,
+    name: "Comites",
+    path: "/comites",
+    subItems:[
+      { name: "Comité Académico", path: "/comites-academico", pro: false },
+      { name: "Comité  de Vinculación", path: "/comites-vinculacion", pro: false },
+      { name: "Comité de calidad", path: "/comites-calidad", pro: false },
+      { name: "Comité de investigación", path: "/comites-investigacion", pro: false },
+    ],
+  },
+  {
+    icon: <UserCircleIcon />,
+    name: "Servicios Escolares",
+    subItems:[
+      { name: "Proceso de admisión", path: "/proceso-admision", pro: false },
+      { name: "Trámites", path: "/tramites", pro: false },
+      { name: "Convocatoria a trámite de título profesional", path: "/convocatoria-titulo", pro: false },
+      { name: "Becas y apoyo", path: "/becas", pro: false },
+    ],
+  },
+  {
+    icon: <ListIcon />,
+    name: "Academia",
+    subItems: [
+      { name: "Carreras", path: "/carreras", pro: false },
+      { name: "Profesores", path: "/Profesores", pro: false },
+    ],
+  },
+  {
+    icon: <CalenderIcon />,
+    name: "Calendario",
+    path: "/calendar",
   },
 ];
 
@@ -110,35 +132,116 @@ const uttecamItems: NavItem[] = [
   },
 ];
 
-const othersItems: NavItem[] = [
+const Vinculacio: NavItem[] = [
   {
     icon: <PieChartIcon />,
-    name: "Charts",
+    name: "Practicas y estadias",
     subItems: [
-      { name: "Line Chart", path: "/line-chart", pro: false },
-      { name: "Bar Chart", path: "/bar-chart", pro: false },
+      { name: "Catalogo de empresas para estadia", path: "/catalogo-estadia", pro: false },
+      { name: "Documentos para la getión de estadias", path: "/documentos-estadia", pro: false },
+      { name: "Servicio social", path: "/servicio-social", pro: false },
     ],
   },
   {
     icon: <BoxCubeIcon />,
-    name: "UI Elements",
+    name: "Servicios Tecnológicos",
     subItems: [
-      { name: "Alerts", path: "/alerts", pro: false },
-      { name: "Avatar", path: "/avatars", pro: false },
-      { name: "Badge", path: "/badge", pro: false },
-      { name: "Buttons", path: "/buttons", pro: false },
-      { name: "Images", path: "/images", pro: false },
-      { name: "Videos", path: "/videos", pro: false },
+      { name: "Catalogo de servicios tecnologicos", path: "/catalodo-servicios", pro: false },
+      { name: "Servicios tecnologicos realizados", path: "/servicios-realizados", pro: false },
     ],
   },
   {
     icon: <PlugInIcon />,
-    name: "Authentication",
+    name: "Educación Continua",
     subItems: [
-      { name: "Sign In", path: "/signin", pro: false },
-      { name: "Sign Up", path: "/signup", pro: false },
+      { name: "Catalogo de cursos y talleres", path: "/catalogo-talleres", pro: false },
+      { name: "Cursos y talleres realizados", path: "/cursos-realizados", pro: false },
     ],
   },
+  {
+    icon: <BoltIcon />,
+    name: "Movilidad internacional",
+    path:"/movilidad-internacional",
+  },
+  {
+    icon: <BoxIconLine />,
+    name: "Desempeño de egresados",
+    subItems: [
+      { name: "Bolsa de trabajo", path: "/bolsa-trabajo", pro: false },
+      { name: "Encuentro de egresados", path: "/encuentro-egresados", pro: false },
+    ],
+  },
+  {
+    icon: <PageIcon />,
+    name: "Entidad de certificación y evaluación",
+    path:"/entidad-certificacion-evaluacion",
+  },
+  {
+    icon: <GroupIcon />,
+    name: "Docente miembros del Sistema Nacional de Investigadoras e Investigadores SNII",
+    path:"/docente-snii",
+  },
+  {
+    icon: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-microscope-icon lucide-microscope">
+      <path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/>
+    </svg>),
+    name: "Repositorio digital de productos de investigación",
+    path:"/repositorio-investigacion",
+  },
+  {
+    icon: (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-coffee-icon lucide-coffee">
+      <path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/>
+    </svg>),
+    name: "Seminario café científico",
+    path:"/seminario-cafe-cientifico",
+  },
+];
+
+const ServiciosGestion : NavItem[] = [
+  {
+    icon: <PieChartIcon />,
+    name: "Finanzas",
+    path: "/finanzas",
+  },
+  {
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-user-round-cog-icon lucide-user-round-cog">
+        <path d="m14.305 19.53.923-.382"/><path d="m15.228 16.852-.923-.383"/><path d="m16.852 15.228-.383-.923"/><path d="m16.852 20.772-.383.924"/><path d="m19.148 15.228.383-.923"/><path d="m19.53 21.696-.382-.924"/><path d="M2 21a8 8 0 0 1 10.434-7.62"/><path d="m20.772 16.852.924-.383"/><path d="m20.772 19.148.924.383"/><circle cx="10" cy="8" r="5"/><circle cx="18" cy="18" r="3"/>
+      </svg>
+    ),
+    name: "Recursos Humanos",
+    path: "/recursos-humanos",
+  },
+  {
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-briefcase-business-icon lucide-briefcase-business">
+        <path d="M12 12h.01"/><path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M22 13a18.15 18.15 0 0 1-20 0"/><rect width="20" height="14" x="2" y="6" rx="2"/>
+      </svg>
+    ),
+    name: "Información y estadia",
+    path: "/informacion-estadia",
+  },
+  {
+    icon: <ShootingStarIcon />,
+    name: "Sistema de gestion ambiental",
+    path: "/sistema-gestion-ambiental",
+  },
+  {
+    icon: <CheckLineIcon />,
+    name: "Sistema de gestion de la calidad",
+    path: "/sistema-gestion-calidad",
+  },
+  {
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-venus-and-mars-icon lucide-venus-and-mars">
+        <path d="M10 20h4"/><path d="M12 16v6"/><path d="M17 2h4v4"/><path d="m21 2-5.46 5.46"/><circle cx="12" cy="11" r="5"/>
+      </svg>
+    ),
+    name: "Coordinación de genero",
+    path: "/coordinacion-genero",
+  }
 ];
 
 const AppSidebar: React.FC = () => {
@@ -146,7 +249,7 @@ const AppSidebar: React.FC = () => {
   const location = useLocation();
 
   const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "uttecam" | "others";
+    type: "main" | "uttecam" | "Vinculacio" | "ServiciosGestion";
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
@@ -162,17 +265,18 @@ const AppSidebar: React.FC = () => {
 
   useEffect(() => {
     let submenuMatched = false;
-    ["main", "uttecam", "others"].forEach((menuType) => {
+    ["main", "uttecam", "Vinculacio", "ServiciosGestion"].forEach((menuType) => {
       const items = 
         menuType === "main" ? navItems : 
         menuType === "uttecam" ? uttecamItems :
-        othersItems;
+        menuType === "Vinculacio" ? Vinculacio :
+        ServiciosGestion;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
               setOpenSubmenu({
-                type: menuType as "main" | "uttecam" | "others",
+                type: menuType as "main" | "uttecam" | "Vinculacio" | "ServiciosGestion",
                 index,
               });
               submenuMatched = true;
@@ -199,7 +303,7 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, menuType: "main" | "uttecam" | "others") => {
+  const handleSubmenuToggle = (index: number, menuType: "main" | "uttecam" | "Vinculacio" | "ServiciosGestion") => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
         prevOpenSubmenu &&
@@ -212,7 +316,7 @@ const AppSidebar: React.FC = () => {
     });
   };
 
-  const renderMenuItems = (items: NavItem[], menuType: "main" | "uttecam" | "others") => (
+  const renderMenuItems = (items: NavItem[], menuType: "main" | "uttecam" | "Vinculacio" | "ServiciosGestion") => (
     <ul className="flex flex-col gap-4">
       {items.map((nav, index) => (
         <li key={nav.name}>
@@ -384,7 +488,7 @@ const AppSidebar: React.FC = () => {
           <div className="flex flex-col gap-4">
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-primary font-semibold  ${
                   !isExpanded && !isHovered
                     ? "lg:justify-center"
                     : "justify-start"
@@ -400,6 +504,22 @@ const AppSidebar: React.FC = () => {
             </div>
             <div>
               <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-primary font-semibold  ${
+                  !isExpanded && !isHovered
+                    ? "lg:justify-center"
+                    : "justify-start"
+                }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "Vinculación"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(Vinculacio, "Vinculacio")} 
+            </div>
+            <div className="">
+              <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-primary dark:text-blue-400 font-semibold ${
                   !isExpanded && !isHovered
                     ? "lg:justify-center"
@@ -407,28 +527,28 @@ const AppSidebar: React.FC = () => {
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "🎓 UTTECAM"
+                  "UTTECAM"
                 ) : (
                   <div className="size-6 text-primary dark:text-blue-400">🎓</div>
                 )}
               </h2>
               {renderMenuItems(uttecamItems, "uttecam")}
             </div>
-            <div className="">
+            <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-primary font-semibold ${
                   !isExpanded && !isHovered
                     ? "lg:justify-center"
                     : "justify-start"
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "Others"
+                  "Servicios y Gestión"
                 ) : (
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(othersItems, "others")}
+              {renderMenuItems(ServiciosGestion, "ServiciosGestion")} 
             </div>
           </div>
         </nav>
