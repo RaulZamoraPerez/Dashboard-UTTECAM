@@ -3,12 +3,16 @@ import { Outlet } from "react-router";
 import AppHeader from "./AppHeader";
 import Backdrop from "./Backdrop";
 import AppSidebar from "./AppSidebar";
+import TokenExpirationMonitor from "../components/auth/TokenExpirationMonitor";
 
 const LayoutContent: React.FC = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
 
   return (
     <div className="min-h-screen xl:flex">
+      {/* Monitor de expiración de token */}
+      <TokenExpirationMonitor />
+      
       <div>
         <AppSidebar />
         <Backdrop />

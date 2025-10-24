@@ -17,7 +17,7 @@ export const ModalCrearApartado: React.FC<ModalCrearApartadoProps> = ({
   titulo,
   setTitulo,
   descripcion,
-  setDescripcion,
+  // setDescripcion no se usa actualmente pero está en la interfaz para consistencia
 }) => {
   useEffect(() => {
     if (isOpen) {
