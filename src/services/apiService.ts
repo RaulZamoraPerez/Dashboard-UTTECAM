@@ -51,20 +51,44 @@ export const fetchWithAuth = async <T>(
 };
 
 /**
- * Ejemplo de uso para obtener datos protegidos
+ * Realiza una petición HTTP con autenticación y retorna la Response (para downloads)
+ * @param endpoint - El endpoint de la API
+ * @param options - Opciones de fetch
+ * @returns Promise con la Response
  */
-export const getProtectedData = async () => {
-  return fetchWithAuth('/api/protected-endpoint', {
-    method: 'GET',
-  });
-};
+export const fetchWithAuthResponse = async (
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<Response> => {
+  // Verificar si el token está expirado antes de hacer la petición
+  if (isTokenExpired()) {
+    removeToken();
+    // Redirigir al login
+    window.location.href = '/signin';
+    throw new Error('Sesión expirada. Por favor, inicie sesión nuevamente.');
+  }
 
-/**
- * Ejemplo de uso para crear datos protegidos
- */
-export const createProtectedData = async (data: unknown) => {
-  return fetchWithAuth('/api/protected-endpoint', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
+  try {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        ...getAuthHeaders(),
+        ...options.headers,
+      },
+    });
+
+    // Si recibimos un 401, el token es inválido
+    if (response.status === 401) {
+      removeToken();
+      window.location.href = '/signin';
+      throw new Error('Sesión expirada. Por favor, inicie sesión nuevamente.');
+    }
+
+    return response;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Error de conexión con el servidor');
+  }
 };

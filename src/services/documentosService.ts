@@ -1,4 +1,4 @@
-import { fetchWithAuth } from './apiService';
+import { fetchWithAuth, fetchWithAuthResponse } from './apiService';
 
 const API_URL = import.meta.env.VITE_BACKENDURL || 'http://localhost:3002';
 
@@ -265,6 +265,16 @@ export const obtenerEstadisticas = async (): Promise<Area[]> => {
 /**
  * Descargar archivo
  */
-export const descargarArchivo = (rutaDocumento: string): string => {
-  return `${API_URL}${rutaDocumento}`;
+export const descargarArchivo = async (rutaDocumento: string): Promise<string> => {
+  try {
+    const response = await fetchWithAuthResponse(rutaDocumento);
+    if (!response.ok) {
+      throw new Error('Error al descargar el archivo');
+    }
+    const blob = await response.blob();
+    return URL.createObjectURL(blob);
+  } catch (error) {
+    console.error('Error al descargar archivo:', error);
+    throw error;
+  }
 };
