@@ -672,26 +672,6 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
             </div>
             
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Categoría
-                </label>
-                <select
-                  value={categoriaSeleccionada || ''}
-                  onChange={(e) => setCategoriaSeleccionada(Number(e.target.value))}
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#d1672a] focus:border-[#d1672a] dark:bg-gray-700 dark:text-white transition-all outline-none text-sm sm:text-base"
-                >
-                  {categorias.map((cat) => (
-                    <option key={cat.ID_Categorias} value={cat.ID_Categorias}>
-                      {cat.Nombre}
-                    </option>
-                  ))}
-                </select>
-                <p className="mt-1 text-xs text-gray-500">
-                  Se preselecciona automáticamente la primera categoría disponible
-                </p>
-              </div>
-
               {archivosASubir.length > 0 && (
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
                   <p className="text-sm text-blue-800 dark:text-blue-200">
@@ -731,23 +711,6 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
                   rows={3}
                   className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#d1672a] focus:border-[#d1672a] dark:bg-gray-700 dark:text-white transition-all outline-none text-sm sm:text-base resize-none"
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Categoría <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={categoriaSeleccionada || ''}
-                  onChange={(e) => setCategoriaSeleccionada(Number(e.target.value))}
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#d1672a] focus:border-[#d1672a] dark:bg-gray-700 dark:text-white transition-all outline-none text-sm sm:text-base"
-                >
-                  {categorias.map((categoria) => (
-                    <option key={categoria.ID_Categorias} value={categoria.ID_Categorias}>
-                      {categoria.Nombre} ({(categoria.archivos?.length || 0)} archivo{(categoria.archivos?.length || 0) !== 1 ? 's' : ''})
-                    </option>
-                  ))}
-                </select>
               </div>
 
               <div>
