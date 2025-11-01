@@ -30,26 +30,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Verificar si hay un token guardado al cargar la aplicación
     const initAuth = async () => {
+      console.log('AuthContext - Iniciando verificación de autenticación');
       const savedToken = getToken();
+      console.log('AuthContext - Token guardado:', savedToken ? 'Sí' : 'No');
+      
       if (savedToken) {
         // Verificar si el token está expirado (verificación local)
         if (isTokenExpired()) {
+          console.log('AuthContext - Token expirado');
           removeToken();
           setToken(null);
           setUser(null);
         } else {
+          console.log('AuthContext - Token válido, verificando con servidor');
           setToken(savedToken);
           // Verificar el token con el servidor
           const userData = await verifyToken();
+          console.log('AuthContext - Datos de usuario del servidor:', userData);
           if (userData) {
             setUser(userData);
           } else {
             // Token inválido, limpiar
+            console.log('AuthContext - Token inválido, limpiando');
             setToken(null);
           }
         }
+      } else {
+        console.log('AuthContext - No hay token guardado');
       }
       setIsLoading(false);
+      console.log('AuthContext - Verificación completada');
     };
 
     initAuth();

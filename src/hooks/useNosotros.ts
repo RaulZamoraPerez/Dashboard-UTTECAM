@@ -50,13 +50,8 @@ export const useNosotros = (): UseNosotrosReturn => {
       setError(null);
       await updateNosotrosSection(section, data);
 
-      // Actualizar el estado local
-      if (content) {
-        setContent({
-          ...content,
-          [section]: data
-        });
-      }
+      // Recargar el contenido desde el servidor para asegurar que se vea actualizado
+      await fetchContent();
 
       return true;
     } catch (err) {
@@ -88,15 +83,10 @@ export const useNosotros = (): UseNosotrosReturn => {
   ): Promise<boolean> => {
     try {
       setError(null);
-      const response = await uploadImageAndUpdateSection(section, file, additionalData, content || undefined);
+      await uploadImageAndUpdateSection(section, file, additionalData, content || undefined);
 
-      // Actualizar el estado local con la nueva información
-      if (content && response.content) {
-        setContent({
-          ...content,
-          ...response.content
-        });
-      }
+      // Recargar el contenido desde el servidor para asegurar que la imagen se actualice
+      await fetchContent();
 
       return true;
     } catch (err) {

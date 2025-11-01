@@ -73,7 +73,7 @@ export default function App() {
             <Route path="/uttecam/directorio" element={<Directorio />} />
             <Route path="/uttecam/carreras" element={<GestionCarreras />} />
             <Route path="/uttecam/noticias" element={<GestionNoticias />} />
-            <Route path="/uttecam/calendario" element={<CalendarioAcademico />} />
+            <Route path="/calendar" element={<CalendarioAcademico />} />
             <Route path="/Nosotros" element={<Nosotros />} />
 
             {/* Servicios y Gestión Pages */}

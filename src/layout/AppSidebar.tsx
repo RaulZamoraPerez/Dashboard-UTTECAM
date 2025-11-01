@@ -39,8 +39,9 @@ const navItems: NavItem[] = [
     name: "Quienes somos",
     subItems: [
       { name: "Nosotros", path: "/Nosotros", pro: false },
-      { name: "Directorio", path: "/Directorio", pro: false },
-      { name: "Organigrama", path: "/Organigrama", pro: false },
+      // Ajuste de rutas para que coincidan con las rutas definidas en App.tsx
+      { name: "Directorio", path: "/uttecam/directorio", pro: false },
+      { name: "Organigrama", path: "/uttecam/organigrama", pro: false },
       { name: "Calendario", path: "/calendar", pro: false },
       { name: "Disposición Juridica", path: "/disposicion-juridica", pro: false },
       { name: "Programas de desarrollo", path: "/programas-desarrollo", pro: false },
