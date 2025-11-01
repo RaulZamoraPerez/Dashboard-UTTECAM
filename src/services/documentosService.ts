@@ -112,9 +112,11 @@ export const obtenerCategoria = async (id: number): Promise<Categoria> => {
  * Crear una nueva categoría
  */
 export const crearCategoria = async (nombre: string, idArea: number): Promise<Categoria> => {
+  const payload = { Nombre: nombre, ID_Area: idArea };
+  console.log('Creando categoría con payload:', payload);
   return fetchWithAuth<Categoria>('/api/documentos/categorias', {
     method: 'POST',
-    body: JSON.stringify({ Nombre: nombre, ID_Area: idArea })
+    body: JSON.stringify(payload)
   });
 };
 

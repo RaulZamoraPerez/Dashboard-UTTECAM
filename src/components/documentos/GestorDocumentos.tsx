@@ -6,7 +6,7 @@ import {
   eliminarCategoria,
   subirArchivo,
   eliminarArchivo,
-  descargarArchivo
+  obtenerAreas
 } from '../../services/documentosService';
 
 interface GestorDocumentosProps {
@@ -27,8 +27,6 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
   
   // Form states
   const [nombreCategoria, setNombreCategoria] = useState('');
-  const [nombreArchivo, setNombreArchivo] = useState('');
-  const [descripcionArchivo, setDescripcionArchivo] = useState('');
   const [archivosASubir, setArchivosASubir] = useState<File[]>([]);
   const [subiendo, setSubiendo] = useState(false);
   const [progresoSubida, setProgresoSubida] = useState<{ actual: number; total: number; archivoActual?: string } | null>(null);
@@ -84,12 +82,46 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
 
     try {
       setError('');
+      console.log(`Intentando crear categoría "${nombreCategoria}" en área ID: ${areaId} (${areaNombre})`);
+
+      // Verificar que el área existe antes de crear la categoría
+      const areas = await obtenerAreas();
+      console.log('Áreas disponibles:', areas);
+
+      const areaExiste = areas.some(area => area.ID_Area === areaId);
+      console.log(`¿Área ${areaId} existe?`, areaExiste);
+
+      if (!areaExiste) {
+        const errorMsg = `El área "${areaNombre}" (ID: ${areaId}) no existe en el sistema. Áreas disponibles: ${areas.map(a => `${a.Nombre} (${a.ID_Area})`).join(', ')}`;
+        console.error(errorMsg);
+        setError(errorMsg);
+        return;
+      }
+
+      console.log('Creando categoría...');
       await crearCategoria(nombreCategoria, areaId);
+      console.log('Categoría creada exitosamente');
+
       setNombreCategoria('');
       setMostrarModalCategoria(false);
       cargarCategorias();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al crear categoría');
+      console.error('Error completo al crear categoría:', err);
+      let errorMessage = 'Error al crear categoría';
+
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'object' && err !== null) {
+        // Intentar extraer mensaje de error del servidor
+        const errorObj = err as any;
+        if (errorObj.message) {
+          errorMessage = errorObj.message;
+        } else if (errorObj.error) {
+          errorMessage = errorObj.error;
+        }
+      }
+
+      setError(errorMessage);
     }
   };
 
@@ -112,7 +144,7 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
       // Subir cada archivo con su nombre automático
       for (let i = 0; i < archivosASubir.length; i++) {
         const archivo = archivosASubir[i];
-        const nombre = nombreArchivo.trim() || archivo.name;
+        const nombre = archivo.name;
 
         setProgresoSubida({
           actual: i,
@@ -123,7 +155,7 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
         await subirArchivo(
           archivo,
           nombre,
-          descripcionArchivo,
+          '',
           categoriaSeleccionada
         );
 
@@ -135,8 +167,6 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
       }
 
       // Reset form
-      setNombreArchivo('');
-      setDescripcionArchivo('');
       setArchivosASubir([]);
       setMostrarModalArchivo(false);
       setProgresoSubida(null);
@@ -337,7 +367,8 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
   // Previsualización functions
   const handlePrevisualizar = async (archivo: Archivo) => {
     try {
-      const url = await descargarArchivo(archivo.Ruta_Documento);
+      // Para previsualización, abrir directamente la URL sin descargar
+      const url = `${import.meta.env.VITE_BACKENDURL || 'https://api.uttecam.edu.mx'}${archivo.Ruta_Documento}`;
       window.open(url, '_blank');
     } catch (error) {
       console.error('Error al previsualizar archivo:', error);
@@ -379,8 +410,7 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
               }
               // Limpiar archivos anteriores si el modal se abre vacío
               if (archivosASubir.length === 0) {
-                setNombreArchivo('');
-                setDescripcionArchivo('');
+                // No hay campos adicionales que limpiar
               }
             }}
             disabled={categorias.length === 0}
@@ -549,14 +579,9 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
                     onClick={async (e) => {
                       e.stopPropagation();
                       try {
-                        const url = await descargarArchivo(archivo.Ruta_Documento);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = archivo.Nombre;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
+                        // Abrir directamente la URL para descarga
+                        const url = `${import.meta.env.VITE_BACKENDURL || 'https://api.uttecam.edu.mx'}${archivo.Ruta_Documento}`;
+                        window.open(url, '_blank');
                       } catch (error) {
                         console.error('Error al descargar archivo:', error);
                         alert('Error al descargar el archivo.');
@@ -658,8 +683,6 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
               <button
                 onClick={() => {
                   setMostrarModalArchivo(false);
-                  setNombreArchivo('');
-                  setDescripcionArchivo('');
                   setArchivosASubir([]);
                 }}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full flex-shrink-0"
@@ -683,35 +706,6 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
                   </p>
                 </div>
               )}
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Nombre personalizado (opcional)
-                </label>
-                <input
-                  type="text"
-                  value={nombreArchivo}
-                  onChange={(e) => setNombreArchivo(e.target.value)}
-                  placeholder={archivosASubir.length > 0 ? "Usar nombre automático" : "Nombre del documento"}
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#d1672a] focus:border-[#d1672a] dark:bg-gray-700 dark:text-white transition-all outline-none text-sm sm:text-base"
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  Si dejas este campo vacío, se usará el nombre original del archivo
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Descripción
-                </label>
-                <textarea
-                  value={descripcionArchivo}
-                  onChange={(e) => setDescripcionArchivo(e.target.value)}
-                  placeholder="Descripción opcional del documento"
-                  rows={3}
-                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-[#d1672a] focus:border-[#d1672a] dark:bg-gray-700 dark:text-white transition-all outline-none text-sm sm:text-base resize-none"
-                />
-              </div>
 
               <div>
                 <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -847,8 +841,6 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
               <button
                 onClick={() => {
                   setMostrarModalArchivo(false);
-                  setNombreArchivo('');
-                  setDescripcionArchivo('');
                   setArchivosASubir([]);
                   setProgresoSubida(null);
                 }}

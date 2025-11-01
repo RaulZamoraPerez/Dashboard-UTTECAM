@@ -7,26 +7,23 @@ Sistema jerárquico de gestión de documentos con tres niveles:
 - **Categorías**: Subcategorización dentro de áreas (ej: "Finanzas", "Recursos Humanos")
 - **Archivos**: Documentos específicos con metadatos
 
-## Estructura de Datos
+## Estructura de Archivos
 
 ```
-Area (Área)
-  ├── ID_Area: number
-  └── Nombre: string
-      │
-      └── Categorias[] (Categorías)
-          ├── ID_Categorias: number
-          ├── Nombre: string
-          └── ID_Area: number (FK)
-              │
-              └── Archivos[] (Archivos)
-                  ├── ID: number
-                  ├── Nombre: string
-                  ├── Descripcion: string | null
-                  ├── Ruta_Documento: string
-                  ├── Fecha_Subida: Date
-                  └── ID_Categorias: number (FK)
+uploads/
+├── documentos/               # Todos los documentos se guardan aquí
+│   ├── archivo1.pdf
+│   ├── archivo2.docx
+│   ├── presupuesto.xlsx
+│   └── documento.pdf
+└── nosotros/                 # Imágenes de la sección "Nosotros"
+    ├── imagen1.jpg
+    └── imagen2.png
 ```
+
+### Migración de Archivos Existentes
+
+**Nota**: A partir de la versión actual, todos los documentos se guardan directamente en la carpeta `uploads/documentos/` sin subcarpetas por categoría. Los archivos existentes mantendrán sus rutas actuales en la base de datos para compatibilidad.
 
 ---
 
@@ -634,7 +631,8 @@ GET /api/documentos/archivos/1
    - Se previenen ataques de path traversal
 
 4. **Almacenamiento**
-   - Carpeta: `uploads/documentos/`
+   - **Carpeta base**: `uploads/documentos/`
+   - Todos los documentos se guardan directamente en esta carpeta
    - Solo accesible mediante rutas del backend
    - Protección contra acceso directo no autorizado
 
@@ -643,12 +641,53 @@ GET /api/documentos/archivos/1
    - Mínimo 50 bytes de tamaño
    - Coincidencia de firma con tipo declarado
 
-### Archivos Bloqueados
+### Acceso Directo a Archivos
 
-- Ejecutables: `.exe`, `.bat`, `.cmd`, `.sh`
-- Scripts: Bloqueados en nombres
-- Archivos del sistema: `con`, `prn`, `aux`, `nul`
+Los archivos subidos se pueden acceder directamente mediante sus URLs:
+
+```
+GET https://api.uttecam.edu.mx/uploads/documentos/archivo.pdf
+```
+
+**Ejemplos de URLs válidas:**
+- `https://api.uttecam.edu.mx/uploads/documentos/plan_estudios.pdf`
+- `https://api.uttecam.edu.mx/uploads/documentos/presupuesto.xlsx`
+- `https://api.uttecam.edu.mx/uploads/documentos/documento.pdf`
+
+**Extensiones permitidas:** `.pdf`, `.doc`, `.docx`, `.xls`, `.xlsx`, `.ppt`, `.pptx`, `.txt`
+
+**Caracteres especiales:** ✅ Soportados (guiones bajos, puntos, espacios, etc.)
+
+**Seguridad:** Rate limiting aplicado (200 descargas por IP cada 15 minutos)
 - Path traversal: `..`, caracteres especiales
+
+### Diagnóstico de Archivos
+
+Para verificar si un archivo existe y está accesible:
+
+```
+GET /api/documentos/check-file/{categoryId}/{filename}
+```
+
+**Ejemplo:**
+```
+GET /api/documentos/check-file/5/10._Analítico_de_la_Deuda.pdf
+```
+
+**Respuesta:**
+```json
+{
+  "filename": "10._Analítico_de_la_Deuda.pdf",
+  "categoryId": "5",
+  "filePath": "/app/uploads/documentos/10._Analítico_de_la_Deuda.pdf",
+  "urlPath": "/uploads/documentos/10._Analítico_de_la_Deuda.pdf",
+  "fullUrl": "https://api.uttecam.edu.mx/uploads/documentos/10._Analítico_de_la_Deuda.pdf",
+  "exists": true,
+  "size": 245760,
+  "modified": "2025-10-28T14:30:00.000Z",
+  "error": null
+}
+```
 
 ---
 
