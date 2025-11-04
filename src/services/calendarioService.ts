@@ -1,7 +1,7 @@
 // services/calendarioService.ts
 import { fetchWithAuth } from './apiService';
 
-const API_BASE_URL = import.meta.env.VITE_BACKENDURL || 'http://localhost:3002';
+const API_BASE_URL = import.meta.env.VITE_BACKENDURL || '';
 
 export interface Calendario {
   id: number;

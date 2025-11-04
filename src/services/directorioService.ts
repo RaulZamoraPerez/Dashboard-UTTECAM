@@ -2,7 +2,7 @@
 import { fetchWithAuth } from './apiService';
 import { Directorio, CreateDirectorioRequest } from '../types/directorio';
 
-const API_BASE_URL = import.meta.env.VITE_BACKENDURL || 'http://localhost:3002';
+const API_BASE_URL = import.meta.env.VITE_BACKENDURL || '';
 
 export const getImageUrl = (imagePath?: string): string => {
   if (!imagePath) {

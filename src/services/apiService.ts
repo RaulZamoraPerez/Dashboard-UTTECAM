@@ -1,6 +1,6 @@
 import { isTokenExpired, removeToken } from './authService';
 
-const API_URL = import.meta.env.VITE_BACKENDURL || 'http://localhost:3002';
+const API_URL = import.meta.env.VITE_BACKENDURL || '';
 
 /**
  * Realiza una petición HTTP con autenticación

@@ -31,6 +31,15 @@ import {
   Nosotros 
 } from "./pages/UTTECAM";
 
+// Home Content Pages
+import HeroSlidesAdmin from "./pages/HomeContent/HeroSlides";
+import EventosAdmin from "./pages/HomeContent/Eventos";
+import NoticiasAdmin from "./pages/HomeContent/Noticias";
+import AnunciosAdmin from "./pages/HomeContent/Anuncios";
+import VideoInstitucionalAdmin from "./pages/HomeContent/VideoInstitucional";
+import RelojDigitalAdmin from "./pages/HomeContent/RelojDigital";
+import HomeContentDashboard from "./pages/HomeContent/HomeContentDashboard";
+
 // Servicios y Gestión Pages
 import {
   Finanzas,
@@ -66,7 +75,18 @@ export default function App() {
               <AppLayout />
             </ProtectedRoute>
           }>
-            <Route index path="/" element={<Home />} />
+            {/* Home Content Management - Ruta raíz */}
+            <Route index path="/" element={<HeroSlidesAdmin />} />
+            <Route path="/home/hero-slides" element={<HeroSlidesAdmin />} />
+            <Route path="/home/eventos" element={<EventosAdmin />} />
+            <Route path="/home/noticias" element={<NoticiasAdmin />} />
+            <Route path="/home/anuncios" element={<AnunciosAdmin />} />
+            <Route path="/home-content" element={<HomeContentDashboard />} />
+            <Route path="/home-content/video-institucional" element={<VideoInstitucionalAdmin />} />
+            <Route path="/home-content/reloj-digital" element={<RelojDigitalAdmin />} />
+            
+            {/* Dashboard Overview */}
+            <Route path="/dashboard" element={<Home />} />
 
             {/* UTTECAM Pages */}
             <Route path="/uttecam/organigrama" element={<Organigrama />} />

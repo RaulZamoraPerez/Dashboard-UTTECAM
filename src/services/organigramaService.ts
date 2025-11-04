@@ -2,7 +2,7 @@
 import { fetchWithAuth } from './apiService';
 import { Organigrama, CreateOrganigramaRequest, OrganigramaNode } from '../types/organigrama';
 
-const API_BASE_URL = import.meta.env.VITE_BACKENDURL || 'http://localhost:3002';
+const API_BASE_URL = import.meta.env.VITE_BACKENDURL || '';
 
 export const getImageUrl = (imagePath?: string): string => {
   if (!imagePath) {

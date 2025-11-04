@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_BACKENDURL || 'http://localhost:3002';
+const API_URL = import.meta.env.VITE_BACKENDURL || '';
 
 export interface LoginCredentials {
   username: string;
