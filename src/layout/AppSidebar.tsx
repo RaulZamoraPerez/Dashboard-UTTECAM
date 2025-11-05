@@ -42,6 +42,7 @@ const navItems: NavItem[] = [
       { name: "Nosotros", path: "/Nosotros", pro: false },
       { name: "Directorio", path: "/Directorio", pro: false },
       { name: "Organigrama", path: "/Organigrama", pro: false },
+      { name: "Gestión de Noticias", path: "/noticias", pro: false },
       { name: "Calendario", path: "/calendar", pro: false },
       { name: "Disposición Juridica", path: "/disposicion-juridica", pro: false },
       { name: "Programas de desarrollo", path: "/programas-desarrollo", pro: false },
@@ -73,6 +74,7 @@ const navItems: NavItem[] = [
     name: "Academia",
     subItems: [
       { name: "Carreras", path: "/carreras", pro: false },
+      { name: "Gestión de Carreras", path: "/uttecam/carreras", pro: false },
       { name: "Profesores", path: "/Profesores", pro: false },
     ],
   },
@@ -83,54 +85,8 @@ const navItems: NavItem[] = [
   },
 ];
 
-// UTTECAM specific items
-const uttecamItems: NavItem[] = [
-  {
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-    ),
-    name: "Organigrama",
-    path: "/uttecam/organigrama",
-  },
-  {
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v2m0 0V7a2 2 0 012-2h14a2 2 0 012 2v2M7 12l3 3-3-3m4 0l3-3-3 3m2-3v6" />
-      </svg>
-    ),
-    name: "Directorio",
-    path: "/uttecam/directorio",
-  },
-  {
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-      </svg>
-    ),
-    name: "Gestión de Carreras",
-    path: "/uttecam/carreras",
-  },
-  {
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-      </svg>
-    ),
-    name: "Gestión de Noticias",
-    path: "/uttecam/noticias",
-  },
-  {
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-    ),
-    name: "Calendario Académico",
-    path: "/uttecam/calendario",
-  },
-];
+// NOTE: moved UTTECAM-related routes into their corresponding sections above
+// to avoid duplicating the same routes in a separate block.
 
 const Vinculacio: NavItem[] = [
   {
@@ -198,6 +154,66 @@ const Vinculacio: NavItem[] = [
     path:"/seminario-cafe-cientifico",
   },
 ];
+const ExtensionUniversitaria: NavItem[] = [
+    {
+    icon: <PieChartIcon />,
+    name: "Actividades Culturales y deportivas",
+    subItems: [
+      { name: "Actividades culturales y deportivas", path: "/actividades", pro: false },
+    ]
+  },
+   {
+    icon: <BoxCubeIcon />,
+    name: "Difusion  y divulgacion",
+    subItems: [
+      { name: "Ferias profeoigraficas", path: "/ferias-profesoigraficas", pro: false },
+      { name: "Promocion institucional", path: "/promocion-institucional", pro: false },
+      { name: "Visitas Guiadas", path: "/visitas-guiadas", pro: false },
+    ],
+  },
+  {
+    icon: <PlugInIcon />,
+    name: "Presensa y difusión",
+    subItems: [
+      { name: "Gacetas", path: "/gacetas", pro: false },
+      
+    ],
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Servicio medico",
+    path:"/servicio-medico",
+  },
+  
+];
+const Acceso: NavItem[] = [
+
+ 
+ 
+  {
+    icon: <BoltIcon />,
+    name: "Portal de estudiantes MI ESCUELA",
+    path:"/servicio-medico",
+  },
+  {
+    icon: <BoltIcon />,
+    name: "moodle Uttecam",
+    path:"/moodle",
+  },
+  {
+    icon: <BoltIcon />,
+    name: "PIT",
+    path:"/programa-institucional-tutorias",
+  },
+  {
+    icon: <BoltIcon />,
+    name: "Portal Administrativo",
+    path:"/portal-administrativo",
+  },
+  
+ 
+  
+];
 
 const ServiciosGestion : NavItem[] = [
   {
@@ -249,7 +265,7 @@ const AppSidebar: React.FC = () => {
   const location = useLocation();
 
   const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "uttecam" | "Vinculacio" | "ServiciosGestion";
+    type: "main" | "Vinculacio" | "ServiciosGestion" | "Acceso" | "ExtensionUniversitaria" ;
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
@@ -265,18 +281,40 @@ const AppSidebar: React.FC = () => {
 
   useEffect(() => {
     let submenuMatched = false;
-    ["main", "uttecam", "Vinculacio", "ServiciosGestion"].forEach((menuType) => {
-      const items = 
-        menuType === "main" ? navItems : 
-        menuType === "uttecam" ? uttecamItems :
-        menuType === "Vinculacio" ? Vinculacio :
-        ServiciosGestion;
+    const menuTypes: Array<"main" | "Vinculacio" | "ServiciosGestion" | "Acceso" | "ExtensionUniversitaria"> = [
+      "main",
+      "Vinculacio",
+      "ExtensionUniversitaria",
+      "Acceso",
+      "ServiciosGestion",
+    ];
+
+    menuTypes.forEach((menuType) => {
+      let items: NavItem[] = [];
+      switch (menuType) {
+        case "main":
+          items = navItems;
+          break;
+        case "Vinculacio":
+          items = Vinculacio;
+          break;
+        case "ExtensionUniversitaria":
+          items = ExtensionUniversitaria;
+          break;
+        case "Acceso":
+          items = Acceso;
+          break;
+        case "ServiciosGestion":
+          items = ServiciosGestion;
+          break;
+      }
+
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
               setOpenSubmenu({
-                type: menuType as "main" | "uttecam" | "Vinculacio" | "ServiciosGestion",
+                type: menuType,
                 index,
               });
               submenuMatched = true;
@@ -303,7 +341,7 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, menuType: "main" | "uttecam" | "Vinculacio" | "ServiciosGestion") => {
+  const handleSubmenuToggle = (index: number, menuType: "main" | "Vinculacio" | "ServiciosGestion" | "Acceso" | "ExtensionUniversitaria") => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
         prevOpenSubmenu &&
@@ -316,7 +354,7 @@ const AppSidebar: React.FC = () => {
     });
   };
 
-  const renderMenuItems = (items: NavItem[], menuType: "main" | "uttecam" | "Vinculacio" | "ServiciosGestion") => (
+  const renderMenuItems = (items: NavItem[], menuType: "main" | "Vinculacio" | "ServiciosGestion" | "Acceso" | "ExtensionUniversitaria") => (
     <ul className="flex flex-col gap-4">
       {items.map((nav, index) => (
         <li key={nav.name}>
@@ -518,6 +556,38 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(Vinculacio, "Vinculacio")} 
             </div>
+            <div>
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-primary font-semibold  ${
+                  !isExpanded && !isHovered
+                    ? "lg:justify-center"
+                    : "justify-start"
+                }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "Extensión Universitaria"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(ExtensionUniversitaria, "ExtensionUniversitaria")} 
+            </div>
+            <div>
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-primary font-semibold  ${
+                  !isExpanded && !isHovered
+                    ? "lg:justify-center"
+                    : "justify-start"
+                }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "Acceso"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(Acceso, "Acceso")} 
+            </div>
             <div className="">
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-primary dark:text-blue-400 font-semibold ${
@@ -532,7 +602,8 @@ const AppSidebar: React.FC = () => {
                   <div className="size-6 text-primary dark:text-blue-400">🎓</div>
                 )}
               </h2>
-              {renderMenuItems(uttecamItems, "uttecam")}
+              {/* UTTECAM items were moved into their corresponding sections to avoid duplication */}
+              {renderMenuItems([], "main")}
             </div>
             <div>
               <h2

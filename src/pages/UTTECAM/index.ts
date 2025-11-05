@@ -3,3 +3,7 @@ export { default as Directorio } from './Directorio';
 export { default as GestionCarreras } from './GestionCarreras';
 export { default as GestionNoticias } from './GestionNoticias';
 export { default as CalendarioAcademico } from './CalendarioAcademico';
+export { default as ProcesoAdmision } from './ProcesoAdmision';
+export { default as Tramites } from './Tramites';
+export { default as ConvocatoriaTitulo } from './ConvocatoriaTitulo';
+export { default as BecasApoyo } from './BecasApoyo';

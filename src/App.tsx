@@ -25,7 +25,11 @@ import {
   Directorio, 
   GestionCarreras, 
   GestionNoticias,
-  CalendarioAcademico 
+  CalendarioAcademico,
+  ProcesoAdmision,
+  Tramites,
+  ConvocatoriaTitulo,
+  BecasApoyo
 } from "./pages/UTTECAM";
 
 // Servicios y Gestión Pages
@@ -48,13 +52,18 @@ export default function App() {
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
             <Route index path="/" element={<Home />} />
-
             {/* UTTECAM Pages */}
-            <Route path="/uttecam/organigrama" element={<Organigrama />} />
-            <Route path="/uttecam/directorio" element={<Directorio />} />
-            <Route path="/uttecam/carreras" element={<GestionCarreras />} />
-            <Route path="/uttecam/noticias" element={<GestionNoticias />} />
-            <Route path="/uttecam/calendario" element={<CalendarioAcademico />} />
+            <Route path="/organigrama" element={<Organigrama />} />
+            <Route path="/directorio" element={<Directorio />} />
+            <Route path="/carreras" element={<GestionCarreras />} />
+            <Route path="/noticias" element={<GestionNoticias />} />
+            <Route path="/calendario" element={<CalendarioAcademico />} />
+
+            {/* Servicios Escolares */}
+            <Route path="/proceso-admision" element={<ProcesoAdmision />} />
+            <Route path="/tramites" element={<Tramites />} />
+            <Route path="/convocatoria-titulo" element={<ConvocatoriaTitulo />} />
+            <Route path="/becas" element={<BecasApoyo />} />
 
             {/* Servicios y Gestión Pages */}
             <Route path="/ServiciosGestion/Finanzas" element={<Finanzas />} />
