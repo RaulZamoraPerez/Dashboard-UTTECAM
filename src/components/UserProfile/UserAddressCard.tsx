@@ -26,7 +26,7 @@ export default function UserAddressCard() {
                   Pais
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                  Mexico.
+                  México
                 </p>
               </div>
 
@@ -35,7 +35,7 @@ export default function UserAddressCard() {
                   Ciudad/Estado
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                  Tecamachalco, Puebla, Mexico.
+                  Tecamachalco, Puebla
                 </p>
               </div>
 
@@ -44,7 +44,7 @@ export default function UserAddressCard() {
                   Codigo Postal
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                  75515
+                  75700
                 </p>
               </div>
 

@@ -3,14 +3,54 @@ import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
+import { useAuth } from "../../context/AuthContext";
 
 export default function UserMetaCard() {
+  const { user, isAuthenticated, isLoading } = useAuth();
   const { isOpen, openModal, closeModal } = useModal();
+  
+  console.log('UserMetaCard - User:', user);
+  console.log('UserMetaCard - IsAuthenticated:', isAuthenticated);
+  console.log('UserMetaCard - IsLoading:', isLoading);
+  
   const handleSave = () => {
     // Handle save logic here
     console.log("Saving changes...");
     closeModal();
   };
+  
+  if (isLoading) {
+    return (
+      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+        <div className="flex justify-center items-center h-32">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+        <div className="text-center py-8">
+          <div className="w-20 h-20 mx-auto mb-4 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800 bg-gray-100">
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </div>
+          <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-2">
+            Usuario no autenticado
+          </h4>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Inicia sesión para ver tu perfil
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <>
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
@@ -21,11 +61,11 @@ export default function UserMetaCard() {
             </div>
             <div className="order-3 xl:order-2">
               <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
-                Raul Zamora
+                {user?.username || 'Usuario'}
               </h4>
               <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Team Manager
+                  {user?.role || 'Usuario'}
                 </p>
                 <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">

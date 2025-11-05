@@ -3,14 +3,47 @@ import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
+import { useAuth } from "../../context/AuthContext";
 
 export default function UserInfoCard() {
+  const { user, isAuthenticated, isLoading } = useAuth();
   const { isOpen, openModal, closeModal } = useModal();
+  
+  console.log('UserInfoCard - User:', user);
+  console.log('UserInfoCard - IsAuthenticated:', isAuthenticated);
+  console.log('UserInfoCard - IsLoading:', isLoading);
+  
   const handleSave = () => {
     // Handle save logic here
     console.log("Saving changes...");
     closeModal();
   };
+  
+  if (isLoading) {
+    return (
+      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+        <div className="flex justify-center items-center h-32">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+        <div className="text-center py-8">
+          <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-2">
+            Información Personal
+          </h4>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Inicia sesión para ver tu información
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -25,7 +58,7 @@ export default function UserInfoCard() {
                 Nombre
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Raul 
+                {user?.username?.split(' ')[0] || 'Usuario'}
               </p>
             </div>
 
@@ -34,7 +67,7 @@ export default function UserInfoCard() {
                 Apellido
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Zamora
+                {user?.username?.split(' ').slice(1).join(' ') || ''}
               </p>
             </div>
 
@@ -43,7 +76,7 @@ export default function UserInfoCard() {
                 Correo Electronico
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                raul@gmail.com
+                {user?.email || 'No especificado'}
               </p>
             </div>
 

@@ -18,6 +18,8 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { PublicRoute } from "./components/auth/PublicRoute";
 
 // UTTECAM Pages
 import { 
@@ -26,11 +28,17 @@ import {
   GestionCarreras, 
   GestionNoticias,
   CalendarioAcademico,
-  ProcesoAdmision,
-  Tramites,
-  ConvocatoriaTitulo,
-  BecasApoyo
+  Nosotros 
 } from "./pages/UTTECAM";
+
+// Home Content Pages
+import HeroSlidesAdmin from "./pages/HomeContent/HeroSlides";
+import EventosAdmin from "./pages/HomeContent/Eventos";
+import NoticiasAdmin from "./pages/HomeContent/Noticias";
+import AnunciosAdmin from "./pages/HomeContent/Anuncios";
+import VideoInstitucionalAdmin from "./pages/HomeContent/VideoInstitucional";
+import RelojDigitalAdmin from "./pages/HomeContent/RelojDigital";
+import HomeContentDashboard from "./pages/HomeContent/HomeContentDashboard";
 
 // Servicios y Gestión Pages
 import {
@@ -49,21 +57,44 @@ export default function App() {
       <Router>
         <ScrollToTop />
         <Routes>
-          {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
-            <Route index path="/" element={<Home />} />
-            {/* UTTECAM Pages */}
-            <Route path="/organigrama" element={<Organigrama />} />
-            <Route path="/directorio" element={<Directorio />} />
-            <Route path="/carreras" element={<GestionCarreras />} />
-            <Route path="/noticias" element={<GestionNoticias />} />
-            <Route path="/calendario" element={<CalendarioAcademico />} />
+          {/* Auth Layout - Rutas públicas */}
+          <Route path="/signin" element={
+            <PublicRoute>
+              <SignIn />
+            </PublicRoute>
+          } />
+          <Route path="/signup" element={
+            <PublicRoute>
+              <SignUp />
+            </PublicRoute>
+          } />
 
-            {/* Servicios Escolares */}
-            <Route path="/proceso-admision" element={<ProcesoAdmision />} />
-            <Route path="/tramites" element={<Tramites />} />
-            <Route path="/convocatoria-titulo" element={<ConvocatoriaTitulo />} />
-            <Route path="/becas" element={<BecasApoyo />} />
+          {/* Dashboard Layout - Rutas protegidas */}
+          <Route element={
+            <ProtectedRoute>
+              <AppLayout />
+            </ProtectedRoute>
+          }>
+            {/* Home Content Management - Ruta raíz */}
+            <Route index path="/" element={<HeroSlidesAdmin />} />
+            <Route path="/home/hero-slides" element={<HeroSlidesAdmin />} />
+            <Route path="/home/eventos" element={<EventosAdmin />} />
+            <Route path="/home/noticias" element={<NoticiasAdmin />} />
+            <Route path="/home/anuncios" element={<AnunciosAdmin />} />
+            <Route path="/home-content" element={<HomeContentDashboard />} />
+            <Route path="/home-content/video-institucional" element={<VideoInstitucionalAdmin />} />
+            <Route path="/home-content/reloj-digital" element={<RelojDigitalAdmin />} />
+            
+            {/* Dashboard Overview */}
+            <Route path="/dashboard" element={<Home />} />
+
+            {/* UTTECAM Pages */}
+            <Route path="/uttecam/organigrama" element={<Organigrama />} />
+            <Route path="/uttecam/directorio" element={<Directorio />} />
+            <Route path="/uttecam/carreras" element={<GestionCarreras />} />
+            <Route path="/uttecam/noticias" element={<GestionNoticias />} />
+            <Route path="/calendar" element={<CalendarioAcademico />} />
+            <Route path="/Nosotros" element={<Nosotros />} />
 
             {/* Servicios y Gestión Pages */}
             <Route path="/ServiciosGestion/Finanzas" element={<Finanzas />} />
@@ -96,10 +127,6 @@ export default function App() {
             <Route path="/line-chart" element={<LineChart />} />
             <Route path="/bar-chart" element={<BarChart />} />
           </Route>
-
-          {/* Auth Layout */}
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
 
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />

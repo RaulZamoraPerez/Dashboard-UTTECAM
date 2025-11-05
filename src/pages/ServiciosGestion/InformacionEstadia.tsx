@@ -1,6 +1,13 @@
+import GestorDocumentos from '../../components/documentos/GestorDocumentos';
+import { AREAS, NOMBRES_AREAS } from '../../constants/areas';
 
 export default function InformacionEstadia() {
   return (
-    <div className="text-blue-500 font-semibold text-center">Información de Estadía</div>
-  )
+    <div className="p-6">
+      <GestorDocumentos 
+        areaId={AREAS.INFORMACION_ESTADIA} 
+        areaNombre={NOMBRES_AREAS[AREAS.INFORMACION_ESTADIA]} 
+      />
+    </div>
+  );
 }
