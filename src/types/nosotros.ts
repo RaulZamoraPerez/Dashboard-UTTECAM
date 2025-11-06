@@ -1,25 +1,25 @@
 // types/nosotros.ts
 export interface Vision {
   imageSrc: string;
-  title: string;
+  title?: string;
   description: string;
 }
 
 export interface Mision {
   imageSrc: string;
-  title: string;
+  title?: string;
   description: string;
 }
 
 export interface Valores {
   imageSrc: string;
-  title: string;
+  title?: string;
   description: string[];
 }
 
 export interface PoliticaIntegral {
   imageSrc: string;
-  title: string;
+  title?: string;
   description: string;
 }
 
