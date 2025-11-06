@@ -60,13 +60,16 @@ export const useNosotros = (): UseNosotrosReturn => {
       console.error('Error updating section:', err);
       return false;
     }
-  }, [content]);
+  }, [fetchContent]);
 
   const updateAllContent = useCallback(async (newContent: NosotrosContent): Promise<boolean> => {
     try {
       setError(null);
       await updateNosotrosContent(newContent);
-      setContent(newContent);
+      
+      // Recargar el contenido desde el servidor para asegurar consistencia
+      await fetchContent();
+      
       return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al actualizar el contenido';
@@ -74,7 +77,7 @@ export const useNosotros = (): UseNosotrosReturn => {
       console.error('Error updating content:', err);
       return false;
     }
-  }, []);
+  }, [fetchContent]);
 
   const uploadImage = useCallback(async (
     section: ImageSectionKey,
@@ -112,7 +115,7 @@ export const useNosotros = (): UseNosotrosReturn => {
       console.error('Error uploading image:', err);
       return false;
     }
-  }, [content]);
+  }, [fetchContent]);
 
   useEffect(() => {
     fetchContent();

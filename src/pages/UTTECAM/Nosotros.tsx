@@ -61,8 +61,56 @@ export default function Nosotros() {
   };
 
   const handleEdit = (section: SectionKey, data: unknown) => {
+    // Preparar los datos con títulos fijos para edición
+    let preparedData = data;
+    
+    if (typeof data === 'object' && data !== null) {
+      switch (section) {
+        case 'politicaIntegral':
+          preparedData = { ...data, title: 'POLÍTICA INTEGRAL' };
+          break;
+        case 'vision':
+          preparedData = { ...data, title: 'VISIÓN' };
+          break;
+        case 'mision':
+          preparedData = { ...data, title: 'MISIÓN' };
+          break;
+        case 'valores':
+          preparedData = { ...data, title: 'VALORES' };
+          break;
+      }
+    }
+    
     setEditingSection(section);
-    setEditData(data);
+    setEditData(preparedData);
+  };
+
+  const prepareDataForSave = (section: SectionKey, data: any) => {
+    // Asegurar que se incluyan los títulos fijos para las secciones que los necesitan
+    switch (section) {
+      case 'politicaIntegral':
+        return {
+          ...data,
+          title: 'POLÍTICA INTEGRAL'
+        };
+      case 'vision':
+        return {
+          ...data,
+          title: 'VISIÓN'
+        };
+      case 'mision':
+        return {
+          ...data,
+          title: 'MISIÓN'
+        };
+      case 'valores':
+        return {
+          ...data,
+          title: 'VALORES'
+        };
+      default:
+        return data;
+    }
   };
 
   const handleSave = async () => {
@@ -72,6 +120,7 @@ export default function Nosotros() {
 
     try {
       const selectedFile = selectedFiles[editingSection];
+      const preparedData = prepareDataForSave(editingSection, editData);
       
       if (selectedFile) {
         // Verificar que la sección soporte subida de imágenes
@@ -82,7 +131,7 @@ export default function Nosotros() {
         }
         
         // Si hay un archivo seleccionado, subir la imagen
-        const success = await uploadImage(editingSection as ImageSectionKey, selectedFile, editData as UpdateSectionRequest);
+        const success = await uploadImage(editingSection as ImageSectionKey, selectedFile, preparedData as UpdateSectionRequest);
         if (success) {
           setEditingSection(null);
           setEditData(null);
@@ -90,20 +139,23 @@ export default function Nosotros() {
           setSelectedFiles(prev => ({ ...prev, [editingSection]: null }));
           setImagePreviews(prev => ({ ...prev, [editingSection]: null }));
         } else {
-          alert('Error al subir la imagen. Verifique que el archivo sea válido y que el backend esté funcionando correctamente.');
+          // El error ya se maneja en el hook, no mostrar alert adicional
+          console.error('Error al subir la imagen');
         }
       } else {
         // Si no hay archivo, actualizar solo los datos de texto
-        const success = await updateSection(editingSection, editData as UpdateSectionRequest);
+        const success = await updateSection(editingSection, preparedData as UpdateSectionRequest);
         if (success) {
           setEditingSection(null);
           setEditData(null);
         } else {
-          alert('Error al guardar los cambios');
+          // El error ya se maneja en el hook, no mostrar alert adicional
+          console.error('Error al guardar los cambios de texto');
         }
       }
-    } catch {
-      alert('Error al guardar los cambios');
+    } catch (error) {
+      console.error('Error inesperado al guardar cambios:', error);
+      alert('Error inesperado al guardar los cambios. Revisa la consola para más detalles.');
     } finally {
       setSaving(false);
     }
@@ -250,17 +302,6 @@ export default function Nosotros() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Título
-                    </label>
-                    <input
-                      type="text"
-                      value={(editData as Vision)?.title || ''}
-                      onChange={(e) => setEditData({ ...(editData as Vision), title: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Descripción
                     </label>
                     <textarea
@@ -316,9 +357,6 @@ export default function Nosotros() {
                 </div>
               ) : (
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                    {content.politicaIntegral?.title && content.politicaIntegral.title.trim() !== '' ? content.politicaIntegral.title : 'POLÍTICA INTEGRAL'}
-                  </h3>
                   <p className="text-gray-700 leading-relaxed">
                     {content.politicaIntegral?.description && content.politicaIntegral.description.trim() !== '' ? content.politicaIntegral.description : 'Contenido no disponible'}
                   </p>
@@ -418,17 +456,6 @@ export default function Nosotros() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Título
-                    </label>
-                    <input
-                      type="text"
-                      value={(editData as Vision)?.title || ''}
-                      onChange={(e) => setEditData({ ...(editData as Vision), title: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Descripción
                     </label>
                     <textarea
@@ -484,9 +511,6 @@ export default function Nosotros() {
                 </div>
               ) : (
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                    {content.vision?.title && content.vision.title.trim() !== '' ? content.vision.title : 'VISIÓN'}
-                  </h3>
                   <p className="text-gray-700 leading-relaxed">
                     {content.vision?.description && content.vision.description.trim() !== '' ? content.vision.description : 'Contenido no disponible'}
                   </p>
@@ -551,17 +575,6 @@ export default function Nosotros() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Título
-                    </label>
-                    <input
-                      type="text"
-                      value={(editData as Mision)?.title || ''}
-                      onChange={(e) => setEditData({ ...(editData as Mision), title: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Descripción
                     </label>
                     <textarea
@@ -617,9 +630,6 @@ export default function Nosotros() {
                 </div>
               ) : (
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                    {content.mision?.title && content.mision.title.trim() !== '' ? content.mision.title : 'MISIÓN'}
-                  </h3>
                   <p className="text-gray-700 leading-relaxed">
                     {content.mision?.description && content.mision.description.trim() !== '' ? content.mision.description : 'Contenido no disponible'}
                   </p>
@@ -684,17 +694,6 @@ export default function Nosotros() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Título
-                    </label>
-                    <input
-                      type="text"
-                      value={(editData as Valores)?.title || ''}
-                      onChange={(e) => setEditData({ ...(editData as Valores), title: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Valores (uno por línea)
                     </label>
                     <textarea
@@ -754,11 +753,8 @@ export default function Nosotros() {
                 </div>
               ) : (
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                    {content.valores?.title && content.valores.title.trim() !== '' ? content.valores.title : 'VALORES'}
-                  </h3>
                   <ul className="space-y-2">
-                    {content.valores?.description && content.valores.description.length > 0 ? (
+                    {content.valores?.description && Array.isArray(content.valores.description) && content.valores.description.length > 0 ? (
                       content.valores.description.map((valor, index) => (
                         <li key={index} className="flex items-start">
                           <span className="inline-block w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
@@ -766,7 +762,12 @@ export default function Nosotros() {
                         </li>
                       ))
                     ) : (
-                      <li className="text-gray-500">Contenido no disponible</li>
+                      <li className="text-gray-500">
+                        {content.valores?.description && !Array.isArray(content.valores.description) 
+                          ? `Error: Los datos no tienen el formato correcto (${typeof content.valores.description})`
+                          : 'Contenido no disponible'
+                        }
+                      </li>
                     )}
                   </ul>
                   <Button
