@@ -1,156 +1,118 @@
-import { useState } from "react";
-import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import ComponentCard from "../../components/common/ComponentCard";
-import PageMeta from "../../components/common/PageMeta";
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import PageBreadcrumb from '../../components/common/PageBreadCrumb';
+import ComponentCard from '../../components/common/ComponentCard';
+import PageMeta from '../../components/common/PageMeta';
 import {
   Table,
   TableBody,
   TableCell,
   TableHeader,
   TableRow,
-} from "../../components/ui/table";
-import Badge from "../../components/ui/badge/Badge";
-import Label from "../../components/form/Label";
-import Input from "../../components/form/input/InputField";
-import ControlledSelect from "../../components/form/ControlledSelect";
-
-interface CarreraData {
-  id: number;
-  nombre: string;
-  codigo: string;
-  modalidad: string;
-  duracion: string;
-  creditos: number;
-  coordinador: string;
-  fechaCreacion: string;
-  estado: 'Activa' | 'Inactiva' | 'En Revision';
-  descripcion?: string;
-  visitas?: number;
-}
+} from '../../components/ui/table';
+import Badge from '../../components/ui/badge/Badge';
+import Label from '../../components/form/Label';
+import Input from '../../components/form/input/InputField';
+import ControlledSelect from '../../components/form/ControlledSelect';
+import {
+  getAllCarreras,
+  createCarrera,
+  updateCarrera,
+  deleteCarrera,
+  getCarreraImageUrl,
+} from '../../services/carreraService';
+import type { Carrera, CreateCarreraRequest } from '../../types/carrera';
 
 export default function GestionCarreras() {
-  const [carreras, setCarreras] = useState<CarreraData[]>([
-    {
-      id: 1,
-      nombre: "Ingeniería en Sistemas Computacionales",
-      codigo: "ISC",
-      modalidad: "Escolarizada",
-      duracion: "9 cuatrimestres",
-      creditos: 256,
-      coordinador: "Ing. Laura Morales",
-      fechaCreacion: "2015-08-15",
-      estado: "Activa",
-      descripcion: "Carrera enfocada en el desarrollo de sistemas computacionales",
-      visitas: 1250
-    },
-    {
-      id: 2,
-      nombre: "Ingeniería en Mecatrónica",
-      codigo: "IMT",
-      modalidad: "Escolarizada",
-      duracion: "9 cuatrimestres",
-      creditos: 268,
-      coordinador: "Ing. Carlos Ruiz",
-      fechaCreacion: "2016-01-20",
-      estado: "Activa",
-      descripcion: "Carrera que combina mecánica, electrónica y sistemas de control",
-      visitas: 980
-    },
-    {
-      id: 3,
-      nombre: "Ingeniería en Gestión Empresarial",
-      codigo: "IGE",
-      modalidad: "Escolarizada",
-      duracion: "9 cuatrimestres",
-      creditos: 240,
-      coordinador: "Lic. María González",
-      fechaCreacion: "2017-09-10",
-      estado: "Activa",
-      descripcion: "Carrera orientada a la administración y gestión de empresas",
-      visitas: 750
-    },
-    {
-      id: 4,
-      nombre: "Técnico Superior Universitario en Tecnologías de la Información",
-      codigo: "TSU-TI",
-      modalidad: "Escolarizada",
-      duracion: "6 cuatrimestres",
-      creditos: 180,
-      coordinador: "Ing. Roberto Hernández",
-      fechaCreacion: "2018-01-15",
-      estado: "Activa",
-      descripcion: "Programa técnico en tecnologías de la información",
-      visitas: 650
-    },
-    {
-      id: 5,
-      nombre: "Ingeniería en Energías Renovables",
-      codigo: "IER",
-      modalidad: "Mixta",
-      duracion: "9 cuatrimestres",
-      creditos: 260,
-      coordinador: "Dr. Juan Pérez",
-      fechaCreacion: "2020-08-01",
-      estado: "En Revision",
-      descripcion: "Carrera enfocada en tecnologías sustentables y energía limpia",
-      visitas: 420
-    }
-  ]);
-
+  const { token } = useAuth();
+  const [carreras, setCarreras] = useState<Carrera[]>([]);
+  const [loading, setLoading] = useState(true);
   const [modalAbierto, setModalAbierto] = useState(false);
-  const [editando, setEditando] = useState<CarreraData | null>(null);
-  const [busqueda, setBusqueda] = useState("");
-  const [filtroModalidad, setFiltroModalidad] = useState("");
-  const [filtroEstado, setFiltroEstado] = useState("");
+  const [editando, setEditando] = useState<Carrera | null>(null);
+  const [busqueda, setBusqueda] = useState('');
+  const [filtroNivel, setFiltroNivel] = useState('');
+  const [filtroModalidad, setFiltroModalidad] = useState('');
 
-  // Datos para filtros
+  // Opciones para filtros y selects
+  const nivelOptions = [
+    { value: '', label: 'Todos los niveles' },
+    { value: 'TSU', label: 'TSU' },
+    { value: 'Ingenieria', label: 'Ingeniería' },
+    { value: 'Licenciatura', label: 'Licenciatura' },
+  ];
+
   const modalidadOptions = [
-    { value: "", label: "Todas las modalidades" },
-    { value: "Escolarizada", label: "Escolarizada" },
-    { value: "Mixta", label: "Mixta" },
-    { value: "En Línea", label: "En Línea" }
+    { value: '', label: 'Todas las modalidades' },
+    { value: 'Escolarizada', label: 'Escolarizada' },
+    { value: 'Ejecutiva', label: 'Ejecutiva' },
+    { value: 'Mixta', label: 'Mixta' },
   ];
 
-  const estadoOptions = [
-    { value: "", label: "Todos los estados" },
-    { value: "Activa", label: "Activa" },
-    { value: "Inactiva", label: "Inactiva" },
-    { value: "En Revision", label: "En Revisión" }
-  ];
+  // Cargar carreras
+  useEffect(() => {
+    cargarCarreras();
+  }, [token]);
 
-  const coordinadoresOptions = [
-    { value: "Ing. Laura Morales", label: "Ing. Laura Morales" },
-    { value: "Ing. Carlos Ruiz", label: "Ing. Carlos Ruiz" },
-    { value: "Lic. María González", label: "Lic. María González" },
-    { value: "Ing. Roberto Hernández", label: "Ing. Roberto Hernández" },
-    { value: "Dr. Juan Pérez", label: "Dr. Juan Pérez" }
-  ];
+  const cargarCarreras = async () => {
+    if (!token) return;
+    try {
+      setLoading(true);
+      const data = await getAllCarreras(token);
+      setCarreras(data);
+    } catch (error) {
+      console.error('Error al cargar carreras:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Estadísticas simplificadas
-  const carrerasActivas = carreras.filter(c => c.estado === "Activa").length;
-  const totalVisitas = carreras.reduce((total, c) => total + (c.visitas || 0), 0);
+  // Estadísticas
+  const carrerasActivas = carreras.filter((c) => c.activo).length;
+  const carrerasPorNivel = {
+    TSU: carreras.filter((c) => c.nivel === 'TSU').length,
+    Ingenieria: carreras.filter((c) => c.nivel === 'Ingenieria').length,
+    Licenciatura: carreras.filter((c) => c.nivel === 'Licenciatura').length,
+  };
 
   // Filtrado
-  const carrerasFiltradas = carreras.filter(carrera => {
-    const cumpleBusqueda = carrera.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-                          carrera.codigo.toLowerCase().includes(busqueda.toLowerCase()) ||
-                          carrera.coordinador.toLowerCase().includes(busqueda.toLowerCase());
-    
-    const cumpleModalidad = filtroModalidad === "" || carrera.modalidad === filtroModalidad;
-    const cumpleEstado = filtroEstado === "" || carrera.estado === filtroEstado;
-    
-    return cumpleBusqueda && cumpleModalidad && cumpleEstado;
+  const carrerasFiltradas = carreras.filter((carrera) => {
+    const cumpleBusqueda =
+      carrera.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+      carrera.siglas.toLowerCase().includes(busqueda.toLowerCase());
+
+    const cumpleNivel = filtroNivel === '' || carrera.nivel === filtroNivel;
+    const cumpleModalidad = filtroModalidad === '' || carrera.modalidad === filtroModalidad;
+
+    return cumpleBusqueda && cumpleNivel && cumpleModalidad;
   });
+
+  const handleEliminar = async (id: number) => {
+    if (!token) return;
+    if (!confirm('¿Estás seguro de eliminar esta carrera? Esta acción no se puede deshacer.')) return;
+
+    try {
+      await deleteCarrera(id, token);
+      await cargarCarreras();
+    } catch (error) {
+      console.error('Error al eliminar carrera:', error);
+      alert('Error al eliminar la carrera');
+    }
+  };
 
   return (
     <>
-      <PageMeta title="Gestión de Carreras - UTTECAM Admin" description="Panel de administración para gestionar carreras y programas educativos de UTTECAM" />
+      <PageMeta
+        title="Gestión de Carreras - UTTECAM Admin"
+        description="Panel de administración para gestionar carreras y programas educativos de UTTECAM"
+      />
       <div className="space-y-8">
-        <PageBreadcrumb pageTitle="Gestión de Carreras - UTTECAM" />
+        <PageBreadcrumb pageTitle="Gestión de Carreras" />
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Gestión de Carreras</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Administra las carreras y programas educativos de UTTECAM</p>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            Administra las carreras y programas educativos de UTTECAM
+          </p>
         </div>
 
         {/* Estadísticas */}
@@ -165,14 +127,14 @@ export default function GestionCarreras() {
             <p className="text-sm text-gray-500 dark:text-gray-400">En oferta actual</p>
           </ComponentCard>
 
-          <ComponentCard title="Total Visitas">
-            <div className="text-3xl font-bold text-blue-600">{totalVisitas.toLocaleString()}</div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Vistas del sitio</p>
+          <ComponentCard title="TSU">
+            <div className="text-3xl font-bold text-blue-600">{carrerasPorNivel.TSU}</div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Técnico Superior</p>
           </ComponentCard>
 
-          <ComponentCard title="Modalidades">
-            <div className="text-3xl font-bold text-purple-600">3</div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Tipos disponibles</p>
+          <ComponentCard title="Ingenierías">
+            <div className="text-3xl font-bold text-purple-600">{carrerasPorNivel.Ingenieria}</div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Programas de Ingeniería</p>
           </ComponentCard>
         </div>
 
@@ -184,12 +146,22 @@ export default function GestionCarreras() {
               <Input
                 type="text"
                 id="busqueda"
-                placeholder="Buscar por nombre, código o coordinador..."
+                placeholder="Buscar por nombre o siglas..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
               />
             </div>
-            
+
+            <div>
+              <Label>Filtrar por Nivel</Label>
+              <ControlledSelect
+                options={nivelOptions}
+                placeholder="Seleccionar nivel"
+                value={filtroNivel}
+                onChange={(value) => setFiltroNivel(value)}
+              />
+            </div>
+
             <div>
               <Label>Filtrar por Modalidad</Label>
               <ControlledSelect
@@ -200,16 +172,6 @@ export default function GestionCarreras() {
               />
             </div>
 
-            <div>
-              <Label>Filtrar por Estado</Label>
-              <ControlledSelect
-                options={estadoOptions}
-                placeholder="Seleccionar estado"
-                value={filtroEstado}
-                onChange={(value) => setFiltroEstado(value)}
-              />
-            </div>
-            
             <div className="flex items-end">
               <button
                 onClick={() => {
@@ -224,45 +186,32 @@ export default function GestionCarreras() {
           </div>
 
           {/* Tabla de Carreras */}
-          {carrerasFiltradas.length > 0 ? (
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+              <p className="mt-4 text-gray-600 dark:text-gray-400">Cargando carreras...</p>
+            </div>
+          ) : carrerasFiltradas.length > 0 ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="border-b border-gray-200 dark:border-white/[0.05]">
-                    <TableCell
-                      isHeader
-                      className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                    >
+                    <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                       Carrera
                     </TableCell>
-                    <TableCell
-                      isHeader
-                      className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                    >
-                      Información
+                    <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                      Nivel / Modalidad
                     </TableCell>
-                    <TableCell
-                      isHeader
-                      className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                    >
-                      Coordinador
+                    <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                      Duración
                     </TableCell>
-                    <TableCell
-                      isHeader
-                      className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                    >
-                      Visitas
+                    <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                      Orden
                     </TableCell>
-                    <TableCell
-                      isHeader
-                      className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                    >
+                    <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                       Estado
                     </TableCell>
-                    <TableCell
-                      isHeader
-                      className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400"
-                    >
+                    <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400">
                       Acciones
                     </TableCell>
                   </TableRow>
@@ -272,55 +221,40 @@ export default function GestionCarreras() {
                   {carrerasFiltradas.map((carrera) => (
                     <TableRow key={carrera.id}>
                       <TableCell className="px-5 py-4 sm:px-6 text-start">
-                        <div>
-                          <div className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                            {carrera.nombre}
-                          </div>
-                          <div className="text-xs text-primary font-medium">
-                            {carrera.codigo}
-                          </div>
-                          {carrera.descripcion && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-xs truncate">
-                              {carrera.descripcion}
-                            </div>
+                        <div className="flex items-center space-x-3">
+                          {carrera.imagen && (
+                            <img
+                              src={getCarreraImageUrl(carrera.imagen)}
+                              alt={carrera.nombre}
+                              className="w-12 h-12 rounded-lg object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
                           )}
+                          <div>
+                            <div className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                              {carrera.nombre}
+                            </div>
+                            <div className="text-xs text-primary font-medium">{carrera.siglas}</div>
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                         <div className="space-y-1">
-                          <div className="text-sm">
-                            <span className="font-medium">Modalidad:</span> {carrera.modalidad}
-                          </div>
-                          <div className="text-sm">
-                            <span className="font-medium">Duración:</span> {carrera.duracion}
-                          </div>
-                          <div className="text-sm">
-                            <span className="font-medium">Créditos:</span> {carrera.creditos}
+                          <div className="text-sm font-medium">{carrera.nivel}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {carrera.modalidad}
                           </div>
                         </div>
                       </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">{carrera.duracion}</TableCell>
                       <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        <div className="font-medium">
-                          {carrera.coordinador}
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          Desde {new Date(carrera.fechaCreacion).getFullYear()}
-                        </div>
-                      </TableCell>
-                      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        <div className="font-medium text-blue-600">
-                          {carrera.visitas?.toLocaleString() || 0}
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          vistas del sitio
-                        </div>
+                        <div className="text-center font-medium">{carrera.orden}</div>
                       </TableCell>
                       <TableCell className="px-4 py-3 text-start">
-                        <Badge 
-                          color={carrera.estado === 'Activa' ? 'success' : 
-                                  carrera.estado === 'Inactiva' ? 'error' : 'warning'}
-                        >
-                          {carrera.estado}
+                        <Badge color={carrera.activo ? 'success' : 'error'}>
+                          {carrera.activo ? 'Activa' : 'Inactiva'}
                         </Badge>
                       </TableCell>
                       <TableCell className="px-4 py-3 text-center">
@@ -333,21 +267,37 @@ export default function GestionCarreras() {
                             className="inline-flex items-center px-2 py-1 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
                             title="Editar carrera"
                           >
-                            <svg className="w-4 h-4 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            <svg
+                              className="w-4 h-4 dark:text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
                             </svg>
                           </button>
                           <button
-                            onClick={() => {
-                              if (confirm('¿Estás seguro de eliminar esta carrera?')) {
-                                setCarreras(carreras.filter(c => c.id !== carrera.id));
-                              }
-                            }}
+                            onClick={() => handleEliminar(carrera.id!)}
                             className="inline-flex items-center px-2 py-1 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                             title="Eliminar carrera"
                           >
-                            <svg className="w-4 h-4 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            <svg
+                              className="w-4 h-4 dark:text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
                             </svg>
                           </button>
                         </div>
@@ -360,13 +310,25 @@ export default function GestionCarreras() {
           ) : (
             <div className="text-center py-12">
               <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                <svg
+                  className="w-12 h-12 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                  />
                 </svg>
               </div>
-              <h3 className="mt-4 text-sm font-medium text-gray-900 dark:text-white">No se encontraron carreras</h3>
+              <h3 className="mt-4 text-sm font-medium text-gray-900 dark:text-white">
+                No se encontraron carreras
+              </h3>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Intenta ajustar los filtros de búsqueda.
+                Intenta ajustar los filtros de búsqueda o agrega una nueva carrera.
               </p>
             </div>
           )}
@@ -380,17 +342,14 @@ export default function GestionCarreras() {
               setModalAbierto(false);
               setEditando(null);
             }}
-            onGuardar={(nuevaCarrera) => {
-              if (editando) {
-                setCarreras(carreras.map(c => c.id === editando.id ? nuevaCarrera : c));
-              } else {
-                setCarreras([...carreras, { ...nuevaCarrera, id: Date.now() }]);
-              }
+            onGuardar={async () => {
+              await cargarCarreras();
               setModalAbierto(false);
               setEditando(null);
             }}
-            modalidadOptions={modalidadOptions.filter(m => m.value !== "")}
-            coordinadoresOptions={coordinadoresOptions}
+            token={token!}
+            nivelOptions={nivelOptions.filter((n) => n.value !== '')}
+            modalidadOptions={modalidadOptions.filter((m) => m.value !== '')}
           />
         )}
       </div>
@@ -400,42 +359,92 @@ export default function GestionCarreras() {
 
 // Modal Component
 interface ModalCarreraProps {
-  carrera: CarreraData | null;
+  carrera: Carrera | null;
   onCerrar: () => void;
-  onGuardar: (carrera: CarreraData) => void;
+  onGuardar: () => void;
+  token: string;
+  nivelOptions: { value: string; label: string }[];
   modalidadOptions: { value: string; label: string }[];
-  coordinadoresOptions: { value: string; label: string }[];
 }
 
-function ModalCarrera({ carrera, onCerrar, onGuardar, modalidadOptions, coordinadoresOptions }: ModalCarreraProps) {
-  const [formData, setFormData] = useState<CarreraData>(
-    carrera || {
-      id: 0,
-      nombre: '',
-      codigo: '',
-      modalidad: '',
-      duracion: '',
-      creditos: 0,
-      coordinador: '',
-      fechaCreacion: new Date().toISOString().split('T')[0],
-      estado: 'En Revision',
-      descripcion: '',
-      visitas: 0
-    }
-  );
+function ModalCarrera({
+  carrera,
+  onCerrar,
+  onGuardar,
+  token,
+  nivelOptions,
+  modalidadOptions,
+}: ModalCarreraProps) {
+  const [formData, setFormData] = useState({
+    nombre: carrera?.nombre || '',
+    siglas: carrera?.siglas || '',
+    nivel: carrera?.nivel || 'TSU',
+    modalidad: carrera?.modalidad || 'Escolarizada',
+    duracion: carrera?.duracion || '',
+    objetivo: carrera?.objetivo || '',
+    perfil_ingreso: carrera?.perfil_ingreso || '',
+    perfil_egreso: carrera?.perfil_egreso || '',
+    campo_laboral: carrera?.campo_laboral || '',
+    orden: carrera?.orden || 0,
+    activo: carrera?.activo ?? true,
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [imagenFile, setImagenFile] = useState<File | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [planFile, setPlanFile] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onGuardar(formData);
+    setSaving(true);
+
+    try {
+      if (carrera) {
+        // Actualizar
+        await updateCarrera(
+          carrera.id!,
+          {
+            ...formData,
+            ...(imagenFile && { imagen: imagenFile }),
+            ...(videoFile && { video: videoFile }),
+            ...(planFile && { plan_estudios: planFile }),
+          },
+          token
+        );
+      } else {
+        // Crear
+        if (!imagenFile) {
+          alert('Debe seleccionar una imagen para la carrera');
+          setSaving(false);
+          return;
+        }
+
+        await createCarrera(
+          {
+            ...formData,
+            imagen: imagenFile,
+            ...(videoFile && { video: videoFile }),
+            ...(planFile && { plan_estudios: planFile }),
+          } as CreateCarreraRequest,
+          token
+        );
+      }
+      onGuardar();
+    } catch (error) {
+      console.error('Error al guardar carrera:', error);
+      alert('Error al guardar la carrera');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 pt-24">
-      <div className="w-full max-w-4xl max-h-[calc(100vh-10rem)] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 pt-24 overflow-y-auto">
+      <div className="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-lg shadow-lg my-8">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              {carrera ? 'Editar Carrera' : 'Nueva Carrera / Programa Educativo'}
+              {carrera ? 'Editar Carrera' : 'Nueva Carrera'}
             </h2>
             <button
               type="button"
@@ -443,11 +452,16 @@ function ModalCarrera({ carrera, onCerrar, onGuardar, modalidadOptions, coordina
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
-          
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div className="sm:col-span-2">
@@ -457,18 +471,29 @@ function ModalCarrera({ carrera, onCerrar, onGuardar, modalidadOptions, coordina
                   id="nombre"
                   value={formData.nombre}
                   onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                  placeholder="Ej: Ingeniería en Sistemas Computacionales"
+                  required
                 />
               </div>
 
               <div>
-                <Label htmlFor="codigo">Código *</Label>
+                <Label htmlFor="siglas">Siglas *</Label>
                 <Input
                   type="text"
-                  id="codigo"
-                  value={formData.codigo}
-                  onChange={(e) => setFormData({ ...formData, codigo: e.target.value.toUpperCase() })}
-                  placeholder="Ej: ISC, IMT, IGE"
+                  id="siglas"
+                  value={formData.siglas}
+                  onChange={(e) =>
+                    setFormData({ ...formData, siglas: e.target.value.toUpperCase() })
+                  }
+                  required
+                />
+              </div>
+
+              <div>
+                <Label>Nivel *</Label>
+                <ControlledSelect
+                  options={nivelOptions}
+                  value={formData.nivel}
+                  onChange={(value) => setFormData({ ...formData, nivel: value as any })}
                 />
               </div>
 
@@ -476,9 +501,8 @@ function ModalCarrera({ carrera, onCerrar, onGuardar, modalidadOptions, coordina
                 <Label>Modalidad *</Label>
                 <ControlledSelect
                   options={modalidadOptions}
-                  placeholder="Seleccionar modalidad"
                   value={formData.modalidad}
-                  onChange={(value) => setFormData({ ...formData, modalidad: value })}
+                  onChange={(value) => setFormData({ ...formData, modalidad: value as any })}
                 />
               </div>
 
@@ -489,73 +513,148 @@ function ModalCarrera({ carrera, onCerrar, onGuardar, modalidadOptions, coordina
                   id="duracion"
                   value={formData.duracion}
                   onChange={(e) => setFormData({ ...formData, duracion: e.target.value })}
-                  placeholder="Ej: 9 cuatrimestres, 8 semestres"
+                  placeholder="Ej: 2 años (6 cuatrimestres)"
+                  required
                 />
               </div>
 
               <div>
-                <Label htmlFor="creditos">Créditos Totales *</Label>
+                <Label htmlFor="orden">Orden de visualización</Label>
                 <Input
                   type="number"
-                  id="creditos"
-                  value={formData.creditos}
-                  onChange={(e) => setFormData({ ...formData, creditos: parseInt(e.target.value) || 0 })}
-                  placeholder="240"
-                  min="1"
-                />
-              </div>
-
-              <div>
-                <Label>Coordinador *</Label>
-                <ControlledSelect
-                  options={coordinadoresOptions}
-                  placeholder="Seleccionar coordinador"
-                  value={formData.coordinador}
-                  onChange={(value) => setFormData({ ...formData, coordinador: value })}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="fechaCreacion">Fecha de Creación *</Label>
-                <Input
-                  type="date"
-                  id="fechaCreacion"
-                  value={formData.fechaCreacion}
-                  onChange={(e) => setFormData({ ...formData, fechaCreacion: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="visitas">Visitas del Sitio</Label>
-                <Input
-                  type="number"
-                  id="visitas"
-                  value={formData.visitas || 0}
-                  onChange={(e) => setFormData({ ...formData, visitas: parseInt(e.target.value) || 0 })}
-                  placeholder="0"
+                  id="orden"
+                  value={formData.orden}
+                  onChange={(e) => setFormData({ ...formData, orden: parseInt(e.target.value) })}
                   min="0"
                 />
               </div>
 
               <div className="sm:col-span-2">
-                <Label htmlFor="descripcion">Descripción</Label>
+                <Label htmlFor="objetivo">Objetivo *</Label>
                 <textarea
-                  id="descripcion"
+                  id="objetivo"
                   rows={3}
-                  value={formData.descripcion || ''}
-                  onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                  placeholder="Descripción breve de la carrera..."
+                  value={formData.objetivo}
+                  onChange={(e) => setFormData({ ...formData, objetivo: e.target.value })}
+                  required
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-primary"
                 />
+              </div>
+
+              <div className="sm:col-span-2">
+                <Label htmlFor="perfil_ingreso">Perfil de Ingreso *</Label>
+                <textarea
+                  id="perfil_ingreso"
+                  rows={3}
+                  value={formData.perfil_ingreso}
+                  onChange={(e) => setFormData({ ...formData, perfil_ingreso: e.target.value })}
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-primary"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <Label htmlFor="perfil_egreso">Perfil de Egreso *</Label>
+                <textarea
+                  id="perfil_egreso"
+                  rows={3}
+                  value={formData.perfil_egreso}
+                  onChange={(e) => setFormData({ ...formData, perfil_egreso: e.target.value })}
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-primary"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <Label htmlFor="campo_laboral">Campo Laboral *</Label>
+                <textarea
+                  id="campo_laboral"
+                  rows={3}
+                  value={formData.campo_laboral}
+                  onChange={(e) => setFormData({ ...formData, campo_laboral: e.target.value })}
+                  required
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-primary"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="imagen">Imagen {!carrera && '*'}</Label>
+                <input
+                  type="file"
+                  id="imagen"
+                  accept="image/*"
+                  onChange={(e) => setImagenFile(e.target.files?.[0] || null)}
+                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
+                />
+                {carrera?.imagen && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Archivo actual: {carrera.imagen}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="video">Video Promocional (MP4, WEBM, AVI)</Label>
+                <input
+                  type="file"
+                  id="video"
+                  accept="video/mp4,video/webm,video/x-msvideo"
+                  onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
+                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
+                />
+                {carrera?.video_url && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Archivo actual: {carrera.video_url}
+                  </p>
+                )}
+                <p className="mt-1 text-xs text-gray-400">
+                  Opcional. Máximo 50MB. Formatos: MP4, WEBM, AVI
+                </p>
+              </div>
+
+              <div className="sm:col-span-2">
+                <Label htmlFor="plan_estudios">Plan de Estudios (PDF)</Label>
+                <input
+                  type="file"
+                  id="plan_estudios"
+                  accept=".pdf"
+                  onChange={(e) => setPlanFile(e.target.files?.[0] || null)}
+                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
+                />
+                {carrera?.plan_estudios_url && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    Archivo actual: {carrera.plan_estudios_url}
+                  </p>
+                )}
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.activo}
+                    onChange={(e) => setFormData({ ...formData, activo: e.target.checked })}
+                    className="rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Carrera activa</span>
+                </label>
               </div>
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
               <button
-                type="submit"
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 bg-indigo-500"
+                type="button"
+                onClick={onCerrar}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
               >
-                {carrera ? 'Actualizar' : 'Crear Carrera'}
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+              >
+                {saving ? 'Guardando...' : carrera ? 'Actualizar' : 'Crear Carrera'}
               </button>
             </div>
           </form>

@@ -11,6 +11,7 @@ export interface Carrera {
   perfil_egreso: string;
   campo_laboral: string;
   imagen: string;
+  video_url?: string;
   plan_estudios_url?: string;
   orden: number;
   activo: boolean;
@@ -29,6 +30,7 @@ export interface CreateCarreraRequest {
   perfil_egreso: string;
   campo_laboral: string;
   imagen: File;
+  video?: File;
   plan_estudios?: File;
   orden: number;
   activo: boolean;
@@ -45,6 +47,7 @@ export interface UpdateCarreraRequest {
   perfil_egreso?: string;
   campo_laboral?: string;
   imagen?: File;
+  video?: File;
   plan_estudios?: File;
   orden?: number;
   activo?: boolean;
