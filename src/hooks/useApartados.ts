@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { confirmDialog, toastError } from '../utils/alert';
 import { Apartado, Documento } from '../types/apartados';
 
 export const useApartados = (apartadosIniciales: Apartado[] = []) => {
@@ -7,7 +8,7 @@ export const useApartados = (apartadosIniciales: Apartado[] = []) => {
 
   const crearApartado = (titulo: string, descripcion: string) => {
     if (!titulo.trim()) {
-      alert('Por favor ingresa un título para el apartado');
+      toastError('Por favor ingresa un título para el apartado');
       return false;
     }
 
@@ -23,12 +24,11 @@ export const useApartados = (apartadosIniciales: Apartado[] = []) => {
     return true;
   };
 
-  const eliminarApartado = (id: string) => {
-    if (confirm('¿Estás seguro de eliminar este apartado?')) {
-      setApartados(apartados.filter(apt => apt.id !== id));
-      return true;
-    }
-    return false;
+  const eliminarApartado = async (id: string) => {
+    const confirmed = await confirmDialog({ title: 'Eliminar apartado', text: '¿Estás seguro de eliminar este apartado?' });
+    if (!confirmed) return false;
+    setApartados(apartados.filter(apt => apt.id !== id));
+    return true;
   };
 
   const seleccionarApartado = (apartado: Apartado) => {
@@ -41,17 +41,17 @@ export const useApartados = (apartadosIniciales: Apartado[] = []) => {
 
   const agregarDocumento = (nombre: string, archivo: File | null) => {
     if (!nombre.trim()) {
-      alert('Por favor ingresa un nombre para el documento');
+      toastError('Por favor ingresa un nombre para el documento');
       return false;
     }
 
     if (!archivo) {
-      alert('Por favor selecciona un archivo');
+      toastError('Por favor selecciona un archivo');
       return false;
     }
 
     if (!apartadoSeleccionado) {
-      alert('No hay un apartado seleccionado');
+      toastError('No hay un apartado seleccionado');
       return false;
     }
 
@@ -85,10 +85,9 @@ export const useApartados = (apartadosIniciales: Apartado[] = []) => {
     return true;
   };
 
-  const eliminarDocumento = (documentoId: string) => {
-    if (!confirm('¿Estás seguro de eliminar este documento?')) {
-      return false;
-    }
+  const eliminarDocumento = async (documentoId: string) => {
+    const confirmed = await confirmDialog({ title: 'Eliminar documento', text: '¿Estás seguro de eliminar este documento?' });
+    if (!confirmed) return false;
 
     if (!apartadoSeleccionado) {
       return false;
@@ -119,12 +118,12 @@ export const useApartados = (apartadosIniciales: Apartado[] = []) => {
 
   const editarDocumento = (documentoId: string, nombre: string, archivo?: File | null) => {
     if (!nombre.trim()) {
-      alert('Por favor ingresa un nombre para el documento');
+      toastError('Por favor ingresa un nombre para el documento');
       return false;
     }
 
     if (!apartadoSeleccionado) {
-      alert('No hay un apartado seleccionado');
+      toastError('No hay un apartado seleccionado');
       return false;
     }
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { confirmDialog, toastSuccess } from '../../utils/alert';
 import { useDropzone } from 'react-dropzone';
 
 interface ProcesoAdmision {
@@ -116,14 +117,15 @@ const ProcesoAdmision: React.FC = () => {
     setIsEditing(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este proceso de admisión?')) {
-      const proceso = procesos.find(p => p.id === id);
-      if (proceso?.previewUrl) {
-        URL.revokeObjectURL(proceso.previewUrl);
-      }
-      setProcesos(prev => prev.filter(p => p.id !== id));
+  const handleDelete = async (id: string) => {
+    const confirmed = await confirmDialog({ title: 'Eliminar proceso de admisión', text: '¿Estás seguro de que deseas eliminar este proceso de admisión?' });
+    if (!confirmed) return;
+    const proceso = procesos.find(p => p.id === id);
+    if (proceso?.previewUrl) {
+      URL.revokeObjectURL(proceso.previewUrl);
     }
+    setProcesos(prev => prev.filter(p => p.id !== id));
+    toastSuccess('Proceso de admisión eliminado');
   };
 
   const handleCancel = () => {
@@ -520,7 +522,7 @@ const ProcesoAdmision: React.FC = () => {
 
       {/* Modal de Preview */}
       {showPreview && previewItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-75 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black bg-opacity-75 backdrop-blur-sm">
           <div className="relative max-w-4xl max-h-[90vh] bg-white dark:bg-black rounded-lg overflow-hidden shadow-2xl border border-stroke dark:border-gray-600">
             {/* Header del modal */}
             <div className="flex items-center justify-between p-6 border-b border-stroke dark:border-strokedark bg-gray-50 dark:bg-gray-800/50">

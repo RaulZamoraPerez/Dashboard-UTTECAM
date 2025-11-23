@@ -6,7 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   function toggleDropdown() {
@@ -32,7 +32,7 @@ export default function UserDropdown() {
           <img src="/images/user/owner.jpg" alt="User" />
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">Raul Zamora</span>
+        <span className="block mr-1 font-medium text-theme-sm">{user?.username || "Usuario"}</span>
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -60,10 +60,10 @@ export default function UserDropdown() {
       >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            Raul Zamora Perez
+            {user?.username || "Usuario"}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            raulzamora@gmail.com
+            {user?.email || "usuario@uttecam.edu.mx"}
           </span>
         </div>
 

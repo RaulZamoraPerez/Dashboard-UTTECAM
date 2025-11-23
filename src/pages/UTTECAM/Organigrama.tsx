@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { confirmDialog, toastSuccess } from '../../utils/alert';
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
@@ -90,10 +91,11 @@ export default function Organigrama() {
     p.departamento.toLowerCase().includes(busqueda.toLowerCase())
   );
 
-  const handleEliminar = (id: number) => {
-    if (confirm('¿Está seguro de eliminar este registro?')) {
-      setPersonal(personal.filter(p => p.id !== id));
-    }
+  const handleEliminar = async (id: number) => {
+    const confirmed = await confirmDialog({ title: 'Eliminar registro', text: '¿Está seguro de eliminar este registro?' });
+    if (!confirmed) return;
+    setPersonal(personal.filter(p => p.id !== id));
+    toastSuccess('Registro eliminado correctamente');
   };
 
   const toggleActivo = (id: number) => {
@@ -376,7 +378,7 @@ function ModalPersonal({ persona, onCerrar, onGuardar, departamentosOptions }: M
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 pt-24">
+    <div className="fixed inset-0 z-[99999] flex items-start justify-center bg-black/50 p-4 pt-24">
       <div className="w-full max-w-2xl max-h-[calc(100vh-10rem)] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
@@ -406,7 +408,6 @@ function ModalPersonal({ persona, onCerrar, onGuardar, departamentosOptions }: M
                   placeholder="Ingrese el nombre completo"
                 />
               </div>
-
               <div>
                 <Label htmlFor="cargo">Cargo *</Label>
                 <Input

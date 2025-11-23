@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { confirmDialog, toastSuccess } from '../../../utils/alert';
 import { useEventos } from '../../../hooks/useEventos';
 
 const EventosAdmin = () => {
@@ -47,9 +48,10 @@ const EventosAdmin = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('¿Está seguro de eliminar este evento?')) {
-      await deleteItem(id);
-    }
+    const confirmed = await confirmDialog({ title: 'Eliminar evento', text: '¿Está seguro de eliminar este evento?' });
+    if (!confirmed) return;
+    const ok = await deleteItem(id);
+    if (ok) toastSuccess('Evento eliminado correctamente');
   };
 
   const resetForm = () => {

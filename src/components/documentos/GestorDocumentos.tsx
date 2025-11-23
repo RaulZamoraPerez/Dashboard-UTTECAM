@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { confirmDialog, toastSuccess, toastError } from '../../utils/alert';
 import type { Categoria, Archivo } from '../../services/documentosService';
 import {
   obtenerCategorias,
@@ -247,14 +248,17 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
   };
 
   const handleEliminarArchivo = async (archivoId: number) => {
-    if (!confirm('¿Está seguro de eliminar este archivo?')) return;
+    const confirmed = await confirmDialog({ title: 'Eliminar archivo', text: '¿Está seguro de eliminar este archivo?' });
+    if (!confirmed) return;
 
     try {
       setError('');
       await eliminarArchivo(archivoId);
+      toastSuccess('Archivo eliminado correctamente');
       cargarCategorias();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al eliminar archivo');
+      toastError('Error al eliminar archivo');
     }
   };
 
@@ -282,7 +286,8 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
     if (archivosSeleccionados.size === 0) return;
 
     const confirmMessage = `¿Está seguro de eliminar ${archivosSeleccionados.size} archivo${archivosSeleccionados.size > 1 ? 's' : ''}?`;
-    if (!confirm(confirmMessage)) return;
+    const confirmed = await confirmDialog({ title: 'Eliminar archivos', text: confirmMessage });
+    if (!confirmed) return;
 
     try {
       setEliminando(true);
@@ -329,7 +334,8 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
       ? `¿Está seguro de eliminar la categoría "${nombreCategoria}"? Se eliminarán también ${archivosCount} archivo${archivosCount > 1 ? 's' : ''} asociado${archivosCount > 1 ? 's' : ''}.`
       : `¿Está seguro de eliminar la categoría "${nombreCategoria}"?`;
     
-    if (!confirm(mensajeConfirmacion)) {
+    const confirmed = await confirmDialog({ title: 'Eliminar categoría', text: mensajeConfirmacion });
+    if (!confirmed) {
       return;
     }
 
@@ -372,7 +378,7 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
       window.open(url, '_blank');
     } catch (error) {
       console.error('Error al previsualizar archivo:', error);
-      alert('Error al previsualizar el archivo. Intente descargar en su lugar.');
+      toastError('Error al previsualizar el archivo. Intente descargar en su lugar.');
     }
   };
 
@@ -584,7 +590,7 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
                         window.open(url, '_blank');
                       } catch (error) {
                         console.error('Error al descargar archivo:', error);
-                        alert('Error al descargar el archivo.');
+                        toastError('Error al descargar el archivo.');
                       }
                     }}
                     className="flex-1 px-3 py-2 text-xs font-medium text-center text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-all"
@@ -618,7 +624,7 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
 
       {/* Modal Crear Categoría */}
       {mostrarModalCategoria && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 sm:p-6 w-full max-w-[95%] sm:max-w-md mx-auto max-h-[90vh] overflow-y-auto animate-fadeIn">
             <div className="flex justify-between items-center mb-4 sm:mb-6">
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
@@ -674,7 +680,7 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
 
       {/* Modal Subir Archivo */}
       {mostrarModalArchivo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 sm:p-6 w-full max-w-[95%] sm:max-w-2xl mx-auto max-h-[90vh] overflow-y-auto animate-fadeIn">
             <div className="flex justify-between items-center mb-4 sm:mb-6">
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">

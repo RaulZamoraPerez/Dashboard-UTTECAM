@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { confirmDialog, toastError, toastSuccess } from '../../../utils/alert';
 import { useHeroSlides } from '../../../hooks/useHeroSlides';
 import { getHeroSlideFileUrl } from '../../../services/homeService';
 import type { CreateHeroSlideRequest, UpdateHeroSlideRequest } from '../../../types/home';
@@ -19,7 +20,7 @@ const HeroSlidesAdmin = () => {
     e.preventDefault();
     
     if (!selectedFile && !editingId) {
-      alert('Debe seleccionar un archivo');
+      toastError('Debe seleccionar un archivo');
       return;
     }
 
@@ -56,9 +57,10 @@ const HeroSlidesAdmin = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('¿Está seguro de eliminar este slide?')) {
-      await deleteItem(id);
-    }
+    const confirmed = await confirmDialog({ title: 'Eliminar Slide', text: '¿Está seguro de eliminar este slide?' });
+    if (!confirmed) return;
+    const success = await deleteItem(id);
+    if (success) toastSuccess('Slide eliminado correctamente');
   };
 
   const resetForm = () => {

@@ -335,6 +335,16 @@ layer(base);
   @apply !font-medium;
 }
 
+/* Ensure SweetAlert2 overlays are above all app UI (navbars, modals, etc.) */
+.swal2-container,
+.swal2-container .swal2-popup,
+.swal2-container .swal2-modal,
+.swal2-backdrop,
+.swal2-toast {
+  z-index: 9999999 !important; /* higher than any modal/z-index in the dashboard */
+}
+
+
 .apexcharts-gridline {
   @apply !stroke-gray-100 dark:!stroke-gray-800;
 }

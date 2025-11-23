@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import PageBreadcrumb from '../../components/common/PageBreadCrumb';
 import ComponentCard from '../../components/common/ComponentCard';
 import PageMeta from '../../components/common/PageMeta';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import {
   Table,
   TableBody,
@@ -16,12 +18,179 @@ import Input from '../../components/form/input/InputField';
 import ControlledSelect from '../../components/form/ControlledSelect';
 import {
   getAllCarreras,
-  createCarrera,
-  updateCarrera,
   deleteCarrera,
   getCarreraImageUrl,
+  updateCarrerasOrder,
 } from '../../services/carreraService';
-import type { Carrera, CreateCarreraRequest } from '../../types/carrera';
+import { confirmDialog, toastSuccess, toastError } from '../../utils/alert';
+import type { Carrera } from '../../types/carrera';
+import ModalCarrera from './Carreras/ModalCarrera';
+import ModalOrdenarCarreras from './Carreras/ModalOrdenarCarreras';
+
+// Draggable Row Component
+interface DraggableRowProps {
+  carrera: Carrera;
+  index: number;
+  moveRow: (dragIndex: number, hoverIndex: number) => void;
+  onEdit: (carrera: Carrera) => void;
+  onDelete: (id: number) => void;
+}
+
+const DraggableRow = ({ carrera, index, moveRow, onEdit, onDelete }: DraggableRowProps) => {
+  const ref = useRef<HTMLTableRowElement>(null);
+
+  const [{ handlerId }, drop] = useDrop({
+    accept: 'row',
+    collect(monitor) {
+      return {
+        handlerId: monitor.getHandlerId(),
+      };
+    },
+    hover(item: any, monitor) {
+      if (!ref.current) {
+        return;
+      }
+      const dragIndex = item.index;
+      const hoverIndex = index;
+
+      // Don't replace items with themselves
+      if (dragIndex === hoverIndex) {
+        return;
+      }
+
+      // Determine rectangle on screen
+      const hoverBoundingRect = ref.current?.getBoundingClientRect();
+
+      // Get vertical middle
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+
+      // Determine mouse position
+      const clientOffset = monitor.getClientOffset();
+
+      // Get pixels to the top
+      const hoverClientY = clientOffset!.y - hoverBoundingRect.top;
+
+      // Only perform the move when the mouse has crossed half of the items height
+      // When dragging downwards, only move when the cursor is below 50%
+      // When dragging upwards, only move when the cursor is above 50%
+
+      // Dragging downwards
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+        return;
+      }
+
+      // Dragging upwards
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+        return;
+      }
+
+      // Time to actually perform the action
+      moveRow(dragIndex, hoverIndex);
+
+      // Note: we're mutating the monitor item here!
+      // Generally it's better to avoid mutations,
+      // but it's good here for the sake of performance
+      // to avoid expensive index searches.
+      item.index = hoverIndex;
+    },
+  });
+
+  const [{ isDragging }, drag] = useDrag({
+    type: 'row',
+    item: () => {
+      return { id: carrera.id, index };
+    },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  const opacity = isDragging ? 0 : 1;
+  drag(drop(ref));
+
+  return (
+    <TableRow ref={ref} style={{ opacity }} data-handler-id={handlerId} className="cursor-grab hover:bg-gray-50 dark:hover:bg-gray-700/50">
+      <TableCell className="px-5 py-4 sm:px-6 text-start">
+        <div className="flex items-center space-x-3">
+          <div className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </div>
+          {carrera.imagen && (
+            <img
+              src={getCarreraImageUrl(carrera.imagen)}
+              alt={carrera.nombre}
+              className="w-12 h-12 rounded-lg object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          )}
+          <div>
+            <div className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
+              {carrera.nombre}
+            </div>
+            <div className="text-xs text-blue-600 font-medium dark:text-blue-400">{carrera.siglas}</div>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+        <div className="space-y-1">
+          <div className="text-sm font-medium">{carrera.nivel}</div>
+        </div>
+      </TableCell>
+      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">{carrera.duracion}</TableCell>
+      <TableCell className="px-4 py-3 text-start">
+        <Badge color={carrera.activo ? 'success' : 'error'}>
+          {carrera.activo ? 'Activa' : 'Inactiva'}
+        </Badge>
+      </TableCell>
+      <TableCell className="px-4 py-3 text-center">
+        <div className="flex items-center justify-center space-x-2">
+          <button
+            onClick={() => onEdit(carrera)}
+            className="inline-flex items-center px-2 py-1 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+            title="Editar carrera"
+          >
+            <svg
+              className="w-4 h-4 dark:text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
+          </button>
+          <button
+            onClick={() => onDelete(carrera.id!)}
+            className="inline-flex items-center px-2 py-1 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+            title="Eliminar carrera"
+          >
+            <svg
+              className="w-4 h-4 dark:text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          </button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+};
 
 export default function GestionCarreras() {
   const { token } = useAuth();
@@ -31,21 +200,14 @@ export default function GestionCarreras() {
   const [editando, setEditando] = useState<Carrera | null>(null);
   const [busqueda, setBusqueda] = useState('');
   const [filtroNivel, setFiltroNivel] = useState('');
-  const [filtroModalidad, setFiltroModalidad] = useState('');
+  const [modalOrdenarAbierto, setModalOrdenarAbierto] = useState(false);
+  const [orderChanged, setOrderChanged] = useState(false);
 
   // Opciones para filtros y selects
   const nivelOptions = [
     { value: '', label: 'Todos los niveles' },
-    { value: 'TSU', label: 'TSU' },
     { value: 'Ingenieria', label: 'Ingeniería' },
     { value: 'Licenciatura', label: 'Licenciatura' },
-  ];
-
-  const modalidadOptions = [
-    { value: '', label: 'Todas las modalidades' },
-    { value: 'Escolarizada', label: 'Escolarizada' },
-    { value: 'Ejecutiva', label: 'Ejecutiva' },
-    { value: 'Mixta', label: 'Mixta' },
   ];
 
   // Cargar carreras
@@ -59,6 +221,7 @@ export default function GestionCarreras() {
       setLoading(true);
       const data = await getAllCarreras(token);
       setCarreras(data);
+      setOrderChanged(false);
     } catch (error) {
       console.error('Error al cargar carreras:', error);
     } finally {
@@ -66,10 +229,35 @@ export default function GestionCarreras() {
     }
   };
 
+  const moveRow = useCallback((dragIndex: number, hoverIndex: number) => {
+    setCarreras((prevCarreras) => {
+      const updatedCarreras = [...prevCarreras];
+      const [draggedRow] = updatedCarreras.splice(dragIndex, 1);
+      updatedCarreras.splice(hoverIndex, 0, draggedRow);
+      return updatedCarreras;
+    });
+    setOrderChanged(true);
+  }, []);
+
+  const handleSaveOrder = async () => {
+    if (!token) return;
+    try {
+      const orderData = carreras.map((c, index) => ({
+        id: c.id!,
+        orden: index + 1,
+      }));
+      await updateCarrerasOrder(orderData, token);
+      setOrderChanged(false);
+      toastSuccess('Orden actualizado correctamente');
+    } catch (error) {
+      console.error('Error al guardar orden:', error);
+      toastError('Error al guardar el orden');
+    }
+  };
+
   // Estadísticas
   const carrerasActivas = carreras.filter((c) => c.activo).length;
   const carrerasPorNivel = {
-    TSU: carreras.filter((c) => c.nivel === 'TSU').length,
     Ingenieria: carreras.filter((c) => c.nivel === 'Ingenieria').length,
     Licenciatura: carreras.filter((c) => c.nivel === 'Licenciatura').length,
   };
@@ -81,26 +269,27 @@ export default function GestionCarreras() {
       carrera.siglas.toLowerCase().includes(busqueda.toLowerCase());
 
     const cumpleNivel = filtroNivel === '' || carrera.nivel === filtroNivel;
-    const cumpleModalidad = filtroModalidad === '' || carrera.modalidad === filtroModalidad;
 
-    return cumpleBusqueda && cumpleNivel && cumpleModalidad;
+    return cumpleBusqueda && cumpleNivel;
   });
 
   const handleEliminar = async (id: number) => {
     if (!token) return;
-    if (!confirm('¿Estás seguro de eliminar esta carrera? Esta acción no se puede deshacer.')) return;
+    const confirmed = await confirmDialog({ title: 'Eliminar carrera', text: '¿Estás seguro de eliminar esta carrera? Esta acción no se puede deshacer.' });
+    if (!confirmed) return;
 
     try {
       await deleteCarrera(id, token);
       await cargarCarreras();
+      toastSuccess('Carrera eliminada correctamente');
     } catch (error) {
       console.error('Error al eliminar carrera:', error);
-      alert('Error al eliminar la carrera');
+      toastError('Error al eliminar la carrera');
     }
   };
 
   return (
-    <>
+    <DndProvider backend={HTML5Backend}>
       <PageMeta
         title="Gestión de Carreras - UTTECAM Admin"
         description="Panel de administración para gestionar carreras y programas educativos de UTTECAM"
@@ -118,22 +307,17 @@ export default function GestionCarreras() {
         {/* Estadísticas */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <ComponentCard title="Total Carreras">
-            <div className="text-3xl font-bold text-primary dark:text-white">{carreras.length}</div>
+            <div className="text-3xl font-bold text-blue-600 dark:text-white">{carreras.length}</div>
             <p className="text-sm text-gray-500 dark:text-gray-400">Programas educativos</p>
           </ComponentCard>
 
           <ComponentCard title="Carreras Activas">
-            <div className="text-3xl font-bold text-green-600">{carrerasActivas}</div>
+            <div className="text-3xl font-bold text-green-600 dark:text-green-400">{carrerasActivas}</div>
             <p className="text-sm text-gray-500 dark:text-gray-400">En oferta actual</p>
           </ComponentCard>
 
-          <ComponentCard title="TSU">
-            <div className="text-3xl font-bold text-blue-600">{carrerasPorNivel.TSU}</div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Técnico Superior</p>
-          </ComponentCard>
-
           <ComponentCard title="Ingenierías">
-            <div className="text-3xl font-bold text-purple-600">{carrerasPorNivel.Ingenieria}</div>
+            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">{carrerasPorNivel.Ingenieria}</div>
             <p className="text-sm text-gray-500 dark:text-gray-400">Programas de Ingeniería</p>
           </ComponentCard>
         </div>
@@ -162,33 +346,37 @@ export default function GestionCarreras() {
               />
             </div>
 
-            <div>
-              <Label>Filtrar por Modalidad</Label>
-              <ControlledSelect
-                options={modalidadOptions}
-                placeholder="Seleccionar modalidad"
-                value={filtroModalidad}
-                onChange={(value) => setFiltroModalidad(value)}
-              />
-            </div>
-
-            <div className="flex items-end">
+            <div className="flex items-end gap-2">
+              <button
+                onClick={() => setModalOrdenarAbierto(true)}
+                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                Ordenar Carreras
+              </button>
               <button
                 onClick={() => {
                   setEditando(null);
                   setModalAbierto(true);
                 }}
-                className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
+                className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500"
               >
                 Agregar Carrera
               </button>
+              {orderChanged && (
+                <button
+                  onClick={handleSaveOrder}
+                  className="flex-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 animate-pulse"
+                >
+                  Guardar Orden
+                </button>
+              )}
             </div>
           </div>
 
           {/* Tabla de Carreras */}
           {loading ? (
             <div className="text-center py-12">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] dark:text-white" />
               <p className="mt-4 text-gray-600 dark:text-gray-400">Cargando carreras...</p>
             </div>
           ) : carrerasFiltradas.length > 0 ? (
@@ -200,13 +388,10 @@ export default function GestionCarreras() {
                       Carrera
                     </TableCell>
                     <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                      Nivel / Modalidad
+                      Nivel
                     </TableCell>
                     <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                       Duración
-                    </TableCell>
-                    <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                      Orden
                     </TableCell>
                     <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                       Estado
@@ -218,91 +403,18 @@ export default function GestionCarreras() {
                 </TableHeader>
 
                 <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                  {carrerasFiltradas.map((carrera) => (
-                    <TableRow key={carrera.id}>
-                      <TableCell className="px-5 py-4 sm:px-6 text-start">
-                        <div className="flex items-center space-x-3">
-                          {carrera.imagen && (
-                            <img
-                              src={getCarreraImageUrl(carrera.imagen)}
-                              alt={carrera.nombre}
-                              className="w-12 h-12 rounded-lg object-cover"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none';
-                              }}
-                            />
-                          )}
-                          <div>
-                            <div className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                              {carrera.nombre}
-                            </div>
-                            <div className="text-xs text-primary font-medium">{carrera.siglas}</div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        <div className="space-y-1">
-                          <div className="text-sm font-medium">{carrera.nivel}</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            {carrera.modalidad}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">{carrera.duracion}</TableCell>
-                      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        <div className="text-center font-medium">{carrera.orden}</div>
-                      </TableCell>
-                      <TableCell className="px-4 py-3 text-start">
-                        <Badge color={carrera.activo ? 'success' : 'error'}>
-                          {carrera.activo ? 'Activa' : 'Inactiva'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="px-4 py-3 text-center">
-                        <div className="flex items-center justify-center space-x-2">
-                          <button
-                            onClick={() => {
-                              setEditando(carrera);
-                              setModalAbierto(true);
-                            }}
-                            className="inline-flex items-center px-2 py-1 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                            title="Editar carrera"
-                          >
-                            <svg
-                              className="w-4 h-4 dark:text-white"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                              />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={() => handleEliminar(carrera.id!)}
-                            className="inline-flex items-center px-2 py-1 text-sm font-medium text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                            title="Eliminar carrera"
-                          >
-                            <svg
-                              className="w-4 h-4 dark:text-white"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
+                  {carrerasFiltradas.map((carrera, index) => (
+                    <DraggableRow
+                      key={carrera.id}
+                      index={index}
+                      carrera={carrera}
+                      moveRow={moveRow}
+                      onEdit={(c) => {
+                        setEditando(c);
+                        setModalAbierto(true);
+                      }}
+                      onDelete={handleEliminar}
+                    />
                   ))}
                 </TableBody>
               </Table>
@@ -334,332 +446,41 @@ export default function GestionCarreras() {
           )}
         </ComponentCard>
 
+        {/* Modal para Ordenar */}
+        {modalOrdenarAbierto && (
+          <ModalOrdenarCarreras
+            carreras={carreras}
+            onCerrar={() => setModalOrdenarAbierto(false)}
+            onGuardar={async (ordenData) => {
+              if (!token) return;
+              try {
+                await updateCarrerasOrder(ordenData, token);
+                await cargarCarreras();
+                setModalOrdenarAbierto(false);
+              } catch (error) {
+                console.error('Error al guardar orden:', error);
+                toastError('Error al guardar el orden');
+              }
+            }}
+          />
+        )}
+
         {/* Modal para Agregar/Editar */}
         {modalAbierto && (
           <ModalCarrera
+            isOpen={modalAbierto}
+            onClose={() => {
+              setModalAbierto(false);
+              setEditando(null);
+            }}
             carrera={editando}
-            onCerrar={() => {
-              setModalAbierto(false);
-              setEditando(null);
-            }}
-            onGuardar={async () => {
+            onSave={async () => {
               await cargarCarreras();
-              setModalAbierto(false);
-              setEditando(null);
+              return true;
             }}
-            token={token!}
-            nivelOptions={nivelOptions.filter((n) => n.value !== '')}
-            modalidadOptions={modalidadOptions.filter((m) => m.value !== '')}
           />
         )}
       </div>
-    </>
-  );
-}
-
-// Modal Component
-interface ModalCarreraProps {
-  carrera: Carrera | null;
-  onCerrar: () => void;
-  onGuardar: () => void;
-  token: string;
-  nivelOptions: { value: string; label: string }[];
-  modalidadOptions: { value: string; label: string }[];
-}
-
-function ModalCarrera({
-  carrera,
-  onCerrar,
-  onGuardar,
-  token,
-  nivelOptions,
-  modalidadOptions,
-}: ModalCarreraProps) {
-  const [formData, setFormData] = useState({
-    nombre: carrera?.nombre || '',
-    siglas: carrera?.siglas || '',
-    nivel: carrera?.nivel || 'TSU',
-    modalidad: carrera?.modalidad || 'Escolarizada',
-    duracion: carrera?.duracion || '',
-    objetivo: carrera?.objetivo || '',
-    perfil_ingreso: carrera?.perfil_ingreso || '',
-    perfil_egreso: carrera?.perfil_egreso || '',
-    campo_laboral: carrera?.campo_laboral || '',
-    orden: carrera?.orden || 0,
-    activo: carrera?.activo ?? true,
-  });
-
-  const [imagenFile, setImagenFile] = useState<File | null>(null);
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [planFile, setPlanFile] = useState<File | null>(null);
-  const [saving, setSaving] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-
-    try {
-      if (carrera) {
-        // Actualizar
-        await updateCarrera(
-          carrera.id!,
-          {
-            ...formData,
-            ...(imagenFile && { imagen: imagenFile }),
-            ...(videoFile && { video: videoFile }),
-            ...(planFile && { plan_estudios: planFile }),
-          },
-          token
-        );
-      } else {
-        // Crear
-        if (!imagenFile) {
-          alert('Debe seleccionar una imagen para la carrera');
-          setSaving(false);
-          return;
-        }
-
-        await createCarrera(
-          {
-            ...formData,
-            imagen: imagenFile,
-            ...(videoFile && { video: videoFile }),
-            ...(planFile && { plan_estudios: planFile }),
-          } as CreateCarreraRequest,
-          token
-        );
-      }
-      onGuardar();
-    } catch (error) {
-      console.error('Error al guardar carrera:', error);
-      alert('Error al guardar la carrera');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 pt-24 overflow-y-auto">
-      <div className="w-full max-w-4xl bg-white dark:bg-gray-800 rounded-lg shadow-lg my-8">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              {carrera ? 'Editar Carrera' : 'Nueva Carrera'}
-            </h2>
-            <button
-              type="button"
-              onClick={onCerrar}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <Label htmlFor="nombre">Nombre de la Carrera *</Label>
-                <Input
-                  type="text"
-                  id="nombre"
-                  value={formData.nombre}
-                  onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="siglas">Siglas *</Label>
-                <Input
-                  type="text"
-                  id="siglas"
-                  value={formData.siglas}
-                  onChange={(e) =>
-                    setFormData({ ...formData, siglas: e.target.value.toUpperCase() })
-                  }
-                  required
-                />
-              </div>
-
-              <div>
-                <Label>Nivel *</Label>
-                <ControlledSelect
-                  options={nivelOptions}
-                  value={formData.nivel}
-                  onChange={(value) => setFormData({ ...formData, nivel: value as any })}
-                />
-              </div>
-
-              <div>
-                <Label>Modalidad *</Label>
-                <ControlledSelect
-                  options={modalidadOptions}
-                  value={formData.modalidad}
-                  onChange={(value) => setFormData({ ...formData, modalidad: value as any })}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="duracion">Duración *</Label>
-                <Input
-                  type="text"
-                  id="duracion"
-                  value={formData.duracion}
-                  onChange={(e) => setFormData({ ...formData, duracion: e.target.value })}
-                  placeholder="Ej: 2 años (6 cuatrimestres)"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="orden">Orden de visualización</Label>
-                <Input
-                  type="number"
-                  id="orden"
-                  value={formData.orden}
-                  onChange={(e) => setFormData({ ...formData, orden: parseInt(e.target.value) })}
-                  min="0"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <Label htmlFor="objetivo">Objetivo *</Label>
-                <textarea
-                  id="objetivo"
-                  rows={3}
-                  value={formData.objetivo}
-                  onChange={(e) => setFormData({ ...formData, objetivo: e.target.value })}
-                  required
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-primary"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <Label htmlFor="perfil_ingreso">Perfil de Ingreso *</Label>
-                <textarea
-                  id="perfil_ingreso"
-                  rows={3}
-                  value={formData.perfil_ingreso}
-                  onChange={(e) => setFormData({ ...formData, perfil_ingreso: e.target.value })}
-                  required
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-primary"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <Label htmlFor="perfil_egreso">Perfil de Egreso *</Label>
-                <textarea
-                  id="perfil_egreso"
-                  rows={3}
-                  value={formData.perfil_egreso}
-                  onChange={(e) => setFormData({ ...formData, perfil_egreso: e.target.value })}
-                  required
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-primary"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <Label htmlFor="campo_laboral">Campo Laboral *</Label>
-                <textarea
-                  id="campo_laboral"
-                  rows={3}
-                  value={formData.campo_laboral}
-                  onChange={(e) => setFormData({ ...formData, campo_laboral: e.target.value })}
-                  required
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-primary"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="imagen">Imagen {!carrera && '*'}</Label>
-                <input
-                  type="file"
-                  id="imagen"
-                  accept="image/*"
-                  onChange={(e) => setImagenFile(e.target.files?.[0] || null)}
-                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
-                />
-                {carrera?.imagen && (
-                  <p className="mt-1 text-xs text-gray-500">
-                    Archivo actual: {carrera.imagen}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="video">Video Promocional (MP4, WEBM, AVI)</Label>
-                <input
-                  type="file"
-                  id="video"
-                  accept="video/mp4,video/webm,video/x-msvideo"
-                  onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
-                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
-                />
-                {carrera?.video_url && (
-                  <p className="mt-1 text-xs text-gray-500">
-                    Archivo actual: {carrera.video_url}
-                  </p>
-                )}
-                <p className="mt-1 text-xs text-gray-400">
-                  Opcional. Máximo 50MB. Formatos: MP4, WEBM, AVI
-                </p>
-              </div>
-
-              <div className="sm:col-span-2">
-                <Label htmlFor="plan_estudios">Plan de Estudios (PDF)</Label>
-                <input
-                  type="file"
-                  id="plan_estudios"
-                  accept=".pdf"
-                  onChange={(e) => setPlanFile(e.target.files?.[0] || null)}
-                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
-                />
-                {carrera?.plan_estudios_url && (
-                  <p className="mt-1 text-xs text-gray-500">
-                    Archivo actual: {carrera.plan_estudios_url}
-                  </p>
-                )}
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={formData.activo}
-                    onChange={(e) => setFormData({ ...formData, activo: e.target.checked })}
-                    className="rounded border-gray-300 text-primary focus:ring-primary"
-                  />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Carrera activa</span>
-                </label>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onCerrar}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
-              >
-                {saving ? 'Guardando...' : carrera ? 'Actualizar' : 'Crear Carrera'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+    </DndProvider>
   );
 }

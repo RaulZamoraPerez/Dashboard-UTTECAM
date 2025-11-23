@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { confirmDialog, toastError, toastSuccess } from '../../../utils/alert';
 import { useNoticias } from '../../../hooks/useNoticias';
 import { getNoticiaFileUrl } from '../../../services/homeService';
 
@@ -17,7 +18,7 @@ const NoticiasAdmin = () => {
     e.preventDefault();
     
     if (!selectedFile && !editingId) {
-      alert('Debe seleccionar una imagen');
+      toastError('Debe seleccionar una imagen');
       return;
     }
 
@@ -61,9 +62,10 @@ const NoticiasAdmin = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('¿Está seguro de eliminar esta noticia?')) {
-      await deleteItem(id);
-    }
+    const confirmed = await confirmDialog({ title: 'Eliminar noticia', text: '¿Está seguro de eliminar esta noticia?' });
+    if (!confirmed) return;
+    const success = await deleteItem(id);
+    if (success) toastSuccess('Noticia eliminada correctamente');
   };
 
   const resetForm = () => {

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { confirmDialog, toastSuccess } from '../../utils/alert';
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
@@ -145,10 +146,11 @@ export default function Directorio() {
     return coincideBusqueda && coincideArea;
   });
 
-  const handleEliminar = (id: number) => {
-    if (confirm('¿Está seguro de eliminar este registro del directorio?')) {
-      setDirectorio(directorio.filter(d => d.id !== id));
-    }
+  const handleEliminar = async (id: number) => {
+    const confirmed = await confirmDialog({ title: 'Eliminar registro', text: '¿Está seguro de eliminar este registro del directorio?' });
+    if (!confirmed) return;
+    setDirectorio(directorio.filter(d => d.id !== id));
+    toastSuccess('Registro eliminado del directorio');
   };
 
   const toggleActivo = (id: number) => {
@@ -474,7 +476,7 @@ function ModalDirectorio({ contacto, onCerrar, onGuardar, areasOptions, ubicacio
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 pt-24">
+    <div className="fixed inset-0 z-[99999] flex items-start justify-center bg-black/50 p-4 pt-24">
       <div className="w-full max-w-4xl max-h-[calc(100vh-10rem)] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">

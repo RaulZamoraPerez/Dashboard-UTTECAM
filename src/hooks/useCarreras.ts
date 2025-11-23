@@ -29,18 +29,18 @@ export const useCarreras = () => {
     fetchCarreras();
   }, []);
 
-  const createItem = async (data: CreateCarreraRequest): Promise<boolean> => {
+  const createItem = async (data: CreateCarreraRequest): Promise<Carrera | null> => {
     try {
       const token = getToken();
       if (!token) throw new Error('No hay token de autenticación');
       
-      await carreraService.createCarrera(data, token);
+      const created = await carreraService.createCarrera(data, token);
       await fetchCarreras();
-      return true;
+      return created || null;
     } catch (err) {
       console.error('Error al crear carrera:', err);
       setError('Error al crear carrera');
-      return false;
+      return null;
     }
   };
 
