@@ -76,9 +76,9 @@ const navItems: NavItem[] = [
     icon: <UserCircleIcon />,
     name: "Servicios Escolares",
     subItems:[
-      { name: "Proceso de admisión", path: "/proceso-admision", pro: false },
-      { name: "Trámites", path: "/tramites", pro: false },
-      { name: "Convocatoria a trámite de título profesional", path: "/convocatoria-titulo", pro: false },
+      { name: "Proceso de admisión", path: "ServiciosEscolares/ProcesoAdmision", pro: false },
+      { name: "Trámites", path: "ServiciosEscolares/Tramites", pro: false },
+      { name: "Convocatoria a trámite de título profesional", path: "ServiciosEscolares/ConvocatoriaTitulo", pro: false },
       { name: "Becas y apoyo", path: "/becas", pro: false },
     ],
   },

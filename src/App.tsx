@@ -49,6 +49,10 @@ import {
   GestionCalidad,
   CordinacionGenero
 } from "./pages/ServiciosGestion";
+import ProcesoAdmisionPage from "./pages/ServiciosEscolares/ProcesoAdmisionPage";
+import ConvocatoriaTituloPage from "./pages/ServiciosEscolares/ConvocatoriaTituloPage";
+import TramitesPage from "./pages/ServiciosEscolares/TramitesPage";
+import TramiteFormularioPage from "./pages/ServiciosEscolares/TramiteFormularioPage";
 
 
 export default function App() {
@@ -103,6 +107,15 @@ export default function App() {
             <Route path="/ServiciosGestion/GestionAmbiental" element={<GestionAmbiental />} />
             <Route path="/ServiciosGestion/GestionCalidad" element={<GestionCalidad />} />
             <Route path="/ServiciosGestion/CordinacionGenero" element={<CordinacionGenero />} />
+
+            {/* Rutas de Servicios Escolares */}
+            <Route path="ServiciosEscolares/ProcesoAdmision" element={<ProcesoAdmisionPage/>}/>
+            <Route path="ServiciosEscolares/ConvocatoriaTitulo" element={<ConvocatoriaTituloPage/>}/>
+            <Route path="ServiciosEscolares/Tramites" element={<TramitesPage/>}/>
+            <Route path="ServiciosEscolares/Tramites/:tramiteId" element={<TramiteFormularioPage/>}/>
+
+            
+
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
