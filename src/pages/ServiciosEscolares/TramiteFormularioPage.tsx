@@ -1,26 +1,37 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { toastSuccess, toastError, confirmDialog } from '../../utils/alert';
 import ComponentCard from '../../components/common/ComponentCard';
+import * as tramiteService from '../../services/tramiteFormularioService';
 
 // Interfaces
 interface Requisito {
   id: string;
+  index?: number;
   texto: string;
 }
 
 interface Paso {
   id: string;
+  index?: number;
+  texto: string;
+}
+
+interface Documento {
+  id: string;
+  index?: number;
   texto: string;
 }
 
 interface InformacionTramite {
   titulo: string;
   subtitulo: string;
+  descripcion: string;
   tiempoEntrega: string;
   costo: string;
   requisitos: Requisito[];
   pasos: Paso[];
+  documentos: Documento[];
 }
 
 // Datos iniciales por tipo de trámite
@@ -28,6 +39,7 @@ const datosInicialesPorTramite: { [key: string]: InformacionTramite } = {
   Inscripcion: {
     titulo: 'Inscripción',
     subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
+    descripcion: 'Proceso de registro para nuevo ingreso a la institución. Este trámite permite formalizar tu inscripción como estudiante de la Universidad Tecnológica de Tecamachalco.',
     tiempoEntrega: '1 día',
     costo: '$0.00',
     requisitos: [
@@ -41,10 +53,17 @@ const datosInicialesPorTramite: { [key: string]: InformacionTramite } = {
       { id: '3', texto: 'Realizar pago en caja' },
       { id: '4', texto: 'Recibir comprobante de inscripción' },
     ],
+    documentos: [
+      { id: '1', texto: 'Acta de nacimiento (original y copia)' },
+      { id: '2', texto: 'Certificado de bachillerato (original y copia)' },
+      { id: '3', texto: 'CURP actualizada' },
+      { id: '4', texto: 'Fotografías tamaño infantil' },
+    ],
   },
   Reinscripcion: {
     titulo: 'Reinscripción a Ingeniería/Licenciatura (7° cuatrimestre)',
     subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
+    descripcion: 'Proceso de actualización de datos y continuidad de estudios para estudiantes que ingresan al séptimo cuatrimestre de Ingeniería o Licenciatura.',
     tiempoEntrega: '1 día',
     costo: '$0.00',
     requisitos: [
@@ -58,10 +77,15 @@ const datosInicialesPorTramite: { [key: string]: InformacionTramite } = {
       { id: '3', texto: 'Confirmar reinscripción' },
       { id: '4', texto: 'Descargar comprobante' },
     ],
+    documentos: [
+      { id: '1', texto: 'Credencial de estudiante vigente' },
+      { id: '2', texto: 'Comprobante de pago del cuatrimestre anterior' },
+    ],
   },
   Constancias: {
     titulo: 'Solicitud de Constancia de Estudios o Kardex',
     subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
+    descripcion: 'Documento oficial que acredita tu situación académica actual o historial de calificaciones. Útil para trámites laborales, becas y otros fines oficiales.',
     tiempoEntrega: '1 día',
     costo: '$49.00',
     requisitos: [
@@ -76,10 +100,15 @@ const datosInicialesPorTramite: { [key: string]: InformacionTramite } = {
       { id: '4', texto: 'Elegir tu carrera y tipo de documento solicitado' },
       { id: '5', texto: 'Contestar el formulario con número de referencia de pago' },
     ],
+    documentos: [
+      { id: '1', texto: 'Identificación oficial vigente' },
+      { id: '2', texto: 'Comprobante de pago' },
+    ],
   },
   Certificado: {
     titulo: 'Certificado de Estudios',
     subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
+    descripcion: 'Documento oficial que certifica la conclusión de tus estudios y el historial académico completo. Requisito indispensable para trámites de titulación y ejercicio profesional.',
     tiempoEntrega: '5 días hábiles',
     costo: '$150.00',
     requisitos: [
@@ -93,10 +122,16 @@ const datosInicialesPorTramite: { [key: string]: InformacionTramite } = {
       { id: '3', texto: 'Esperar el tiempo de procesamiento' },
       { id: '4', texto: 'Recoger el certificado en la fecha indicada' },
     ],
+    documentos: [
+      { id: '1', texto: 'Identificación oficial vigente' },
+      { id: '2', texto: 'Comprobante de pago' },
+      { id: '3', texto: 'Acta de nacimiento (copia)' },
+    ],
   },
   CartaPasante: {
     titulo: 'Carta Pasante',
     subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
+    descripcion: 'Documento que acredita la conclusión del 100% de los créditos del plan de estudios. Permite ejercer temporalmente mientras se realiza el trámite de titulación.',
     tiempoEntrega: '3 días hábiles',
     costo: '$100.00',
     requisitos: [
@@ -110,10 +145,16 @@ const datosInicialesPorTramite: { [key: string]: InformacionTramite } = {
       { id: '3', texto: 'Realizar el pago correspondiente' },
       { id: '4', texto: 'Recoger la carta en la fecha indicada' },
     ],
+    documentos: [
+      { id: '1', texto: 'Identificación oficial vigente' },
+      { id: '2', texto: 'Comprobante de pago' },
+      { id: '3', texto: 'Constancia de no adeudo' },
+    ],
   },
   IMSS: {
     titulo: 'Alta o Baja del IMSS',
     subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
+    descripcion: 'Trámite para dar de alta o baja en el Instituto Mexicano del Seguro Social como estudiante. Permite acceder a servicios médicos durante tu estancia en la universidad.',
     tiempoEntrega: '3 días hábiles',
     costo: '$0.00',
     requisitos: [
@@ -126,10 +167,16 @@ const datosInicialesPorTramite: { [key: string]: InformacionTramite } = {
       { id: '2', texto: 'Entregar documentación requerida' },
       { id: '3', texto: 'Esperar confirmación del trámite' },
     ],
+    documentos: [
+      { id: '1', texto: 'CURP actualizada' },
+      { id: '2', texto: 'Comprobante de domicilio reciente' },
+      { id: '3', texto: 'Credencial de estudiante vigente' },
+    ],
   },
   Credencializacion: {
     titulo: 'Credencialización',
     subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
+    descripcion: 'Trámite para obtener o renovar la credencial de estudiante. Documento oficial que te identifica como alumno activo de la institución.',
     tiempoEntrega: '5 días hábiles',
     costo: '$50.00',
     requisitos: [
@@ -143,10 +190,16 @@ const datosInicialesPorTramite: { [key: string]: InformacionTramite } = {
       { id: '3', texto: 'Realizar pago en caja' },
       { id: '4', texto: 'Recoger credencial en la fecha indicada' },
     ],
+    documentos: [
+      { id: '1', texto: 'Fotografía tamaño infantil (fondo blanco)' },
+      { id: '2', texto: 'Comprobante de inscripción vigente' },
+      { id: '3', texto: 'Comprobante de pago' },
+    ],
   },
   TituloProfesional: {
     titulo: 'Título Profesional Electrónico',
     subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
+    descripcion: 'Documento oficial que acredita la conclusión de tus estudios profesionales y te autoriza para ejercer legalmente tu profesión. El título electrónico tiene validez oficial ante la SEP.',
     tiempoEntrega: '30 días hábiles',
     costo: '$2,500.00',
     requisitos: [
@@ -163,6 +216,14 @@ const datosInicialesPorTramite: { [key: string]: InformacionTramite } = {
       { id: '5', texto: 'Firmar documentos digitales' },
       { id: '6', texto: 'Recibir título electrónico' },
     ],
+    documentos: [
+      { id: '1', texto: 'Acta de nacimiento (original y copia)' },
+      { id: '2', texto: 'Certificado de estudios' },
+      { id: '3', texto: 'Carta de liberación de servicio social' },
+      { id: '4', texto: 'CURP actualizada' },
+      { id: '5', texto: 'Fotografías tamaño título' },
+      { id: '6', texto: 'Comprobante de pago' },
+    ],
   },
 };
 
@@ -178,6 +239,18 @@ const nombresAmigables: { [key: string]: string } = {
   TituloProfesional: 'Título Profesional Electrónico',
 };
 
+// Mapeo de tramiteId a tipo de API
+const tipoApiPorTramite: { [key: string]: string | null } = {
+  Inscripcion: null,
+  Reinscripcion: null,
+  Constancias: 'kardex_constancias', // Solo este tiene conexión a API por ahora
+  Certificado: null,
+  CartaPasante: null,
+  IMSS: null,
+  Credencializacion: null,
+  TituloProfesional: null,
+};
+
 export default function TramiteFormularioPage() {
   const { tramiteId } = useParams<{ tramiteId: string }>();
   const navigate = useNavigate();
@@ -187,17 +260,254 @@ export default function TramiteFormularioPage() {
     ? datosInicialesPorTramite[tramiteId] 
     : datosInicialesPorTramite['Constancias'];
 
+  // Obtener el tipo de API para este trámite
+  const tipoApi = tramiteId ? tipoApiPorTramite[tramiteId] : null;
+
   // Estados
   const [informacion, setInformacion] = useState<InformacionTramite>(datosIniciales);
   const [editandoInfo, setEditandoInfo] = useState(false);
   const [infoTemporal, setInfoTemporal] = useState<InformacionTramite>(informacion);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSavingInfo, setIsSavingInfo] = useState(false);
 
-  // Estado para nuevo requisito/paso
+  // Estados para edición inline de requisitos, pasos y documentos
+  const [editandoRequisitoIndex, setEditandoRequisitoIndex] = useState<number | null>(null);
+  const [editandoPasoIndex, setEditandoPasoIndex] = useState<number | null>(null);
+  const [editandoDocumentoIndex, setEditandoDocumentoIndex] = useState<number | null>(null);
+  const [textoEditando, setTextoEditando] = useState('');
+  const [isSavingItem, setIsSavingItem] = useState(false);
+
+  // Estado para nuevo requisito/paso/documento
   const [nuevoRequisito, setNuevoRequisito] = useState('');
   const [nuevoPaso, setNuevoPaso] = useState('');
+  const [nuevoDocumento, setNuevoDocumento] = useState('');
+  const [isAddingRequisito, setIsAddingRequisito] = useState(false);
+  const [isAddingPaso, setIsAddingPaso] = useState(false);
+  const [isAddingDocumento, setIsAddingDocumento] = useState(false);
+
+  // Función para recargar solo requisitos
+  const reloadRequisitos = async () => {
+    if (!tipoApi) return;
+    try {
+      // Pequeño delay para asegurar que el backend haya persistido los cambios
+      await new Promise(resolve => setTimeout(resolve, 300));
+      const requisitosData = await tramiteService.getRequisitos(tipoApi);
+      setInformacion(prev => ({
+        ...prev,
+        requisitos: requisitosData.map((r, idx) => ({
+          id: r.id || idx.toString(),
+          index: r.index ?? idx,
+          texto: r.texto || '',
+        })),
+      }));
+    } catch (error) {
+      console.error('Error al recargar requisitos:', error);
+    }
+  };
+
+  // Función para recargar solo pasos
+  const reloadPasos = async () => {
+    if (!tipoApi) return;
+    try {
+      // Pequeño delay para asegurar que el backend haya persistido los cambios
+      await new Promise(resolve => setTimeout(resolve, 300));
+      const pasosData = await tramiteService.getPasos(tipoApi);
+      setInformacion(prev => ({
+        ...prev,
+        pasos: pasosData.map((p, idx) => ({
+          id: p.id || idx.toString(),
+          index: p.index ?? idx,
+          texto: p.texto || '',
+        })),
+      }));
+    } catch (error) {
+      console.error('Error al recargar pasos:', error);
+    }
+  };
+
+  // Función para recargar solo documentos
+  const reloadDocumentos = async () => {
+    if (!tipoApi) return;
+    try {
+      // Pequeño delay para asegurar que el backend haya persistido los cambios
+      await new Promise(resolve => setTimeout(resolve, 300));
+      const documentosData = await tramiteService.getDocumentos(tipoApi);
+      setInformacion(prev => ({
+        ...prev,
+        documentos: documentosData.map((d, idx) => ({
+          id: d.id || idx.toString(),
+          index: d.index ?? idx,
+          texto: d.texto || '',
+        })),
+      }));
+    } catch (error) {
+      console.error('Error al recargar documentos:', error);
+    }
+  };
+
+  // Cargar datos desde la API al montar el componente
+  // Datos por defecto para kardex_constancias
+  const datosDefaultKardex = {
+    info: {
+      titulo: 'Solicitud de Constancia de Estudios o Kardex',
+      subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
+      descripcion: '', // Sin descripción según indicaciones
+      tiempoEntrega: '1 día',
+      costo: '$49.00',
+    },
+    requisitos: [
+      'Ser o haber sido estudiante, o en su caso egresado de la Universidad',
+      'No contar con ningún adeudo con la Institución',
+      'Pagar el costo del servicio',
+    ],
+    pasos: [
+      'Descargar la orden pago de la página pagos en línea Puebla',
+      'Realizar el pago en cualquiera de las instituciones bancarias autorizadas',
+      'Ingresar a la página de la Universidad en Servicios Escolares en Línea',
+      'Elegir tu carrera y tipo de documento solicitado',
+      'Contestar el formulario con número de referencia de pago',
+      'Presentarse en ventanilla con el comprobante de pago original',
+    ],
+    documentos: [
+      'Identificarse con credencial de estudiante o INE',
+      'Original y copia de la orden y comprobante de pago',
+    ],
+  };
+
+  useEffect(() => {
+    if (!tipoApi) return;
+
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // Cargar todas las secciones en paralelo
+        const [infoData, requisitosData, pasosData, documentosData] = await Promise.all([
+          tramiteService.getInfoPrincipal(tipoApi),
+          tramiteService.getRequisitos(tipoApi),
+          tramiteService.getPasos(tipoApi),
+          tramiteService.getDocumentos(tipoApi),
+        ]);
+
+        // Determinar si necesitamos crear datos por defecto
+        const needsDefaultData = !infoData && requisitosData.length === 0 && pasosData.length === 0 && documentosData.length === 0;
+
+        if (needsDefaultData && tipoApi === 'kardex_constancias') {
+          // Crear datos por defecto para kardex_constancias
+          try {
+            // Crear info principal
+            await tramiteService.createInfoPrincipal(tipoApi, datosDefaultKardex.info);
+            
+            // Crear requisitos
+            for (const requisito of datosDefaultKardex.requisitos) {
+              await tramiteService.createRequisito(tipoApi, { texto: requisito });
+            }
+            
+            // Crear pasos
+            for (const paso of datosDefaultKardex.pasos) {
+              await tramiteService.createPaso(tipoApi, { texto: paso });
+            }
+            
+            // Crear documentos
+            for (const documento of datosDefaultKardex.documentos) {
+              await tramiteService.createDocumento(tipoApi, { texto: documento });
+            }
+
+            // Actualizar estado con los datos creados
+            setInformacion(prev => ({
+              ...prev,
+              ...datosDefaultKardex.info,
+              requisitos: datosDefaultKardex.requisitos.map((texto, idx) => ({
+                id: idx.toString(),
+                index: idx,
+                texto,
+              })),
+              pasos: datosDefaultKardex.pasos.map((texto, idx) => ({
+                id: idx.toString(),
+                index: idx,
+                texto,
+              })),
+              documentos: datosDefaultKardex.documentos.map((texto, idx) => ({
+                id: idx.toString(),
+                index: idx,
+                texto,
+              })),
+            }));
+            setInfoTemporal(prev => ({
+              ...prev,
+              ...datosDefaultKardex.info,
+            }));
+          } catch (error) {
+            console.error('Error al crear datos por defecto:', error);
+          }
+        } else {
+          // Usar datos existentes del servidor
+          if (infoData) {
+            setInformacion(prev => ({
+              ...prev,
+              titulo: infoData.titulo || '',
+              subtitulo: infoData.subtitulo || '',
+              descripcion: infoData.descripcion || '',
+              tiempoEntrega: infoData.tiempoEntrega || '',
+              costo: infoData.costo || '',
+            }));
+            setInfoTemporal(prev => ({
+              ...prev,
+              titulo: infoData.titulo || '',
+              subtitulo: infoData.subtitulo || '',
+              descripcion: infoData.descripcion || '',
+              tiempoEntrega: infoData.tiempoEntrega || '',
+              costo: infoData.costo || '',
+            }));
+          }
+
+          // Actualizar requisitos
+          if (requisitosData.length > 0) {
+            setInformacion(prev => ({
+              ...prev,
+              requisitos: requisitosData.map((r, idx) => ({
+                id: r.id || idx.toString(),
+                index: r.index ?? idx,
+                texto: r.texto,
+              })),
+            }));
+          }
+
+          // Actualizar pasos
+          if (pasosData.length > 0) {
+            setInformacion(prev => ({
+              ...prev,
+              pasos: pasosData.map((p, idx) => ({
+                id: p.id || idx.toString(),
+                index: p.index ?? idx,
+                texto: p.texto,
+              })),
+            }));
+          }
+
+          // Actualizar documentos
+          if (documentosData.length > 0) {
+            setInformacion(prev => ({
+              ...prev,
+              documentos: documentosData.map((d, idx) => ({
+                id: d.id || idx.toString(),
+                index: d.index ?? idx,
+                texto: d.texto,
+              })),
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error al cargar datos:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [tipoApi]);
 
   // Handlers para información básica
-  const handleGuardarInfo = () => {
+  const handleGuardarInfo = async () => {
     if (!infoTemporal.titulo.trim()) {
       toastError('El título es obligatorio');
       return;
@@ -207,9 +517,41 @@ export default function TramiteFormularioPage() {
       return;
     }
 
-    setInformacion(infoTemporal);
-    setEditandoInfo(false);
-    toastSuccess('Información actualizada correctamente');
+    if (tipoApi) {
+      setIsSavingInfo(true);
+      try {
+        const data = {
+          titulo: infoTemporal.titulo.trim(),
+          subtitulo: infoTemporal.subtitulo.trim(),
+          descripcion: infoTemporal.descripcion.trim(),
+          tiempoEntrega: infoTemporal.tiempoEntrega.trim(),
+          costo: infoTemporal.costo.trim(),
+        };
+
+        // Intentar actualizar, si falla crear
+        try {
+          await tramiteService.updateInfoPrincipal(tipoApi, data);
+        } catch {
+          await tramiteService.createInfoPrincipal(tipoApi, data);
+        }
+
+        setInformacion(prev => ({ ...prev, ...data }));
+        setEditandoInfo(false);
+        toastSuccess('Información actualizada correctamente');
+      } catch (error) {
+        if (error instanceof Error) {
+          toastError(error.message);
+        } else {
+          toastError('Error al guardar la información');
+        }
+      } finally {
+        setIsSavingInfo(false);
+      }
+    } else {
+      setInformacion(infoTemporal);
+      setEditandoInfo(false);
+      toastSuccess('Información actualizada correctamente');
+    }
   };
 
   const handleCancelarInfo = () => {
@@ -218,109 +560,362 @@ export default function TramiteFormularioPage() {
   };
 
   // Handlers para requisitos
-  const handleAgregarRequisito = () => {
+  const handleAgregarRequisito = async () => {
     if (!nuevoRequisito.trim()) {
       toastError('El requisito no puede estar vacío');
       return;
     }
 
-    const nuevoReq: Requisito = {
-      id: Date.now().toString(),
-      texto: nuevoRequisito.trim(),
-    };
-
-    setInformacion(prev => ({
-      ...prev,
-      requisitos: [...prev.requisitos, nuevoReq],
-    }));
-    setNuevoRequisito('');
-    toastSuccess('Requisito agregado');
+    if (tipoApi) {
+      setIsAddingRequisito(true);
+      try {
+        await tramiteService.createRequisito(tipoApi, { texto: nuevoRequisito.trim() });
+        // Recargar desde el servidor para obtener datos actualizados
+        await reloadRequisitos();
+        setNuevoRequisito('');
+        toastSuccess('Requisito agregado');
+      } catch (error) {
+        if (error instanceof Error) {
+          toastError(error.message);
+        } else {
+          toastError('Error al agregar requisito');
+        }
+      } finally {
+        setIsAddingRequisito(false);
+      }
+    } else {
+      const nuevoReq: Requisito = {
+        id: Date.now().toString(),
+        texto: nuevoRequisito.trim(),
+      };
+      setInformacion(prev => ({
+        ...prev,
+        requisitos: [...prev.requisitos, nuevoReq],
+      }));
+      setNuevoRequisito('');
+      toastSuccess('Requisito agregado');
+    }
   };
 
-  const handleEliminarRequisito = async (id: string) => {
+  const handleEliminarRequisito = async (id: string, index: number) => {
     const confirmed = await confirmDialog({
       title: 'Eliminar requisito',
       text: '¿Estás seguro de eliminar este requisito?',
     });
     if (!confirmed) return;
 
-    setInformacion(prev => ({
-      ...prev,
-      requisitos: prev.requisitos.filter(r => r.id !== id),
-    }));
-    toastSuccess('Requisito eliminado');
+    if (tipoApi) {
+      try {
+        await tramiteService.deleteRequisito(tipoApi, index);
+        // Recargar desde el servidor para sincronizar índices
+        await reloadRequisitos();
+        toastSuccess('Requisito eliminado');
+      } catch (error) {
+        if (error instanceof Error) {
+          toastError(error.message);
+        } else {
+          toastError('Error al eliminar requisito');
+        }
+      }
+    } else {
+      setInformacion(prev => ({
+        ...prev,
+        requisitos: prev.requisitos.filter(r => r.id !== id),
+      }));
+      toastSuccess('Requisito eliminado');
+    }
   };
 
-  const handleEditarRequisito = (id: string, nuevoTexto: string) => {
-    setInformacion(prev => ({
-      ...prev,
-      requisitos: prev.requisitos.map(r => 
-        r.id === id ? { ...r, texto: nuevoTexto } : r
-      ),
-    }));
+  const handleIniciarEdicionRequisito = (index: number, texto: string) => {
+    setEditandoRequisitoIndex(index);
+    setTextoEditando(texto || '');
+  };
+
+  const handleGuardarEdicionRequisito = async (id: string, index: number) => {
+    if (!textoEditando.trim()) {
+      toastError('El requisito no puede estar vacío');
+      return;
+    }
+
+    if (tipoApi) {
+      setIsSavingItem(true);
+      try {
+        await tramiteService.updateRequisito(tipoApi, index, { texto: textoEditando.trim() });
+        // Recargar desde el servidor para sincronizar
+        await reloadRequisitos();
+        setEditandoRequisitoIndex(null);
+        setTextoEditando('');
+        toastSuccess('Requisito actualizado');
+      } catch (error) {
+        console.error('Error al actualizar requisito:', error);
+        if (error instanceof Error) {
+          toastError(error.message);
+        } else {
+          toastError('Error al actualizar requisito');
+        }
+      } finally {
+        setIsSavingItem(false);
+      }
+    } else {
+      setInformacion(prev => ({
+        ...prev,
+        requisitos: prev.requisitos.map(r => 
+          r.id === id ? { ...r, texto: textoEditando.trim() } : r
+        ),
+      }));
+      setEditandoRequisitoIndex(null);
+      setTextoEditando('');
+      toastSuccess('Requisito actualizado');
+    }
+  };
+
+  const handleCancelarEdicionRequisito = () => {
+    setEditandoRequisitoIndex(null);
+    setTextoEditando('');
   };
 
   // Handlers para pasos
-  const handleAgregarPaso = () => {
+  const handleAgregarPaso = async () => {
     if (!nuevoPaso.trim()) {
       toastError('El paso no puede estar vacío');
       return;
     }
 
-    const nuevoPasoObj: Paso = {
-      id: Date.now().toString(),
-      texto: nuevoPaso.trim(),
-    };
-
-    setInformacion(prev => ({
-      ...prev,
-      pasos: [...prev.pasos, nuevoPasoObj],
-    }));
-    setNuevoPaso('');
-    toastSuccess('Paso agregado');
+    if (tipoApi) {
+      setIsAddingPaso(true);
+      try {
+        await tramiteService.createPaso(tipoApi, { texto: nuevoPaso.trim() });
+        // Recargar desde el servidor
+        await reloadPasos();
+        setNuevoPaso('');
+        toastSuccess('Paso agregado');
+      } catch (error) {
+        if (error instanceof Error) {
+          toastError(error.message);
+        } else {
+          toastError('Error al agregar paso');
+        }
+      } finally {
+        setIsAddingPaso(false);
+      }
+    } else {
+      const nuevoPasoObj: Paso = {
+        id: Date.now().toString(),
+        texto: nuevoPaso.trim(),
+      };
+      setInformacion(prev => ({
+        ...prev,
+        pasos: [...prev.pasos, nuevoPasoObj],
+      }));
+      setNuevoPaso('');
+      toastSuccess('Paso agregado');
+    }
   };
 
-  const handleEliminarPaso = async (id: string) => {
+  const handleEliminarPaso = async (id: string, index: number) => {
     const confirmed = await confirmDialog({
       title: 'Eliminar paso',
       text: '¿Estás seguro de eliminar este paso?',
     });
     if (!confirmed) return;
 
-    setInformacion(prev => ({
-      ...prev,
-      pasos: prev.pasos.filter(p => p.id !== id),
-    }));
-    toastSuccess('Paso eliminado');
+    if (tipoApi) {
+      try {
+        await tramiteService.deletePaso(tipoApi, index);
+        // Recargar desde el servidor para sincronizar índices
+        await reloadPasos();
+        toastSuccess('Paso eliminado');
+      } catch (error) {
+        if (error instanceof Error) {
+          toastError(error.message);
+        } else {
+          toastError('Error al eliminar paso');
+        }
+      }
+    } else {
+      setInformacion(prev => ({
+        ...prev,
+        pasos: prev.pasos.filter(p => p.id !== id),
+      }));
+      toastSuccess('Paso eliminado');
+    }
   };
 
-  const handleEditarPaso = (id: string, nuevoTexto: string) => {
-    setInformacion(prev => ({
-      ...prev,
-      pasos: prev.pasos.map(p => 
-        p.id === id ? { ...p, texto: nuevoTexto } : p
-      ),
-    }));
+  const handleIniciarEdicionPaso = (index: number, texto: string) => {
+    setEditandoPasoIndex(index);
+    setTextoEditando(texto || '');
   };
 
-  // Mover requisito/paso
-  const moverRequisito = (index: number, direccion: 'arriba' | 'abajo') => {
-    const nuevosRequisitos = [...informacion.requisitos];
-    const nuevoIndex = direccion === 'arriba' ? index - 1 : index + 1;
-    if (nuevoIndex < 0 || nuevoIndex >= nuevosRequisitos.length) return;
-    [nuevosRequisitos[index], nuevosRequisitos[nuevoIndex]] = [nuevosRequisitos[nuevoIndex], nuevosRequisitos[index]];
-    setInformacion(prev => ({ ...prev, requisitos: nuevosRequisitos }));
+  const handleGuardarEdicionPaso = async (id: string, index: number) => {
+    if (!textoEditando.trim()) {
+      toastError('El paso no puede estar vacío');
+      return;
+    }
+
+    if (tipoApi) {
+      setIsSavingItem(true);
+      try {
+        await tramiteService.updatePaso(tipoApi, index, { texto: textoEditando.trim() });
+        // Recargar desde el servidor
+        await reloadPasos();
+        setEditandoPasoIndex(null);
+        setTextoEditando('');
+        toastSuccess('Paso actualizado');
+      } catch (error) {
+        if (error instanceof Error) {
+          toastError(error.message);
+        } else {
+          toastError('Error al actualizar paso');
+        }
+      } finally {
+        setIsSavingItem(false);
+      }
+    } else {
+      setInformacion(prev => ({
+        ...prev,
+        pasos: prev.pasos.map(p => 
+          p.id === id ? { ...p, texto: textoEditando.trim() } : p
+        ),
+      }));
+      setEditandoPasoIndex(null);
+      setTextoEditando('');
+      toastSuccess('Paso actualizado');
+    }
   };
 
-  const moverPaso = (index: number, direccion: 'arriba' | 'abajo') => {
-    const nuevosPasos = [...informacion.pasos];
-    const nuevoIndex = direccion === 'arriba' ? index - 1 : index + 1;
-    if (nuevoIndex < 0 || nuevoIndex >= nuevosPasos.length) return;
-    [nuevosPasos[index], nuevosPasos[nuevoIndex]] = [nuevosPasos[nuevoIndex], nuevosPasos[index]];
-    setInformacion(prev => ({ ...prev, pasos: nuevosPasos }));
+  const handleCancelarEdicionPaso = () => {
+    setEditandoPasoIndex(null);
+    setTextoEditando('');
+  };
+
+  // Handlers para documentos
+  const handleAgregarDocumento = async () => {
+    if (!nuevoDocumento.trim()) {
+      toastError('El documento no puede estar vacío');
+      return;
+    }
+
+    if (tipoApi) {
+      setIsAddingDocumento(true);
+      try {
+        await tramiteService.createDocumento(tipoApi, { texto: nuevoDocumento.trim() });
+        // Recargar desde el servidor
+        await reloadDocumentos();
+        setNuevoDocumento('');
+        toastSuccess('Documento agregado');
+      } catch (error) {
+        if (error instanceof Error) {
+          toastError(error.message);
+        } else {
+          toastError('Error al agregar documento');
+        }
+      } finally {
+        setIsAddingDocumento(false);
+      }
+    } else {
+      const nuevoDoc: Documento = {
+        id: Date.now().toString(),
+        texto: nuevoDocumento.trim(),
+      };
+      setInformacion(prev => ({
+        ...prev,
+        documentos: [...prev.documentos, nuevoDoc],
+      }));
+      setNuevoDocumento('');
+      toastSuccess('Documento agregado');
+    }
+  };
+
+  const handleEliminarDocumento = async (id: string, index: number) => {
+    const confirmed = await confirmDialog({
+      title: 'Eliminar documento',
+      text: '¿Estás seguro de eliminar este documento?',
+    });
+    if (!confirmed) return;
+
+    if (tipoApi) {
+      try {
+        await tramiteService.deleteDocumento(tipoApi, index);
+        // Recargar desde el servidor para sincronizar índices
+        await reloadDocumentos();
+        toastSuccess('Documento eliminado');
+      } catch (error) {
+        if (error instanceof Error) {
+          toastError(error.message);
+        } else {
+          toastError('Error al eliminar documento');
+        }
+      }
+    } else {
+      setInformacion(prev => ({
+        ...prev,
+        documentos: prev.documentos.filter(d => d.id !== id),
+      }));
+      toastSuccess('Documento eliminado');
+    }
+  };
+
+  const handleIniciarEdicionDocumento = (index: number, texto: string) => {
+    setEditandoDocumentoIndex(index);
+    setTextoEditando(texto || '');
+  };
+
+  const handleGuardarEdicionDocumento = async (id: string, index: number) => {
+    if (!textoEditando.trim()) {
+      toastError('El documento no puede estar vacío');
+      return;
+    }
+
+    if (tipoApi) {
+      setIsSavingItem(true);
+      try {
+        await tramiteService.updateDocumento(tipoApi, index, { texto: textoEditando.trim() });
+        // Recargar desde el servidor
+        await reloadDocumentos();
+        setEditandoDocumentoIndex(null);
+        setTextoEditando('');
+        toastSuccess('Documento actualizado');
+      } catch (error) {
+        if (error instanceof Error) {
+          toastError(error.message);
+        } else {
+          toastError('Error al actualizar documento');
+        }
+      } finally {
+        setIsSavingItem(false);
+      }
+    } else {
+      setInformacion(prev => ({
+        ...prev,
+        documentos: prev.documentos.map(d => 
+          d.id === id ? { ...d, texto: textoEditando.trim() } : d
+        ),
+      }));
+      setEditandoDocumentoIndex(null);
+      setTextoEditando('');
+      toastSuccess('Documento actualizado');
+    }
+  };
+
+  const handleCancelarEdicionDocumento = () => {
+    setEditandoDocumentoIndex(null);
+    setTextoEditando('');
   };
 
   const nombreTramite = tramiteId ? nombresAmigables[tramiteId] || tramiteId : 'Trámite';
+
+  // Pantalla de carga inicial
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <svg className="w-12 h-12 animate-spin text-brand-500" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p className="mt-4 text-gray-600 dark:text-gray-400">Cargando información del trámite...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -351,6 +946,10 @@ export default function TramiteFormularioPage() {
                 <div>
                   <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Subtítulo</span>
                   <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{informacion.subtitulo}</p>
+                </div>
+                <div className="md:col-span-2">
+                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Descripción</span>
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{informacion.descripcion || '(Sin descripción)'}</p>
                 </div>
                 <div>
                   <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tiempo de Entrega</span>
@@ -401,6 +1000,18 @@ export default function TramiteFormularioPage() {
                   className="w-full h-11 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent dark:bg-gray-900 px-4 py-2.5 text-sm text-gray-800 dark:text-white placeholder:text-gray-400 shadow-theme-xs focus:outline-none focus:ring-3 focus:border-brand-300 focus:ring-brand-500/20 dark:focus:border-brand-800 transition-all"
                 />
               </div>
+              <div className="md:col-span-2">
+                <label className="mb-2.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Descripción
+                </label>
+                <textarea
+                  value={infoTemporal.descripcion}
+                  onChange={(e) => setInfoTemporal(prev => ({ ...prev, descripcion: e.target.value }))}
+                  placeholder="Descripción detallada del trámite..."
+                  rows={3}
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent dark:bg-gray-900 px-4 py-2.5 text-sm text-gray-800 dark:text-white placeholder:text-gray-400 shadow-theme-xs focus:outline-none focus:ring-3 focus:border-brand-300 focus:ring-brand-500/20 dark:focus:border-brand-800 transition-all"
+                />
+              </div>
               <div>
                 <label className="mb-2.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Tiempo de Entrega
@@ -430,12 +1041,25 @@ export default function TramiteFormularioPage() {
             <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
               <button
                 onClick={handleGuardarInfo}
-                className="inline-flex items-center justify-center rounded-lg bg-brand-500 hover:bg-brand-600 py-2.5 px-6 font-medium text-white text-sm shadow-theme-xs hover:shadow-lg transition-all duration-200"
+                disabled={isSavingInfo}
+                className="inline-flex items-center justify-center rounded-lg bg-brand-500 hover:bg-brand-600 py-2.5 px-6 font-medium text-white text-sm shadow-theme-xs hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
-                </svg>
-                Guardar Cambios
+                {isSavingInfo ? (
+                  <>
+                    <svg className="w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                    </svg>
+                    Guardar Cambios
+                  </>
+                )}
               </button>
               <button
                 onClick={handleCancelarInfo}
@@ -464,41 +1088,65 @@ export default function TramiteFormularioPage() {
                 {index + 1}
               </div>
               
-              <input
-                type="text"
-                value={requisito.texto}
-                onChange={(e) => handleEditarRequisito(requisito.id, e.target.value)}
-                className="flex-1 h-9 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
-              />
-
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => moverRequisito(index, 'arriba')}
-                  disabled={index === 0}
-                  className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M7.41,15.41L12,10.83L16.59,15.41L18,14L12,8L6,14L7.41,15.41Z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => moverRequisito(index, 'abajo')}
-                  disabled={index === informacion.requisitos.length - 1}
-                  className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => handleEliminarRequisito(requisito.id)}
-                  className="p-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
-                  </svg>
-                </button>
-              </div>
+              {editandoRequisitoIndex === index ? (
+                // Modo edición
+                <>
+                  <input
+                    type="text"
+                    value={textoEditando || ''}
+                    onChange={(e) => setTextoEditando(e.target.value)}
+                    className="flex-1 h-9 rounded-lg border border-brand-400 dark:border-brand-500 bg-transparent dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => handleGuardarEdicionRequisito(requisito.id!, index)}
+                    disabled={isSavingItem}
+                    className="p-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors disabled:opacity-50"
+                  >
+                    {isSavingItem ? (
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                      </svg>
+                    )}
+                  </button>
+                  <button
+                    onClick={handleCancelarEdicionRequisito}
+                    className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                    </svg>
+                  </button>
+                </>
+              ) : (
+                // Modo visualización
+                <>
+                  <span className="flex-1 text-sm text-gray-800 dark:text-white px-3 py-1.5">
+                    {requisito.texto}
+                  </span>
+                  <button
+                    onClick={() => handleIniciarEdicionRequisito(index, requisito.texto)}
+                    className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleEliminarRequisito(requisito.id, index)}
+                    className="p-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
+                    </svg>
+                  </button>
+                </>
+              )}
             </div>
           ))}
         </div>
@@ -511,16 +1159,25 @@ export default function TramiteFormularioPage() {
             onChange={(e) => setNuevoRequisito(e.target.value)}
             placeholder="Nuevo requisito..."
             className="flex-1 h-11 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent dark:bg-gray-900 px-4 py-2.5 text-sm text-gray-800 dark:text-white placeholder:text-gray-400 shadow-theme-xs focus:outline-none focus:ring-3 focus:border-brand-300 focus:ring-brand-500/20 dark:focus:border-brand-800 transition-all"
-            onKeyDown={(e) => e.key === 'Enter' && handleAgregarRequisito()}
+            onKeyDown={(e) => e.key === 'Enter' && !isAddingRequisito && handleAgregarRequisito()}
+            disabled={isAddingRequisito}
           />
           <button
             onClick={handleAgregarRequisito}
-            className="inline-flex items-center justify-center rounded-lg bg-brand-500 hover:bg-brand-600 py-2.5 px-5 font-medium text-white text-sm shadow-theme-xs hover:shadow-lg transition-all duration-200"
+            disabled={isAddingRequisito}
+            className="inline-flex items-center justify-center rounded-lg bg-brand-500 hover:bg-brand-600 py-2.5 px-5 font-medium text-white text-sm shadow-theme-xs hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-            </svg>
-            Agregar
+            {isAddingRequisito ? (
+              <svg className="w-4 h-4 mr-1 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+              </svg>
+            )}
+            {isAddingRequisito ? 'Agregando...' : 'Agregar'}
           </button>
         </div>
       </ComponentCard>
@@ -541,41 +1198,65 @@ export default function TramiteFormularioPage() {
                 {index + 1}
               </div>
               
-              <input
-                type="text"
-                value={paso.texto}
-                onChange={(e) => handleEditarPaso(paso.id, e.target.value)}
-                className="flex-1 h-9 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
-              />
-
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => moverPaso(index, 'arriba')}
-                  disabled={index === 0}
-                  className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M7.41,15.41L12,10.83L16.59,15.41L18,14L12,8L6,14L7.41,15.41Z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => moverPaso(index, 'abajo')}
-                  disabled={index === informacion.pasos.length - 1}
-                  className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => handleEliminarPaso(paso.id)}
-                  className="p-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
-                  </svg>
-                </button>
-              </div>
+              {editandoPasoIndex === index ? (
+                // Modo edición
+                <>
+                  <input
+                    type="text"
+                    value={textoEditando || ''}
+                    onChange={(e) => setTextoEditando(e.target.value)}
+                    className="flex-1 h-9 rounded-lg border border-brand-400 dark:border-brand-500 bg-transparent dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => handleGuardarEdicionPaso(paso.id!, index)}
+                    disabled={isSavingItem}
+                    className="p-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors disabled:opacity-50"
+                  >
+                    {isSavingItem ? (
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                      </svg>
+                    )}
+                  </button>
+                  <button
+                    onClick={handleCancelarEdicionPaso}
+                    className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                    </svg>
+                  </button>
+                </>
+              ) : (
+                // Modo visualización
+                <>
+                  <span className="flex-1 text-sm text-gray-800 dark:text-white px-3 py-1.5">
+                    {paso.texto}
+                  </span>
+                  <button
+                    onClick={() => handleIniciarEdicionPaso(index, paso.texto)}
+                    className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleEliminarPaso(paso.id, index)}
+                    className="p-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
+                    </svg>
+                  </button>
+                </>
+              )}
             </div>
           ))}
         </div>
@@ -588,105 +1269,136 @@ export default function TramiteFormularioPage() {
             onChange={(e) => setNuevoPaso(e.target.value)}
             placeholder="Nuevo paso..."
             className="flex-1 h-11 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent dark:bg-gray-900 px-4 py-2.5 text-sm text-gray-800 dark:text-white placeholder:text-gray-400 shadow-theme-xs focus:outline-none focus:ring-3 focus:border-brand-300 focus:ring-brand-500/20 dark:focus:border-brand-800 transition-all"
-            onKeyDown={(e) => e.key === 'Enter' && handleAgregarPaso()}
+            onKeyDown={(e) => e.key === 'Enter' && !isAddingPaso && handleAgregarPaso()}
+            disabled={isAddingPaso}
           />
           <button
             onClick={handleAgregarPaso}
-            className="inline-flex items-center justify-center rounded-lg bg-brand-500 hover:bg-brand-600 py-2.5 px-5 font-medium text-white text-sm shadow-theme-xs hover:shadow-lg transition-all duration-200"
+            disabled={isAddingPaso}
+            className="inline-flex items-center justify-center rounded-lg bg-brand-500 hover:bg-brand-600 py-2.5 px-5 font-medium text-white text-sm shadow-theme-xs hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-            </svg>
-            Agregar
+            {isAddingPaso ? (
+              <svg className="w-4 h-4 mr-1 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+              </svg>
+            )}
+            {isAddingPaso ? 'Agregando...' : 'Agregar'}
           </button>
         </div>
       </ComponentCard>
 
-      {/* Vista Previa */}
+      {/* Card 4: Documentos a Presentar */}
       <ComponentCard
-        title="Vista Previa"
-        desc="Así se verá la sección de información importante en la página del trámite"
+        title="Documentos a Presentar"
+        desc="Lista de documentos que el estudiante debe entregar para realizar este trámite"
       >
-        <div className="bg-gray-100 dark:bg-gray-900 rounded-xl p-6">
-          {/* Título */}
-          <h2 className="text-2xl font-bold text-[#d1672a] text-center mb-2" style={{ fontFamily: 'serif' }}>
-            {informacion.titulo}
-          </h2>
-          
-          {/* Subtítulo */}
-          <p className="text-center text-gray-600 dark:text-gray-400 mb-6 text-sm">
-            {informacion.subtitulo}
-          </p>
-
-          {/* Sección de información */}
-          <div className="bg-gradient-to-r from-[#d1672a] to-[#e87d3a] rounded-2xl p-6 text-white">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
-                </svg>
+        {/* Lista de documentos */}
+        <div className="space-y-3 mb-6">
+          {informacion.documentos.map((documento, index) => (
+            <div
+              key={documento.id}
+              className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700"
+            >
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 font-semibold text-xs flex-shrink-0">
+                {index + 1}
               </div>
-              <span className="font-semibold text-lg">Información importante sobre este trámite</span>
+              
+              {editandoDocumentoIndex === index ? (
+                // Modo edición
+                <>
+                  <input
+                    type="text"
+                    value={textoEditando || ''}
+                    onChange={(e) => setTextoEditando(e.target.value)}
+                    className="flex-1 h-9 rounded-lg border border-brand-400 dark:border-brand-500 bg-transparent dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => handleGuardarEdicionDocumento(documento.id!, index)}
+                    disabled={isSavingItem}
+                    className="p-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors disabled:opacity-50"
+                  >
+                    {isSavingItem ? (
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                      </svg>
+                    )}
+                  </button>
+                  <button
+                    onClick={handleCancelarEdicionDocumento}
+                    className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                    </svg>
+                  </button>
+                </>
+              ) : (
+                // Modo visualización
+                <>
+                  <span className="flex-1 text-sm text-gray-800 dark:text-white px-3 py-1.5">
+                    {documento.texto}
+                  </span>
+                  <button
+                    onClick={() => handleIniciarEdicionDocumento(index, documento.texto)}
+                    className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleEliminarDocumento(documento.id, index)}
+                    className="p-1.5 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
+                    </svg>
+                  </button>
+                </>
+              )}
             </div>
+          ))}
+        </div>
 
-            {/* Tiempo de entrega */}
-            <div className="flex items-center justify-between py-3 border-b border-white/20">
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M16.2,16.2L11,13V7H12.5V12.2L17,14.9L16.2,16.2Z" />
-                </svg>
-                <span className="font-medium">Tiempo de entrega</span>
-              </div>
-              <span className="text-white/90">{informacion.tiempoEntrega}</span>
-            </div>
-
-            {/* Requisitos */}
-            <div className="py-4 border-b border-white/20">
-              <div className="flex items-center gap-2 mb-3">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19,2H5C3.9,2 3,2.9 3,4V20C3,21.1 3.9,22 5,22H19C20.1,22 21,21.1 21,20V4C21,2.9 20.1,2 19,2M19,20H5V4H19V20M7,18H17V16H7V18M7,14H17V12H7V14M7,10H17V6H7V10Z" />
-                </svg>
-                <span className="font-medium">Requisitos</span>
-              </div>
-              <ul className="space-y-2 ml-7">
-                {informacion.requisitos.map((req) => (
-                  <li key={req.id} className="flex items-start gap-2 text-sm text-white/90">
-                    <span className="text-white/60">→</span>
-                    {req.texto}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Costo */}
-            <div className="flex items-center justify-between py-3 border-b border-white/20">
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M7,15H9C9,16.08 10.37,17 12,17C13.63,17 15,16.08 15,15C15,13.9 13.96,13.5 11.76,12.97C9.64,12.44 7,11.78 7,9C7,7.21 8.47,5.69 10.5,5.18V3H13.5V5.18C15.53,5.69 17,7.21 17,9H15C15,7.92 13.63,7 12,7C10.37,7 9,7.92 9,9C9,10.1 10.04,10.5 12.24,11.03C14.36,11.56 17,12.22 17,15C17,16.79 15.53,18.31 13.5,18.82V21H10.5V18.82C8.47,18.31 7,16.79 7,15Z" />
-                </svg>
-                <span className="font-medium">Costo</span>
-              </div>
-              <span className="text-white/90 font-semibold">{informacion.costo}</span>
-            </div>
-
-            {/* Pasos a seguir */}
-            <div className="py-4">
-              <div className="flex items-center gap-2 mb-3">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19,2H5C3.9,2 3,2.9 3,4V20C3,21.1 3.9,22 5,22H19C20.1,22 21,21.1 21,20V4C21,2.9 20.1,2 19,2M19,20H5V4H19V20M7,18H17V16H7V18M7,14H17V12H7V14M7,10H17V6H7V10Z" />
-                </svg>
-                <span className="font-medium">Pasos a seguir</span>
-              </div>
-              <ul className="space-y-2 ml-7">
-                {informacion.pasos.map((paso) => (
-                  <li key={paso.id} className="flex items-start gap-2 text-sm text-white/90">
-                    <span className="text-white/60">→</span>
-                    {paso.texto}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+        {/* Agregar nuevo documento */}
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={nuevoDocumento}
+            onChange={(e) => setNuevoDocumento(e.target.value)}
+            placeholder="Nuevo documento..."
+            className="flex-1 h-11 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent dark:bg-gray-900 px-4 py-2.5 text-sm text-gray-800 dark:text-white placeholder:text-gray-400 shadow-theme-xs focus:outline-none focus:ring-3 focus:border-brand-300 focus:ring-brand-500/20 dark:focus:border-brand-800 transition-all"
+            onKeyDown={(e) => e.key === 'Enter' && !isAddingDocumento && handleAgregarDocumento()}
+            disabled={isAddingDocumento}
+          />
+          <button
+            onClick={handleAgregarDocumento}
+            disabled={isAddingDocumento}
+            className="inline-flex items-center justify-center rounded-lg bg-brand-500 hover:bg-brand-600 py-2.5 px-5 font-medium text-white text-sm shadow-theme-xs hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isAddingDocumento ? (
+              <svg className="w-4 h-4 mr-1 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+              </svg>
+            )}
+            {isAddingDocumento ? 'Agregando...' : 'Agregar'}
+          </button>
         </div>
       </ComponentCard>
     </div>

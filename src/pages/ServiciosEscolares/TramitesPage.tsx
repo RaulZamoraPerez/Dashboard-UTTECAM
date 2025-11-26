@@ -1,7 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { toastSuccess, toastError } from '../../utils/alert';
 import ComponentCard from '../../components/common/ComponentCard';
+import { 
+  getTramitesVista, 
+  createTramitesVista, 
+  updateTramitesVista 
+} from '../../services/tramitesService';
 
 // Interfaces
 interface TramiteCard {
@@ -67,14 +72,42 @@ export default function TramitesPage() {
 
   // Estado para información general
   const [infoGeneral, setInfoGeneral] = useState<InformacionGeneral>({
-    titulo: 'Servicios Escolares',
-    subtitulo: 'El departamento de Servicios Escolares, brinda atención a los estudiantes y egresados de la Universidad Tecnológica de Tecamachalco, con respecto a los servicios que demanden durante su ingreso, permanencia y egreso.',
+    titulo: '',
+    subtitulo: '',
   });
+  const [infoId, setInfoId] = useState<string | null>(null); // ID del registro en el backend
   const [editandoInfo, setEditandoInfo] = useState(false);
   const [infoTemporal, setInfoTemporal] = useState<InformacionGeneral>(infoGeneral);
+  const [isLoadingInfo, setIsLoadingInfo] = useState(true);
+  const [isSavingInfo, setIsSavingInfo] = useState(false);
 
-  // Estado para las cards de trámites (fijas, solo se puede editar el título)
-  const [tramites, setTramites] = useState<TramiteCard[]>([
+  // Cargar información al montar el componente
+  useEffect(() => {
+    const fetchInfo = async () => {
+      try {
+        setIsLoadingInfo(true);
+        const response = await getTramitesVista();
+        
+        if (response) {
+          setInfoGeneral({
+            titulo: response.titulo || '',
+            subtitulo: response.subtitulo || '',
+          });
+          setInfoId(response.id || null);
+        }
+      } catch (error) {
+        // Si hay error, dejamos los campos vacíos
+        console.error('Error al cargar información:', error);
+      } finally {
+        setIsLoadingInfo(false);
+      }
+    };
+
+    fetchInfo();
+  }, []);
+
+  // Estado para las cards de trámites (fijas)
+  const [tramites] = useState<TramiteCard[]>([
     {
       id: 'inscripcion',
       titulo: 'Inscripción',
@@ -141,12 +174,8 @@ export default function TramitesPage() {
     },
   ]);
 
-  // Estado para editar card individual
-  const [editandoCardId, setEditandoCardId] = useState<string | null>(null);
-  const [tituloCardTemporal, setTituloCardTemporal] = useState('');
-
   // Handlers para información general
-  const handleGuardarInfo = () => {
+  const handleGuardarInfo = async () => {
     if (!infoTemporal.titulo.trim()) {
       toastError('El título es obligatorio');
       return;
@@ -156,9 +185,48 @@ export default function TramitesPage() {
       return;
     }
 
-    setInfoGeneral(infoTemporal);
-    setEditandoInfo(false);
-    toastSuccess('Información actualizada correctamente');
+    setIsSavingInfo(true);
+
+    try {
+      const data = {
+        titulo: infoTemporal.titulo.trim(),
+        subtitulo: infoTemporal.subtitulo.trim(),
+      };
+
+      if (infoId) {
+        // Actualizar registro existente
+        await updateTramitesVista(infoId, data);
+        toastSuccess('Información actualizada correctamente');
+      } else {
+        // Crear nuevo registro
+        await createTramitesVista(data);
+        toastSuccess('Información guardada correctamente');
+      }
+
+      // Después de guardar, obtener los datos actualizados del servidor
+      const updatedData = await getTramitesVista();
+      if (updatedData) {
+        setInfoGeneral({
+          titulo: updatedData.titulo,
+          subtitulo: updatedData.subtitulo,
+        });
+        setInfoTemporal({
+          titulo: updatedData.titulo,
+          subtitulo: updatedData.subtitulo,
+        });
+        setInfoId(updatedData.id);
+      }
+      
+      setEditandoInfo(false);
+    } catch (error) {
+      if (error instanceof Error) {
+        toastError(error.message);
+      } else {
+        toastError('Error al guardar la información');
+      }
+    } finally {
+      setIsSavingInfo(false);
+    }
   };
 
   const handleCancelarInfo = () => {
@@ -166,34 +234,8 @@ export default function TramitesPage() {
     setEditandoInfo(false);
   };
 
-  // Handlers para editar título de card
-  const handleIniciarEdicionCard = (tramite: TramiteCard) => {
-    setEditandoCardId(tramite.id);
-    setTituloCardTemporal(tramite.titulo);
-  };
-
-  const handleGuardarTituloCard = (id: string) => {
-    if (!tituloCardTemporal.trim()) {
-      toastError('El título no puede estar vacío');
-      return;
-    }
-
-    setTramites(prev => prev.map(t => 
-      t.id === id ? { ...t, titulo: tituloCardTemporal.trim() } : t
-    ));
-    setEditandoCardId(null);
-    setTituloCardTemporal('');
-    toastSuccess('Título actualizado correctamente');
-  };
-
-  const handleCancelarEdicionCard = () => {
-    setEditandoCardId(null);
-    setTituloCardTemporal('');
-  };
-
   // Navegar al formulario del trámite
   const handleClickCard = (tramite: TramiteCard) => {
-    if (editandoCardId) return; // No navegar si está editando
     navigate(tramite.ruta);
   };
 
@@ -204,21 +246,47 @@ export default function TramitesPage() {
         title="Información de la Vista de Trámites"
         desc="Configura el título y subtítulo que se mostrarán en la página principal de Servicios Escolares"
       >
-        {!editandoInfo ? (
+        {/* Estado de carga inicial */}
+        {isLoadingInfo ? (
+          <div className="text-center py-12">
+            <div className="mb-4">
+              <svg className="animate-spin w-10 h-10 mx-auto text-brand-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+            <p className="text-gray-500 dark:text-gray-400">Cargando información...</p>
+          </div>
+        ) : !editandoInfo ? (
           // Vista de lectura
           <div className="space-y-4">
-            <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-              <div className="space-y-4">
-                <div>
-                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Título Principal</span>
-                  <p className="mt-1 text-lg font-semibold text-gray-800 dark:text-white">{infoGeneral.titulo}</p>
-                </div>
-                <div>
-                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Subtítulo / Descripción</span>
-                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{infoGeneral.subtitulo}</p>
+            {/* Mostrar mensaje si no hay datos */}
+            {!infoGeneral.titulo && !infoGeneral.subtitulo ? (
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-6 border border-yellow-200 dark:border-yellow-800">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M13,13H11V7H13M13,17H11V15H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">No hay información configurada</p>
+                    <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-1">Haz clic en "Editar Información" para agregar el título y subtítulo de la vista.</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Título Principal</span>
+                    <p className="mt-1 text-lg font-semibold text-gray-800 dark:text-white">{infoGeneral.titulo || '(Sin título)'}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Subtítulo / Descripción</span>
+                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{infoGeneral.subtitulo || '(Sin subtítulo)'}</p>
+                  </div>
+                </div>
+              </div>
+            )}
             
             <button
               onClick={() => {
@@ -230,7 +298,7 @@ export default function TramitesPage() {
               <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
               </svg>
-              Editar Información
+              {infoGeneral.titulo || infoGeneral.subtitulo ? 'Editar Información' : 'Agregar Información'}
             </button>
           </div>
         ) : (
@@ -245,7 +313,8 @@ export default function TramitesPage() {
                 value={infoTemporal.titulo}
                 onChange={(e) => setInfoTemporal(prev => ({ ...prev, titulo: e.target.value }))}
                 placeholder="Ej: Servicios Escolares"
-                className="w-full h-11 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent dark:bg-gray-900 px-4 py-2.5 text-sm text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 shadow-theme-xs focus:outline-none focus:ring-3 focus:border-brand-300 focus:ring-brand-500/20 dark:focus:border-brand-800 transition-all"
+                disabled={isSavingInfo}
+                className="w-full h-11 rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent dark:bg-gray-900 px-4 py-2.5 text-sm text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 shadow-theme-xs focus:outline-none focus:ring-3 focus:border-brand-300 focus:ring-brand-500/20 dark:focus:border-brand-800 transition-all disabled:opacity-50"
               />
             </div>
 
@@ -258,23 +327,38 @@ export default function TramitesPage() {
                 onChange={(e) => setInfoTemporal(prev => ({ ...prev, subtitulo: e.target.value }))}
                 placeholder="Describe los servicios que ofrece el departamento..."
                 rows={4}
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent dark:bg-gray-900 px-4 py-2.5 text-sm text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 shadow-theme-xs focus:outline-none focus:ring-3 focus:border-brand-300 focus:ring-brand-500/20 dark:focus:border-brand-800 transition-all"
+                disabled={isSavingInfo}
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-transparent dark:bg-gray-900 px-4 py-2.5 text-sm text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 shadow-theme-xs focus:outline-none focus:ring-3 focus:border-brand-300 focus:ring-brand-500/20 dark:focus:border-brand-800 transition-all disabled:opacity-50"
               />
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
               <button
                 onClick={handleGuardarInfo}
-                className="inline-flex items-center justify-center rounded-lg bg-brand-500 hover:bg-brand-600 py-2.5 px-6 font-medium text-white text-sm shadow-theme-xs hover:shadow-lg transition-all duration-200"
+                disabled={isSavingInfo}
+                className="inline-flex items-center justify-center rounded-lg bg-brand-500 hover:bg-brand-600 py-2.5 px-6 font-medium text-white text-sm shadow-theme-xs hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
-                </svg>
-                Guardar Cambios
+                {isSavingInfo ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
+                    </svg>
+                    {infoId ? 'Actualizar Cambios' : 'Guardar Cambios'}
+                  </>
+                )}
               </button>
               <button
                 onClick={handleCancelarInfo}
-                className="inline-flex items-center justify-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 py-2.5 px-6 font-medium text-gray-700 dark:text-gray-300 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
+                disabled={isSavingInfo}
+                className="inline-flex items-center justify-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 py-2.5 px-6 font-medium text-gray-700 dark:text-gray-300 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancelar
               </button>
@@ -286,91 +370,35 @@ export default function TramitesPage() {
       {/* Card 2: Cards de Trámites */}
       <ComponentCard
         title="Cards de Trámites"
-        desc="Gestiona los títulos de las cards y accede a la configuración de cada formulario haciendo clic en ellas"
+        desc="Accede a la configuración de cada formulario haciendo clic en las cards"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {tramites.map((tramite) => (
             <div
               key={tramite.id}
-              className={`relative bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 p-5 transition-all duration-200 ${
-                editandoCardId === tramite.id 
-                  ? 'ring-2 ring-brand-500' 
-                  : 'hover:shadow-lg hover:border-brand-300 dark:hover:border-brand-700 cursor-pointer'
-              }`}
-              onClick={() => !editandoCardId && handleClickCard(tramite)}
+              className="relative bg-white dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 p-5 transition-all duration-200 hover:shadow-lg hover:border-brand-300 dark:hover:border-brand-700 cursor-pointer"
+              onClick={() => handleClickCard(tramite)}
             >
-              {/* Botón de editar título */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleIniciarEdicionCard(tramite);
-                }}
-                className="absolute top-3 right-3 p-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-300 transition-colors z-10"
-                title="Editar título"
-              >
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
-                </svg>
-              </button>
-
               {/* Icono */}
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 mb-4">
                 {iconos[tramite.icono]}
               </div>
 
               {/* Contenido */}
-              {editandoCardId === tramite.id ? (
-                // Modo edición
-                <div className="space-y-3" onClick={(e) => e.stopPropagation()}>
-                  <input
-                    type="text"
-                    value={tituloCardTemporal}
-                    onChange={(e) => setTituloCardTemporal(e.target.value)}
-                    className="w-full h-9 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent dark:bg-gray-900 px-3 py-1.5 text-sm text-gray-800 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
-                    placeholder="Título del trámite"
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleGuardarTituloCard(tramite.id);
-                      if (e.key === 'Escape') handleCancelarEdicionCard();
-                    }}
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleGuardarTituloCard(tramite.id)}
-                      className="flex-1 inline-flex items-center justify-center rounded-lg bg-brand-500 hover:bg-brand-600 py-1.5 px-3 font-medium text-white text-xs transition-colors"
-                    >
-                      <svg className="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
-                      </svg>
-                      Guardar
-                    </button>
-                    <button
-                      onClick={handleCancelarEdicionCard}
-                      className="flex-1 inline-flex items-center justify-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 py-1.5 px-3 font-medium text-gray-700 dark:text-gray-300 text-xs hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                // Modo lectura
-                <>
-                  <h6 className="font-semibold text-gray-800 dark:text-white text-sm mb-2 pr-8">
-                    {tramite.titulo}
-                  </h6>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {tramite.descripcion}
-                  </p>
-                  
-                  {/* Indicador de clic */}
-                  <div className="mt-4 flex items-center text-xs text-brand-500 dark:text-brand-400 font-medium">
-                    <span>Configurar formulario</span>
-                    <svg className="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
-                    </svg>
-                  </div>
-                </>
-              )}
+              <h6 className="font-semibold text-gray-800 dark:text-white text-sm mb-2">
+                {tramite.titulo}
+              </h6>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {tramite.descripcion}
+              </p>
+              
+              {/* Indicador de clic */}
+              <div className="mt-4 flex items-center text-xs text-brand-500 dark:text-brand-400 font-medium">
+                <span>Configurar formulario</span>
+                <svg className="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" />
+                </svg>
+              </div>
             </div>
           ))}
         </div>
