@@ -9,6 +9,8 @@ export const AREAS = {
   INFORMACION_ESTADIA: 4,
   GESTION_CALIDAD: 5,
   COORDINACION_GENERO: 6,
+  VINCULACION: 7,
+  SERVICIO_SOCIAL: 8,
 } as const;
 
 export const NOMBRES_AREAS = {
@@ -18,4 +20,6 @@ export const NOMBRES_AREAS = {
   [AREAS.INFORMACION_ESTADIA]: 'Información de Estadía',
   [AREAS.GESTION_CALIDAD]: 'Gestión de Calidad',
   [AREAS.COORDINACION_GENERO]: 'Coordinación de Género',
+  [AREAS.VINCULACION]: 'Vinculación',
+  [AREAS.SERVICIO_SOCIAL]: 'Servicio Social',
 } as const;

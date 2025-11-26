@@ -30,6 +30,8 @@ import {
   CalendarioAcademico,
   Nosotros 
 } from "./pages/UTTECAM";
+import ExtensionSection from "./pages/UTTECAM/ExtensionUniversitaria/ExtensionSection";
+import ExtensionDocuments from "./pages/UTTECAM/ExtensionUniversitaria/ExtensionDocuments";
 
 // Home Content Pages
 import HeroSlidesAdmin from "./pages/HomeContent/HeroSlides";
@@ -47,7 +49,9 @@ import {
   GestionAmbiental,
   InformacionEstadia,
   GestionCalidad,
-  CordinacionGenero
+  CordinacionGenero,
+  Vinculacion,
+  ServicioSocial
 } from "./pages/ServiciosGestion";
 
 
@@ -96,6 +100,10 @@ export default function App() {
             <Route path="/calendar" element={<CalendarioAcademico />} />
             <Route path="/Nosotros" element={<Nosotros />} />
 
+            {/* Extension Universitaria */}
+            <Route path="/uttecam/extension/section/:slug" element={<ExtensionSection />} />
+            <Route path="/uttecam/extension/documents/:category" element={<ExtensionDocuments />} />
+
             {/* Servicios y Gestión Pages */}
             <Route path="/ServiciosGestion/Finanzas" element={<Finanzas />} />
             <Route path="/ServiciosGestion/RecursosHumanos" element={<RecursosHumanos />} />
@@ -103,6 +111,8 @@ export default function App() {
             <Route path="/ServiciosGestion/GestionAmbiental" element={<GestionAmbiental />} />
             <Route path="/ServiciosGestion/GestionCalidad" element={<GestionCalidad />} />
             <Route path="/ServiciosGestion/CordinacionGenero" element={<CordinacionGenero />} />
+            <Route path="/ServiciosGestion/Vinculacion" element={<Vinculacion />} />
+            <Route path="/ServiciosGestion/ServicioSocial" element={<ServicioSocial />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
