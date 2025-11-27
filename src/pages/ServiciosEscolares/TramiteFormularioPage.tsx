@@ -34,197 +34,16 @@ interface InformacionTramite {
   documentos: Documento[];
 }
 
-// Datos iniciales por tipo de trámite
-const datosInicialesPorTramite: { [key: string]: InformacionTramite } = {
-  Inscripcion: {
-    titulo: 'Inscripción',
-    subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
-    descripcion: 'Proceso de registro para nuevo ingreso a la institución. Este trámite permite formalizar tu inscripción como estudiante de la Universidad Tecnológica de Tecamachalco.',
-    tiempoEntrega: '1 día',
-    costo: '$0.00',
-    requisitos: [
-      { id: '1', texto: 'Haber sido aceptado en el proceso de admisión' },
-      { id: '2', texto: 'Presentar documentación completa' },
-      { id: '3', texto: 'Realizar el pago correspondiente' },
-    ],
-    pasos: [
-      { id: '1', texto: 'Verificar aceptación en el sistema' },
-      { id: '2', texto: 'Entregar documentación en ventanilla' },
-      { id: '3', texto: 'Realizar pago en caja' },
-      { id: '4', texto: 'Recibir comprobante de inscripción' },
-    ],
-    documentos: [
-      { id: '1', texto: 'Acta de nacimiento (original y copia)' },
-      { id: '2', texto: 'Certificado de bachillerato (original y copia)' },
-      { id: '3', texto: 'CURP actualizada' },
-      { id: '4', texto: 'Fotografías tamaño infantil' },
-    ],
-  },
-  Reinscripcion: {
-    titulo: 'Reinscripción a Ingeniería/Licenciatura (7° cuatrimestre)',
-    subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
-    descripcion: 'Proceso de actualización de datos y continuidad de estudios para estudiantes que ingresan al séptimo cuatrimestre de Ingeniería o Licenciatura.',
-    tiempoEntrega: '1 día',
-    costo: '$0.00',
-    requisitos: [
-      { id: '1', texto: 'Ser estudiante regular de la institución' },
-      { id: '2', texto: 'No tener adeudos con la institución' },
-      { id: '3', texto: 'Haber aprobado el cuatrimestre anterior' },
-    ],
-    pasos: [
-      { id: '1', texto: 'Ingresar al sistema de Servicios Escolares en Línea' },
-      { id: '2', texto: 'Verificar datos personales y académicos' },
-      { id: '3', texto: 'Confirmar reinscripción' },
-      { id: '4', texto: 'Descargar comprobante' },
-    ],
-    documentos: [
-      { id: '1', texto: 'Credencial de estudiante vigente' },
-      { id: '2', texto: 'Comprobante de pago del cuatrimestre anterior' },
-    ],
-  },
-  Constancias: {
-    titulo: 'Solicitud de Constancia de Estudios o Kardex',
-    subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
-    descripcion: 'Documento oficial que acredita tu situación académica actual o historial de calificaciones. Útil para trámites laborales, becas y otros fines oficiales.',
-    tiempoEntrega: '1 día',
-    costo: '$49.00',
-    requisitos: [
-      { id: '1', texto: 'Ser o haber sido estudiante, o en su caso egresado de la Universidad' },
-      { id: '2', texto: 'No contar con ningún adeudo con la Institución' },
-      { id: '3', texto: 'Pagar el costo del servicio' },
-    ],
-    pasos: [
-      { id: '1', texto: 'Descargar la orden pago de la página pagos en línea Puebla' },
-      { id: '2', texto: 'Realizar el pago en cualquiera de las instituciones bancarias autorizadas' },
-      { id: '3', texto: 'Ingresar a la página de la Universidad en Servicios Escolares en Línea' },
-      { id: '4', texto: 'Elegir tu carrera y tipo de documento solicitado' },
-      { id: '5', texto: 'Contestar el formulario con número de referencia de pago' },
-    ],
-    documentos: [
-      { id: '1', texto: 'Identificación oficial vigente' },
-      { id: '2', texto: 'Comprobante de pago' },
-    ],
-  },
-  Certificado: {
-    titulo: 'Certificado de Estudios',
-    subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
-    descripcion: 'Documento oficial que certifica la conclusión de tus estudios y el historial académico completo. Requisito indispensable para trámites de titulación y ejercicio profesional.',
-    tiempoEntrega: '5 días hábiles',
-    costo: '$150.00',
-    requisitos: [
-      { id: '1', texto: 'Haber concluido satisfactoriamente el plan de estudios' },
-      { id: '2', texto: 'No tener adeudos con la institución' },
-      { id: '3', texto: 'Presentar identificación oficial' },
-    ],
-    pasos: [
-      { id: '1', texto: 'Solicitar el trámite en ventanilla de Servicios Escolares' },
-      { id: '2', texto: 'Realizar el pago correspondiente' },
-      { id: '3', texto: 'Esperar el tiempo de procesamiento' },
-      { id: '4', texto: 'Recoger el certificado en la fecha indicada' },
-    ],
-    documentos: [
-      { id: '1', texto: 'Identificación oficial vigente' },
-      { id: '2', texto: 'Comprobante de pago' },
-      { id: '3', texto: 'Acta de nacimiento (copia)' },
-    ],
-  },
-  CartaPasante: {
-    titulo: 'Carta Pasante',
-    subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
-    descripcion: 'Documento que acredita la conclusión del 100% de los créditos del plan de estudios. Permite ejercer temporalmente mientras se realiza el trámite de titulación.',
-    tiempoEntrega: '3 días hábiles',
-    costo: '$100.00',
-    requisitos: [
-      { id: '1', texto: 'Haber concluido el 100% de los créditos del plan de estudios' },
-      { id: '2', texto: 'No tener adeudos con la institución' },
-      { id: '3', texto: 'Presentar solicitud por escrito' },
-    ],
-    pasos: [
-      { id: '1', texto: 'Solicitar el trámite en ventanilla' },
-      { id: '2', texto: 'Entregar documentación requerida' },
-      { id: '3', texto: 'Realizar el pago correspondiente' },
-      { id: '4', texto: 'Recoger la carta en la fecha indicada' },
-    ],
-    documentos: [
-      { id: '1', texto: 'Identificación oficial vigente' },
-      { id: '2', texto: 'Comprobante de pago' },
-      { id: '3', texto: 'Constancia de no adeudo' },
-    ],
-  },
-  IMSS: {
-    titulo: 'Alta o Baja del IMSS',
-    subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
-    descripcion: 'Trámite para dar de alta o baja en el Instituto Mexicano del Seguro Social como estudiante. Permite acceder a servicios médicos durante tu estancia en la universidad.',
-    tiempoEntrega: '3 días hábiles',
-    costo: '$0.00',
-    requisitos: [
-      { id: '1', texto: 'Ser estudiante inscrito en el cuatrimestre vigente' },
-      { id: '2', texto: 'Presentar CURP actualizada' },
-      { id: '3', texto: 'Presentar comprobante de domicilio' },
-    ],
-    pasos: [
-      { id: '1', texto: 'Acudir a ventanilla de Servicios Escolares' },
-      { id: '2', texto: 'Entregar documentación requerida' },
-      { id: '3', texto: 'Esperar confirmación del trámite' },
-    ],
-    documentos: [
-      { id: '1', texto: 'CURP actualizada' },
-      { id: '2', texto: 'Comprobante de domicilio reciente' },
-      { id: '3', texto: 'Credencial de estudiante vigente' },
-    ],
-  },
-  Credencializacion: {
-    titulo: 'Credencialización',
-    subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
-    descripcion: 'Trámite para obtener o renovar la credencial de estudiante. Documento oficial que te identifica como alumno activo de la institución.',
-    tiempoEntrega: '5 días hábiles',
-    costo: '$50.00',
-    requisitos: [
-      { id: '1', texto: 'Ser estudiante inscrito' },
-      { id: '2', texto: 'Presentar fotografía reciente tamaño infantil' },
-      { id: '3', texto: 'Realizar el pago correspondiente' },
-    ],
-    pasos: [
-      { id: '1', texto: 'Acudir a ventanilla con fotografía' },
-      { id: '2', texto: 'Llenar formato de solicitud' },
-      { id: '3', texto: 'Realizar pago en caja' },
-      { id: '4', texto: 'Recoger credencial en la fecha indicada' },
-    ],
-    documentos: [
-      { id: '1', texto: 'Fotografía tamaño infantil (fondo blanco)' },
-      { id: '2', texto: 'Comprobante de inscripción vigente' },
-      { id: '3', texto: 'Comprobante de pago' },
-    ],
-  },
-  TituloProfesional: {
-    titulo: 'Título Profesional Electrónico',
-    subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
-    descripcion: 'Documento oficial que acredita la conclusión de tus estudios profesionales y te autoriza para ejercer legalmente tu profesión. El título electrónico tiene validez oficial ante la SEP.',
-    tiempoEntrega: '30 días hábiles',
-    costo: '$2,500.00',
-    requisitos: [
-      { id: '1', texto: 'Haber concluido satisfactoriamente el plan de estudios' },
-      { id: '2', texto: 'Haber liberado el servicio social' },
-      { id: '3', texto: 'No tener adeudos con la institución' },
-      { id: '4', texto: 'Presentar documentación completa' },
-    ],
-    pasos: [
-      { id: '1', texto: 'Solicitar el trámite en ventanilla' },
-      { id: '2', texto: 'Entregar documentación requerida' },
-      { id: '3', texto: 'Realizar el pago correspondiente' },
-      { id: '4', texto: 'Esperar validación de documentos' },
-      { id: '5', texto: 'Firmar documentos digitales' },
-      { id: '6', texto: 'Recibir título electrónico' },
-    ],
-    documentos: [
-      { id: '1', texto: 'Acta de nacimiento (original y copia)' },
-      { id: '2', texto: 'Certificado de estudios' },
-      { id: '3', texto: 'Carta de liberación de servicio social' },
-      { id: '4', texto: 'CURP actualizada' },
-      { id: '5', texto: 'Fotografías tamaño título' },
-      { id: '6', texto: 'Comprobante de pago' },
-    ],
-  },
+// Estado inicial vacío
+const estadoInicialVacio: InformacionTramite = {
+  titulo: '',
+  subtitulo: '',
+  descripcion: '',
+  tiempoEntrega: '',
+  costo: '',
+  requisitos: [],
+  pasos: [],
+  documentos: [],
 };
 
 // Nombres amigables para mostrar
@@ -241,30 +60,25 @@ const nombresAmigables: { [key: string]: string } = {
 
 // Mapeo de tramiteId a tipo de API
 const tipoApiPorTramite: { [key: string]: string | null } = {
-  Inscripcion: null,
+  Inscripcion: 'inscripcion',
   Reinscripcion: null,
-  Constancias: 'kardex_constancias', // Solo este tiene conexión a API por ahora
-  Certificado: null,
-  CartaPasante: null,
-  IMSS: null,
-  Credencializacion: null,
-  TituloProfesional: null,
+  Constancias: 'kardex_constancias',
+  Certificado: 'certificado',
+  CartaPasante: 'carta_pasante',
+  IMSS: 'imss',
+  Credencializacion: 'credencial',
+  TituloProfesional: 'titulo',
 };
 
 export default function TramiteFormularioPage() {
   const { tramiteId } = useParams<{ tramiteId: string }>();
   const navigate = useNavigate();
 
-  // Obtener datos iniciales según el tramiteId
-  const datosIniciales = tramiteId && datosInicialesPorTramite[tramiteId] 
-    ? datosInicialesPorTramite[tramiteId] 
-    : datosInicialesPorTramite['Constancias'];
-
   // Obtener el tipo de API para este trámite
   const tipoApi = tramiteId ? tipoApiPorTramite[tramiteId] : null;
 
-  // Estados
-  const [informacion, setInformacion] = useState<InformacionTramite>(datosIniciales);
+  // Estados - inicializar vacío, se llenará con datos del backend o defaults
+  const [informacion, setInformacion] = useState<InformacionTramite>(estadoInicialVacio);
   const [editandoInfo, setEditandoInfo] = useState(false);
   const [infoTemporal, setInfoTemporal] = useState<InformacionTramite>(informacion);
   const [isLoading, setIsLoading] = useState(false);
@@ -351,7 +165,7 @@ export default function TramiteFormularioPage() {
     info: {
       titulo: 'Solicitud de Constancia de Estudios o Kardex',
       subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
-      descripcion: '', // Sin descripción según indicaciones
+      descripcion: '',
       tiempoEntrega: '1 día',
       costo: '$49.00',
     },
@@ -374,6 +188,162 @@ export default function TramiteFormularioPage() {
     ],
   };
 
+  // Datos por defecto para inscripcion (Reinscripción)
+  const datosDefaultInscripcion = {
+    info: {
+      titulo: 'Reinscripción',
+      subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
+      descripcion: 'La Reinscripción es un proceso administrativo mediante el cual el o la estudiante inscrito en un programa educativo de la Universidad es registrada(o) para continuar sus estudios en el siguiente cuatrimestre de acuerdo con el Plan y Programa de estudios.\n\nPara este proceso es importante conocer la siguiente información.',
+      tiempoEntrega: '5 Minutos',
+      costo: 'Cuatrimestre: $1,465.00 | Seguro Escolar: $335.00',
+    },
+    requisitos: [
+      'Ser estudiante de la Universidad',
+      'No contar con ningún adeudo con la Institución',
+      'Pagar el costo del cuatrimestre',
+      'Pagar el costo del seguro escolar (anual)',
+      'Actualizar sus datos personales',
+    ],
+    pasos: [
+      'Al inicio del cuatrimestre el Departamento de Servicios Escolares informará al Programa Educativo el Calendario de Reinscripción.',
+      'El programa educativo notificará a los estudiantes.',
+      'Descargar la orden de pago de la página pagos en línea Puebla; https://rl.puebla.gob.mx/',
+      'Realizar el pago en cualquiera de las Instituciones bancarias autorizadas en la orden de pago.',
+      'Acudir con la documentación completa a la ventanilla correspondiente, en el día y la hora indicada.',
+    ],
+    documentos: [
+      'Credencial de estudiante',
+      'Original y copia de la orden y comprobante de pago emitido por la institución bancaria donde se realizó',
+      'En caso de haber solicitado beca, presentar Acuse de Registro',
+    ],
+  };
+
+  // Datos por defecto para certificado de estudios
+  const datosDefaultCertificado = {
+    info: {
+      titulo: 'Solicitud de Certificado de Estudios',
+      subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
+      descripcion: '',
+      tiempoEntrega: '20 días',
+      costo: '$305.00',
+    },
+    requisitos: [
+      'Ser o haber sido estudiante, o en su caso egresado de la Universidad',
+      'No contar con ningún adeudo con la Institución',
+      'Pagar el costo del servicio',
+      '3 fotografías tamaño infantil a blanco y negro con adherible; toma de la fotografía con ropa formal',
+    ],
+    pasos: [
+      'Descargar la orden pago de la página pagos en línea Puebla',
+      'Realizar el pago en cualquiera de las instituciones bancarias autorizadas',
+      'Ingresar a la página de la Universidad en Servicios Escolares en Línea',
+      'Elegir tu carrera',
+      'Contestar el formulario con número de referencia de pago',
+      'Presentarse en ventanilla con el comprobante de pago original',
+    ],
+    documentos: [
+      'Identificarse con credencial de estudiante o INE',
+      'Original y copia de la orden y comprobante de pago',
+    ],
+  };
+
+  // Datos por defecto para carta pasante
+  const datosDefaultCartaPasante = {
+    info: {
+      titulo: 'Solicitud de Carta Pasante',
+      subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
+      descripcion: '',
+      tiempoEntrega: '1 hora en días hábiles',
+      costo: '$225.00',
+    },
+    requisitos: [
+      'Haber presentado el Acto Protocolario de Nivel Licenciatura/Ingeniería',
+      'No contar con ningún adeudo con la Institución',
+      'Pagar el costo del servicio',
+      '3 fotografías tamaño infantil a blanco y negro con adherible; toma de la fotografía con ropa formal',
+    ],
+    pasos: [],
+    documentos: [
+      'Identificarse con credencial de estudiante o INE',
+      'Original y copia de la orden y comprobante de pago emitido por la institución bancaria donde se realizó',
+      '2 fotografías tamaño infantil a blanco y negro con adherible; toma de la fotografía con ropa formal',
+    ],
+  };
+
+  // Datos por defecto para IMSS (Alta/Baja)
+  const datosDefaultIMSS = {
+    info: {
+      titulo: 'Solicitud de Alta / Baja del IMSS',
+      subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
+      descripcion: '',
+      tiempoEntrega: '72 horas en días hábiles',
+      costo: '',
+    },
+    requisitos: [
+      'Ser o haber sido estudiante de la Universidad (según sea el caso)',
+      'No contar con ningún adeudo con la Institución',
+    ],
+    pasos: [
+      'Descargar constancia de vigencia de derechos IMSS desde la página oficial del IMSS',
+      'Completar el formulario en línea con todos tus datos',
+      'Adjuntar la constancia de vigencia en formato PDF',
+      'Enviar la solicitud',
+      'En un máximo de 72 horas se notificará a través de correo electrónico que se atendió la solicitud.',
+    ],
+    documentos: [
+      'Constancia de vigencia de derechos del IMSS (archivo digital en PDF)',
+    ],
+  };
+
+  // Datos por defecto para Credencialización
+  const datosDefaultCredencial = {
+    info: {
+      titulo: 'Solicitud de Reposición de Credencial de Estudiante',
+      subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
+      descripcion: '',
+      tiempoEntrega: '1 hora en días hábiles',
+      costo: '$70.00',
+    },
+    requisitos: [
+      'Ser estudiante de la Universidad',
+      'No contar con ningún adeudo con la Institución',
+      'Credencial anterior, o en caso de extravío acudir al área del Abogado General, ubicado en el Edificio H Planta alta, para obtener la "Constancia para la Reposición de Credencial"',
+      'Pagar el costo del servicio',
+    ],
+    pasos: [],
+    documentos: [
+      'Original y copia de la Constancia para la Reposición de Credencial',
+      'Original y copia de la orden y comprobante de pago emitido por la institución bancaria donde se realizó',
+    ],
+  };
+
+  // Datos por defecto para Título Profesional
+  const datosDefaultTitulo = {
+    info: {
+      titulo: 'Solicitud de Trámite de Título',
+      subtitulo: 'Departamento de Servicios Escolares - Universidad Tecnológica de Tecamachalco',
+      descripcion: 'Este espacio está diseñado para que puedas recibir información confiable acerca del proceso que tendrás que seguir cuando, una vez titulado, quieras tramitar tu Título Profesional Electrónico.\n\nRecuerda que entre más pronto inicies tu trámite menos tardarán en llegar tu Título Profesional.\n\nPrimero debes tramitar el título de nivel Técnico Superior Universitario y después el de Ingeniería/Licenciatura, por lo tanto, si te retrasas en el primero, te demorarás en el segundo.\n\nPara saber los pasos y documentos que necesitas para realizar la solicitud de Título Profesional Electrónico, consulta la siguiente información.',
+      tiempoEntrega: 'Entre 6 y 8 meses',
+      costo: '$2,630.00',
+    },
+    requisitos: [
+      'Haber presentado el Acto Protocolario de Nivel Licenciatura/Ingeniería',
+      'No contar con ningún adeudo con la Institución',
+      'Agendar cita',
+      'Entregar la documentación requerida',
+      'Pagar el costo del servicio',
+    ],
+    pasos: [],
+    documentos: [
+      'Original y copia (tamaño carta) del Acta de Nacimiento',
+      'Escaneo a color de Acta de Nacimiento en formato PDF',
+      'Certificado original y copia (tamaño carta) de bachillerato legalizado original',
+      'Escaneo a color de Certificado de bachillerato legalizado original en formato PDF',
+      'CURP (formato actualizado)',
+      'Original y copia de credencial del INE',
+    ],
+  };
+
   useEffect(() => {
     if (!tipoApi) return;
 
@@ -388,45 +358,86 @@ export default function TramiteFormularioPage() {
           tramiteService.getDocumentos(tipoApi),
         ]);
 
+        console.log('=== DEBUG FETCH DATA ===');
+        console.log('tipoApi:', tipoApi);
+        console.log('infoData:', infoData);
+        console.log('requisitosData:', requisitosData);
+        console.log('pasosData:', pasosData);
+        console.log('documentosData:', documentosData);
+
         // Determinar si necesitamos crear datos por defecto
         const needsDefaultData = !infoData && requisitosData.length === 0 && pasosData.length === 0 && documentosData.length === 0;
+        
+        console.log('needsDefaultData:', needsDefaultData);
 
-        if (needsDefaultData && tipoApi === 'kardex_constancias') {
-          // Crear datos por defecto para kardex_constancias
+        // Seleccionar datos por defecto según el tipo
+        const getDatosDefault = () => {
+          switch (tipoApi) {
+            case 'kardex_constancias':
+              return datosDefaultKardex;
+            case 'inscripcion':
+              return datosDefaultInscripcion;
+            case 'certificado':
+              return datosDefaultCertificado;
+            case 'carta_pasante':
+              return datosDefaultCartaPasante;
+            case 'imss':
+              return datosDefaultIMSS;
+            case 'credencial':
+              return datosDefaultCredencial;
+            case 'titulo':
+              return datosDefaultTitulo;
+            default:
+              return null;
+          }
+        };
+
+        const datosDefault = getDatosDefault();
+        console.log('datosDefault:', datosDefault ? 'encontrado' : 'null');
+
+        if (needsDefaultData && datosDefault) {
+          console.log('Creando datos por defecto para:', tipoApi);
+          // Crear datos por defecto
           try {
             // Crear info principal
-            await tramiteService.createInfoPrincipal(tipoApi, datosDefaultKardex.info);
+            console.log('Creando info principal...');
+            await tramiteService.createInfoPrincipal(tipoApi, datosDefault.info);
             
             // Crear requisitos
-            for (const requisito of datosDefaultKardex.requisitos) {
+            console.log('Creando requisitos...');
+            for (const requisito of datosDefault.requisitos) {
               await tramiteService.createRequisito(tipoApi, { texto: requisito });
             }
             
             // Crear pasos
-            for (const paso of datosDefaultKardex.pasos) {
+            console.log('Creando pasos...');
+            for (const paso of datosDefault.pasos) {
               await tramiteService.createPaso(tipoApi, { texto: paso });
             }
             
             // Crear documentos
-            for (const documento of datosDefaultKardex.documentos) {
+            console.log('Creando documentos...');
+            for (const documento of datosDefault.documentos) {
               await tramiteService.createDocumento(tipoApi, { texto: documento });
             }
+
+            console.log('Datos por defecto creados exitosamente');
 
             // Actualizar estado con los datos creados
             setInformacion(prev => ({
               ...prev,
-              ...datosDefaultKardex.info,
-              requisitos: datosDefaultKardex.requisitos.map((texto, idx) => ({
+              ...datosDefault.info,
+              requisitos: datosDefault.requisitos.map((texto, idx) => ({
                 id: idx.toString(),
                 index: idx,
                 texto,
               })),
-              pasos: datosDefaultKardex.pasos.map((texto, idx) => ({
+              pasos: datosDefault.pasos.map((texto, idx) => ({
                 id: idx.toString(),
                 index: idx,
                 texto,
               })),
-              documentos: datosDefaultKardex.documentos.map((texto, idx) => ({
+              documentos: datosDefault.documentos.map((texto, idx) => ({
                 id: idx.toString(),
                 index: idx,
                 texto,
@@ -434,7 +445,7 @@ export default function TramiteFormularioPage() {
             }));
             setInfoTemporal(prev => ({
               ...prev,
-              ...datosDefaultKardex.info,
+              ...datosDefault.info,
             }));
           } catch (error) {
             console.error('Error al crear datos por defecto:', error);
