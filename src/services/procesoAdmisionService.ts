@@ -58,12 +58,40 @@ export const createProcesoAdmision = async (
 
 /**
  * Obtiene todas las convocatorias de proceso de admisión
+ * Devuelve array vacío si no hay datos (404) sin mostrar error
  * @returns Promise con la lista de convocatorias
  */
 export const getProcesoAdmisionList = async (): Promise<ProcesoAdmisionGetResponse> => {
-  return fetchWithAuth<ProcesoAdmisionGetResponse>(ENDPOINT, {
-    method: 'GET',
-  });
+  try {
+    const token = localStorage.getItem('authToken');
+    const API_URL = import.meta.env.VITE_BACKENDURL || '';
+    
+    const response = await fetch(`${API_URL}${ENDPOINT}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    // Si es 404, no hay convocatorias - retornar array vacío silenciosamente
+    if (response.status === 404) {
+      return [];
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Error ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data || [];
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Error al obtener las convocatorias');
+  }
 };
 
 /**

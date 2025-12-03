@@ -74,11 +74,9 @@ export default function ProcesoAdmisionPage() {
         
         setConvocatorias(mappedData);
       } catch (error) {
-        if (error instanceof Error) {
-          toastError(error.message);
-        } else {
-          toastError('Error al cargar las convocatorias');
-        }
+        // Solo mostrar error si no es un 404 (sin datos)
+        console.error('Error al cargar convocatorias:', error);
+        // No mostrar toast de error en la carga inicial
       } finally {
         setIsLoadingData(false);
       }

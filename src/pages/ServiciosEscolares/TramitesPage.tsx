@@ -78,14 +78,14 @@ export default function TramitesPage() {
   const [infoId, setInfoId] = useState<string | null>(null); // ID del registro en el backend
   const [editandoInfo, setEditandoInfo] = useState(false);
   const [infoTemporal, setInfoTemporal] = useState<InformacionGeneral>(infoGeneral);
-  const [isLoadingInfo, setIsLoadingInfo] = useState(true);
+  const [isLoadingInfo, setIsLoadingInfo] = useState(false);
   const [isSavingInfo, setIsSavingInfo] = useState(false);
 
   // Cargar información al montar el componente
   useEffect(() => {
     const fetchInfo = async () => {
+      setIsLoadingInfo(true);
       try {
-        setIsLoadingInfo(true);
         const response = await getTramitesVista();
         
         if (response) {
