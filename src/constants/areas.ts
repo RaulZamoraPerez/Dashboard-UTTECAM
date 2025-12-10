@@ -9,13 +9,15 @@ export const AREAS = {
   INFORMACION_ESTADIA: 4,
   GESTION_CALIDAD: 5,
   COORDINACION_GENERO: 6,
+  PIT: 7,
 } as const;
 
 export const NOMBRES_AREAS = {
   [AREAS.FINANZAS]: 'Finanzas',
   [AREAS.RECURSOS_HUMANOS]: 'Recursos Humanos',
   [AREAS.GESTION_AMBIENTAL]: 'Gestión Ambiental',
-  [AREAS.INFORMACION_ESTADIA]: 'Información de Estadía',
+  [AREAS.INFORMACION_ESTADIA]: 'Información y Estadística',
   [AREAS.GESTION_CALIDAD]: 'Gestión de Calidad',
   [AREAS.COORDINACION_GENERO]: 'Coordinación de Género',
+  [AREAS.PIT]: 'Programa Institucional de Tutorías (PIT)',
 } as const;

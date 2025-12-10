@@ -49,6 +49,7 @@ import {
   GestionCalidad,
   CordinacionGenero
 } from "./pages/ServiciosGestion";
+import Pit from "./pages/Accesos/Pit";
 
 
 export default function App() {
@@ -95,6 +96,9 @@ export default function App() {
             <Route path="/uttecam/noticias" element={<GestionNoticias />} />
             <Route path="/calendar" element={<CalendarioAcademico />} />
             <Route path="/Nosotros" element={<Nosotros />} />
+
+            {/* Accesos Pages */}
+            <Route path="/accesos/pit" element={<Pit />} />
 
             {/* Servicios y Gestión Pages */}
             <Route path="/ServiciosGestion/Finanzas" element={<Finanzas />} />

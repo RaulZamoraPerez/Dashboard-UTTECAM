@@ -203,6 +203,20 @@ const Vinculacio: NavItem[] = [
   },
 ];
 
+const Accesos: NavItem[] = [
+  {
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-graduation-cap">
+        <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/>
+        <path d="M22 10v6"/>
+        <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>
+      </svg>
+    ),
+    name: "PIT",
+    path: "/Accesos/pit",
+  },
+];
+
 const ServiciosGestion : NavItem[] = [
   {
     icon: <PieChartIcon />,
@@ -224,7 +238,7 @@ const ServiciosGestion : NavItem[] = [
         <path d="M12 12h.01"/><path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M22 13a18.15 18.15 0 0 1-20 0"/><rect width="20" height="14" x="2" y="6" rx="2"/>
       </svg>
     ),
-    name: "Información y estadia",
+    name: "Información y Estadística",
     path: "/ServiciosGestion/InformacionEstadia",
   },
   {
@@ -248,7 +262,7 @@ const ServiciosGestion : NavItem[] = [
         <path d="M10 20h4"/><path d="M12 16v6"/><path d="M17 2h4v4"/><path d="m21 2-5.46 5.46"/><circle cx="12" cy="11" r="5"/>
       </svg>
     ),
-    name: "Coordinación de género",
+    name: "Sitio Web Coordinación De Género",
     path: "/ServiciosGestion/CordinacionGenero",
   }
 ];
@@ -258,7 +272,7 @@ const AppSidebar: React.FC = () => {
   const location = useLocation();
 
   const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "uttecam" | "Vinculacio" | "ServiciosGestion";
+    type: "main" | "uttecam" | "Vinculacio" | "Accesos" | "ServiciosGestion";
     index: number;
   } | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
@@ -274,18 +288,19 @@ const AppSidebar: React.FC = () => {
 
   useEffect(() => {
     let submenuMatched = false;
-    ["main", "uttecam", "Vinculacio", "ServiciosGestion"].forEach((menuType) => {
+    ["main", "uttecam", "Vinculacio", "Accesos", "ServiciosGestion"].forEach((menuType) => {
       const items = 
         menuType === "main" ? navItems : 
         menuType === "uttecam" ? uttecamItems :
         menuType === "Vinculacio" ? Vinculacio :
+        menuType === "Accesos" ? Accesos :
         ServiciosGestion;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
               setOpenSubmenu({
-                type: menuType as "main" | "uttecam" | "Vinculacio" | "ServiciosGestion",
+                type: menuType as "main" | "uttecam" | "Vinculacio" | "Accesos" | "ServiciosGestion",
                 index,
               });
               submenuMatched = true;
@@ -312,7 +327,7 @@ const AppSidebar: React.FC = () => {
     }
   }, [openSubmenu]);
 
-  const handleSubmenuToggle = (index: number, menuType: "main" | "uttecam" | "Vinculacio" | "ServiciosGestion") => {
+  const handleSubmenuToggle = (index: number, menuType: "main" | "uttecam" | "Vinculacio" | "Accesos" | "ServiciosGestion") => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
         prevOpenSubmenu &&
@@ -325,7 +340,7 @@ const AppSidebar: React.FC = () => {
     });
   };
 
-  const renderMenuItems = (items: NavItem[], menuType: "main" | "uttecam" | "Vinculacio" | "ServiciosGestion") => (
+  const renderMenuItems = (items: NavItem[], menuType: "main" | "uttecam" | "Vinculacio" | "Accesos" | "ServiciosGestion") => (
     <ul className="flex flex-col gap-4">
       {items.map((nav, index) => (
         <li key={nav.name}>
@@ -526,6 +541,22 @@ const AppSidebar: React.FC = () => {
                 )}
               </h2>
               {renderMenuItems(Vinculacio, "Vinculacio")} 
+            </div>
+            <div>
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-primary font-semibold ${
+                  !isExpanded && !isHovered
+                    ? "lg:justify-center"
+                    : "justify-start"
+                }`}
+              >
+                {isExpanded || isHovered || isMobileOpen ? (
+                  "Accesos"
+                ) : (
+                  <HorizontaLDots />
+                )}
+              </h2>
+              {renderMenuItems(Accesos, "Accesos")} 
             </div>
             <div className="">
               <h2
