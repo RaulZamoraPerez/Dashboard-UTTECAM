@@ -10,6 +10,9 @@ export const AREAS = {
   GESTION_CALIDAD: 5,
   COORDINACION_GENERO: 6,
   PIT: 7,
+  SERVICIO_SOCIAL: 8,
+  EXTENSION_GACETAS: 9,
+  EXTENSION_PROMOCION: 10,
 } as const;
 
 export const NOMBRES_AREAS = {
@@ -20,4 +23,7 @@ export const NOMBRES_AREAS = {
   [AREAS.GESTION_CALIDAD]: 'Gestión de Calidad',
   [AREAS.COORDINACION_GENERO]: 'Coordinación de Género',
   [AREAS.PIT]: 'Programa Institucional de Tutorías (PIT)',
+  [AREAS.SERVICIO_SOCIAL]: 'Servicio Social',
+  [AREAS.EXTENSION_GACETAS]: 'Gacetas',
+  [AREAS.EXTENSION_PROMOCION]: 'Promoción Institucional',
 } as const;

@@ -7,7 +7,8 @@ import {
   eliminarCategoria,
   subirArchivo,
   eliminarArchivo,
-  obtenerAreas
+  obtenerAreas,
+  obtenerArea
 } from '../../services/documentosService';
 
 interface GestorDocumentosProps {
@@ -89,7 +90,18 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
       const areas = await obtenerAreas();
       console.log('Áreas disponibles:', areas);
 
-      const areaExiste = areas.some(area => area.ID_Area === areaId);
+      let areaExiste = areas.some(area => area.ID_Area === areaId);
+      // Si el área no figura en el listado, intentar obtenerla por id (caso de seed/DB reciente)
+      if (!areaExiste) {
+        try {
+          const areaRemoto = await obtenerArea(areaId);
+          if (areaRemoto) {
+            areaExiste = true;
+          }
+        } catch (err) {
+          // no hacer nada, controlaremos abajo
+        }
+      }
       console.log(`¿Área ${areaId} existe?`, areaExiste);
 
       if (!areaExiste) {
@@ -734,7 +746,7 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
                     type="file"
                     multiple
                     onChange={handleFileInputChange}
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar"
+                    accept={areaId === 10 ? ".pdf,.jpg,.jpeg,.png,.gif,.webp" : ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar"}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
                   
@@ -752,7 +764,9 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
                         <span className="text-[#d1672a] font-semibold cursor-pointer">haz clic para seleccionar</span>
                       </p>
                       <p className="text-xs text-gray-500">
-                        Máximo 100MB por archivo. Formatos: PDF, Word, Excel, PowerPoint, TXT, ZIP, RAR
+                        {areaId === 10 
+                          ? 'Máximo 100MB por archivo. Formatos: PDF, JPG, PNG, GIF, WebP'
+                          : 'Máximo 100MB por archivo. Formatos: PDF, Word, Excel, PowerPoint, TXT, ZIP, RAR'}
                       </p>
                     </div>
                   </div>

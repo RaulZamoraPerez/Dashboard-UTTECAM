@@ -61,20 +61,20 @@ export const getNosotrosContent = async (): Promise<NosotrosContent> => {
   // Deserializar los campos que vienen como JSON strings desde la base de datos
   const data = {
     ...rawData,
-    politicaIntegral: rawData.politicaIntegral ? (typeof rawData.politicaIntegral === 'string' ? JSON.parse(rawData.politicaIntegral) : rawData.politicaIntegral) : { imageSrc: '', title: '', description: '' },
     vision: rawData.vision ? (typeof rawData.vision === 'string' ? JSON.parse(rawData.vision) : rawData.vision) : { imageSrc: '', title: '', description: '' },
     mision: rawData.mision ? (typeof rawData.mision === 'string' ? JSON.parse(rawData.mision) : rawData.mision) : { imageSrc: '', title: '', description: '' },
     valores: rawData.valores ? (typeof rawData.valores === 'string' ? JSON.parse(rawData.valores) : rawData.valores) : { imageSrc: '', title: '', description: [] },
+    politicaIntegral: rawData.politicaIntegral ? (typeof rawData.politicaIntegral === 'string' ? JSON.parse(rawData.politicaIntegral) : rawData.politicaIntegral) : { imageSrc: '', title: '', description: '' },
     noDiscriminacion: rawData.noDiscriminacion ? (typeof rawData.noDiscriminacion === 'string' ? JSON.parse(rawData.noDiscriminacion) : rawData.noDiscriminacion) : []
   };
 
   // Normalizar los datos para asegurar que todos los campos requeridos estén presentes
   return {
-    politicaIntegral: data.politicaIntegral,
-    objetivoIntegral: data.objetivoIntegral || '',
     vision: data.vision,
     mision: data.mision,
     valores: data.valores,
+    politicaIntegral: data.politicaIntegral,
+    objetivoIntegral: data.objetivoIntegral || '',
     noDiscriminacion: data.noDiscriminacion
   };
 };
@@ -120,14 +120,24 @@ export const updateNosotrosSection = async (
   section: SectionKey,
   data: UpdateSectionRequest
 ): Promise<ApiResponse<Partial<NosotrosContent>>> => {
-  // Enviar los datos envueltos en un objeto con la clave de la sección
-  // El backend espera { [section]: data }
+  // Serializar los datos según el tipo de sección
+  let serializedData: any = data;
+  
+  if (section === 'vision' || section === 'mision' || section === 'valores' || section === 'politicaIntegral') {
+    // Para objetos, serializar a JSON string
+    serializedData = JSON.stringify(data);
+  } else if (section === 'noDiscriminacion') {
+    // Para arrays, serializar a JSON string
+    serializedData = JSON.stringify(data);
+  }
+  // Para strings (politicaIntegral, objetivoIntegral), enviar directamente
+
   return await fetchWithAuth<ApiResponse<Partial<NosotrosContent>>>(`${API_BASE}/content/${section}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ [section]: data }),
+    body: JSON.stringify({ [section]: serializedData }),
   });
 };
 
@@ -165,13 +175,11 @@ export const uploadImageAndUpdateSection = async (
     sectionData = { ...sectionData, ...additionalData };
   }
 
-  // Agregar todos los campos de la sección al FormData
-  Object.entries(sectionData).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && key !== 'imageSrc') {
-      // No enviar imageSrc ya que se actualizará con la nueva imagen
-      formData.append(key, typeof value === 'string' ? value : JSON.stringify(value));
-    }
-  });
+  // For robustness, send the entire section data as a single JSON payload in 'data'
+  // This prevents many form fields being created and avoids Multer field limits
+  const payloadData = { ...(sectionData as any) };
+  delete payloadData.imageSrc;
+  formData.append('data', JSON.stringify(payloadData));
 
   // Usar fetchWithAuth corregido sin redirección automática en caso de 401
   return await fetchWithAuth<ApiResponse<Partial<NosotrosContent>>>(`${API_BASE}/upload-image`, {
