@@ -53,12 +53,7 @@ import {
   Vinculacion,
   ServicioSocial
 } from "./pages/ServiciosGestion";
-
-import {
-  Pit,
-  PortalEstudiantes
-} from "./pages/Accesos";
-
+import Pit from "./pages/Accesos/Pit";
 
 
 export default function App() {
@@ -107,9 +102,7 @@ export default function App() {
             <Route path="/Nosotros" element={<Nosotros />} />
 
             {/* Accesos Pages */}
-            
             <Route path="/accesos/pit" element={<Pit />} />
-            <Route path="/accesos/portalestudiantes" element={<PortalEstudiantes />} />
 
             {/* Extension Universitaria */}
             <Route path="/uttecam/extension/section/:slug" element={<ExtensionSection />} />
