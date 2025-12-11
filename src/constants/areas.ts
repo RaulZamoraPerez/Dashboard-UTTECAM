@@ -13,6 +13,7 @@ export const AREAS = {
   SERVICIO_SOCIAL: 8,
   EXTENSION_GACETAS: 9,
   EXTENSION_PROMOCION: 10,
+  VINCULACION: 11,
 } as const;
 
 export const NOMBRES_AREAS = {
@@ -26,4 +27,5 @@ export const NOMBRES_AREAS = {
   [AREAS.SERVICIO_SOCIAL]: 'Servicio Social',
   [AREAS.EXTENSION_GACETAS]: 'Gacetas',
   [AREAS.EXTENSION_PROMOCION]: 'Promoción Institucional',
+  [AREAS.VINCULACION]: 'Vinculación',
 } as const;
