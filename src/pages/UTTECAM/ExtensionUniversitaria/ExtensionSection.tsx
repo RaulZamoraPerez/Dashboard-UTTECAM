@@ -35,6 +35,11 @@ const ExtensionSection = () => {
   const [isSectionEditOpen, setIsSectionEditOpen] = useState(false);
   const [sectionTitleEdit, setSectionTitleEdit] = useState('');
   const [sectionDescriptionEdit, setSectionDescriptionEdit] = useState('');
+  const [sectionScheduleEdit, setSectionScheduleEdit] = useState('');
+  const [sectionLocationEdit, setSectionLocationEdit] = useState('');
+  const [sectionContactEdit, setSectionContactEdit] = useState('');
+  const [sectionRequirementsEdit, setSectionRequirementsEdit] = useState('');
+  const [sectionRegistrationEdit, setSectionRegistrationEdit] = useState('');
   const [sectionBannerFile, setSectionBannerFile] = useState<File | null>(null);
   
   // Form states
@@ -135,6 +140,11 @@ const ExtensionSection = () => {
     if (!isSectionEditOpen) {
       setSectionTitleEdit(section.title);
       setSectionDescriptionEdit(section.description || '');
+      setSectionScheduleEdit(section.schedule || '');
+      setSectionLocationEdit(section.location || '');
+      setSectionContactEdit(section.contact_info || '');
+      setSectionRequirementsEdit(section.requirements || '');
+      setSectionRegistrationEdit(section.registration_info || '');
       setIsSectionEditOpen(true);
     }
     // Always support opening the file selector even if editor is already open
@@ -159,7 +169,15 @@ const ExtensionSection = () => {
   const handleSaveSectionEdit = async () => {
     if (!slug) return;
     try {
-      await updateSection(slug, { title: sectionTitleEdit, description: sectionDescriptionEdit });
+      await updateSection(slug, { 
+        title: sectionTitleEdit, 
+        description: sectionDescriptionEdit,
+        schedule: sectionScheduleEdit,
+        location: sectionLocationEdit,
+        contact_info: sectionContactEdit,
+        requirements: sectionRequirementsEdit,
+        registration_info: sectionRegistrationEdit
+      });
       toastSuccess('Sección actualizada correctamente');
       setIsSectionEditOpen(false);
       fetchSection();
@@ -298,6 +316,44 @@ const ExtensionSection = () => {
                 <TextArea value={isSectionEditOpen ? sectionDescriptionEdit : (section.description || '')} disabled={!isSectionEditOpen} onChange={(value) => setSectionDescriptionEdit(value)} />
               </div>
             </div>
+
+            {/* New Dynamic Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Horario</Label>
+                <div role="button" onClick={() => handleOpenSectionEdit()} className="cursor-pointer">
+                  <Input value={isSectionEditOpen ? sectionScheduleEdit : (section.schedule || '')} disabled={!isSectionEditOpen} onChange={(e) => setSectionScheduleEdit(e.target.value)} placeholder="Ej: Lunes a Viernes: 9:00 - 17:00" />
+                </div>
+              </div>
+              <div>
+                <Label>Ubicación</Label>
+                <div role="button" onClick={() => handleOpenSectionEdit()} className="cursor-pointer">
+                  <Input value={isSectionEditOpen ? sectionLocationEdit : (section.location || '')} disabled={!isSectionEditOpen} onChange={(e) => setSectionLocationEdit(e.target.value)} placeholder="Ej: Edificio de Extensión" />
+                </div>
+              </div>
+              <div>
+                <Label>Contacto</Label>
+                <div role="button" onClick={() => handleOpenSectionEdit()} className="cursor-pointer">
+                  <Input value={isSectionEditOpen ? sectionContactEdit : (section.contact_info || '')} disabled={!isSectionEditOpen} onChange={(e) => setSectionContactEdit(e.target.value)} placeholder="Ej: Coordinación Deportiva" />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Requisitos (uno por línea)</Label>
+                <div role="button" onClick={() => handleOpenSectionEdit()} className="cursor-pointer">
+                  <TextArea value={isSectionEditOpen ? sectionRequirementsEdit : (section.requirements || '')} disabled={!isSectionEditOpen} onChange={(value) => setSectionRequirementsEdit(value)} placeholder="Requisito 1&#10;Requisito 2&#10;Requisito 3" />
+                </div>
+              </div>
+              <div>
+                <Label>Información de Registro / Inscripción</Label>
+                <div role="button" onClick={() => handleOpenSectionEdit()} className="cursor-pointer">
+                  <TextArea value={isSectionEditOpen ? sectionRegistrationEdit : (section.registration_info || '')} disabled={!isSectionEditOpen} onChange={(value) => setSectionRegistrationEdit(value)} placeholder="Detalles sobre el proceso de inscripción..." />
+                </div>
+              </div>
+            </div>
+
             <div>
               <Label>Banner actual</Label>
               {section.banner_url ? (

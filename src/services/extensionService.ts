@@ -23,6 +23,11 @@ export interface ExtensionSection {
   items: ExtensionItem[];
   banner_url?: string;
   is_enabled?: boolean;
+  schedule?: string;
+  location?: string;
+  contact_info?: string;
+  requirements?: string;
+  registration_info?: string;
 }
 
 export interface ExtensionDocument {
