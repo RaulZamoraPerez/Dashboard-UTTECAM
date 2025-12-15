@@ -32,20 +32,11 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Contenido del Sitio",
-    subItems: [
-      { name: "Panel Principal", path: "/", pro: false },
-      {
-        name: "Contenido Homepage",
-        path: "/home-content",
-        pro: false,
-        new: true
-      },
-      { name: "Reloj Digital", path: "/home-content/reloj-digital", pro: false },
-      { name: "Video Institucional", path: "/home-content/video-institucional", pro: false },
-      { name: "Eventos", path: "/home/eventos", pro: false },
+      subItems: [
       { name: "Hero Slides", path: "/home/hero-slides", pro: false },
+      { name: "Eventos", path: "/home/eventos", pro: false },
       { name: "Noticias", path: "/home/noticias", pro: false },
-      { name: "Anuncios", path: "/home/anuncios", pro: false },
+      { name: "Modelos Educativos", path: "/home-content/modelos-educativos", pro: false },
     ],
   },
   {
