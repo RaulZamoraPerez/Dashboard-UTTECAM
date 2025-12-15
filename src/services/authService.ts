@@ -81,7 +81,7 @@ export const isAuthenticated = (): boolean => {
 /**
  * Obtiene los headers de autorización con el token
  */
-export const getAuthHeaders = (): HeadersInit => {
+export const getAuthHeaders = (): any => {
   const token = getToken();
   return {
     'Content-Type': 'application/json',

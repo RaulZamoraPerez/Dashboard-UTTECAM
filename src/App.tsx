@@ -23,13 +23,13 @@ import { PublicRoute } from "./components/auth/PublicRoute";
 
 // UTTECAM Pages
 import { 
-  Organigrama, 
-  Directorio, 
+ 
   GestionCarreras, 
   GestionNoticias,
   CalendarioAcademico,
-  Nosotros 
+ 
 } from "./pages/UTTECAM";
+
 
 // Home Content Pages
 import HeroSlidesAdmin from "./pages/HomeContent/HeroSlides";
@@ -39,6 +39,8 @@ import AnunciosAdmin from "./pages/HomeContent/Anuncios";
 import VideoInstitucionalAdmin from "./pages/HomeContent/VideoInstitucional";
 import RelojDigitalAdmin from "./pages/HomeContent/RelojDigital";
 import HomeContentDashboard from "./pages/HomeContent/HomeContentDashboard";
+import ComiteDocumentsManager from './pages/Comites/ComiteDocumentsManager';
+import ProgramasDesarrollo from "./pages/ProgramasDesarrollo";
 
 // Servicios y Gestión Pages
 import {
@@ -49,6 +51,11 @@ import {
   GestionCalidad,
   CordinacionGenero
 } from "./pages/ServiciosGestion";
+import NormatividadPage from "./pages/quienes-somos/Normatividad";
+import Directorio from "./pages/quienes-somos/Directorio";
+import Organigrama from "./pages/quienes-somos/Organigrama";
+import Nosotros from "./pages/quienes-somos/Nosotros";
+
 
 
 export default function App() {
@@ -84,17 +91,26 @@ export default function App() {
             <Route path="/home-content" element={<HomeContentDashboard />} />
             <Route path="/home-content/video-institucional" element={<VideoInstitucionalAdmin />} />
             <Route path="/home-content/reloj-digital" element={<RelojDigitalAdmin />} />
+            <Route path="/programas-desarrollo" element={<ProgramasDesarrollo />} />
+            
+            {/* Comites Routes */}
+            <Route path="/comites-academico" element={<ComiteDocumentsManager slug="academico" pageTitle="Comité Académico" />} />
+            <Route path="/comites-vinculacion" element={<ComiteDocumentsManager slug="vinculacion" pageTitle="Comité de Vinculación" />} />
+            <Route path="/comites-calidad" element={<ComiteDocumentsManager slug="calidad" pageTitle="Comité de Calidad" />} />
+            <Route path="/comites-investigacion" element={<ComiteDocumentsManager slug="investigacion" pageTitle="Comité de Investigación" />} />
             
             {/* Dashboard Overview */}
             <Route path="/dashboard" element={<Home />} />
 
             {/* UTTECAM Pages */}
-            <Route path="/uttecam/organigrama" element={<Organigrama />} />
-            <Route path="/uttecam/directorio" element={<Directorio />} />
-            <Route path="/uttecam/carreras" element={<GestionCarreras />} />
-            <Route path="/uttecam/noticias" element={<GestionNoticias />} />
+            <Route path="/organigrama" element={<Organigrama />} />
+            <Route path="/directorio" element={<Directorio />} />
+            <Route path="/carreras" element={<GestionCarreras />} />
+            
             <Route path="/calendar" element={<CalendarioAcademico />} />
             <Route path="/Nosotros" element={<Nosotros />} />
+            <Route path="/Disposicion-juridica" element={< NormatividadPage/>} />
+            <Route path="/uttecam/noticias" element={<GestionNoticias />} />
 
             {/* Servicios y Gestión Pages */}
             <Route path="/ServiciosGestion/Finanzas" element={<Finanzas />} />

@@ -22,7 +22,7 @@ function DirectorioForm(props: { directorio?: Directorio | null; onClose: () => 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-        <h2 className="text-lg font-semibold mb-4">{directorio ? 'Editar contacto' : 'Nuevo contacto'}</h2>
+        <h2 className="text-lg font-semibold mb-4">{directorio ? 'Editar contacto' : 'Nuevo contactoa'}</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Nombre</label>
