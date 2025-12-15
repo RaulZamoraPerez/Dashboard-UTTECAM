@@ -46,3 +46,26 @@ export const deleteNode = async (id: number): Promise<any> => {
     method: 'DELETE'
   });
 };
+
+// Adapters for useOrganigrama hook
+export const getAllOrganigrama = getOrganigrama;
+
+export const createOrganigrama = async (data: any, image?: File | null) => {
+  const fd = new FormData();
+  Object.keys(data).forEach(key => {
+    if (data[key] !== undefined && data[key] !== null) fd.append(key, String(data[key]));
+  });
+  if (image) fd.append('image', image);
+  return createNode(fd);
+};
+
+export const updateOrganigrama = async (id: number, data: any, image?: File | null) => {
+  const fd = new FormData();
+  Object.keys(data).forEach(key => {
+    if (data[key] !== undefined && data[key] !== null) fd.append(key, String(data[key]));
+  });
+  if (image) fd.append('image', image);
+  return updateNode(id, fd);
+};
+
+export const deleteOrganigrama = deleteNode;

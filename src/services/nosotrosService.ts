@@ -66,8 +66,8 @@ export const getNosotrosContent = async (): Promise<NosotrosContent> => {
     mision: rawData.mision || { title: 'Misión', description: '', imageSrc: null },
     valores: rawData.valores || { title: 'Valores', description: [], imageSrc: null },
     politicaIntegral: rawData.politicaIntegral || { text: '', imageSrc: null },
-    objetivoIntegral: rawData.objetivoIntegral || { text: '', imageSrc: null },
-    noDiscriminacion: rawData.noDiscriminacion || { items: [], imageSrc: null },
+    objetivoIntegral: rawData.objetivoIntegral || { text: '' },
+    noDiscriminacion: rawData.noDiscriminacion || { items: [] },
     organigrama: rawData.organigrama || { imageSrc: null }
   };
 };
@@ -139,7 +139,7 @@ export const uploadImageAndUpdateSection = async (
   section: ImageSectionKey,
   file: File,
   additionalData?: Partial<UpdateSectionRequest>,
-  currentContent?: Partial<NosotrosContent>
+  _currentContent?: Partial<NosotrosContent>
 ): Promise<ApiResponse<Partial<NosotrosContent>>> => {
   const formData = new FormData();
   formData.append('image', file);

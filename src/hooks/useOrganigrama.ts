@@ -8,12 +8,35 @@ export const useOrganigrama = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Helper to flatten recursive structure
+  const flattenOrganigrama = (nodes: any[]): Organigrama[] => {
+    let flat: Organigrama[] = [];
+    for (const node of nodes) {
+      flat.push({
+        id: node.id,
+        key: node.key,
+        parent_id: node.parent_id,
+        expanded: node.expanded,
+        type: node.type || 'person',
+        image: node.data?.image,
+        name: node.data?.name || '',
+        title: node.data?.title || '',
+        text: node.data?.text,
+        order_position: node.order_position
+      });
+      if (node.children && node.children.length > 0) {
+        flat = [...flat, ...flattenOrganigrama(node.children)];
+      }
+    }
+    return flat;
+  };
+
   const fetchOrganigrama = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await organigramaService.getAllOrganigrama();
-      setOrganigrama(data);
+      setOrganigrama(flattenOrganigrama(data));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar organigrama');
       console.error('Error fetching organigrama:', err);

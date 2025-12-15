@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { confirmDialog, toastError, toastSuccess } from '../../../utils/alert';
 import { useAnuncios } from '../../../hooks/useAnuncios';
 import { getAnuncioFileUrl } from '../../../services/homeService';
 
@@ -18,7 +19,7 @@ const AnunciosAdmin = () => {
     e.preventDefault();
     
     if (!selectedFile && !editingId) {
-      alert('Debe seleccionar una imagen');
+      toastError('Debe seleccionar una imagen');
       return;
     }
 
@@ -65,9 +66,10 @@ const AnunciosAdmin = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('¿Está seguro de eliminar este anuncio?')) {
-      await deleteItem(id);
-    }
+    const confirmed = await confirmDialog({ title: 'Eliminar anuncio', text: '¿Está seguro de eliminar este anuncio?' });
+    if (!confirmed) return;
+    const ok = await deleteItem(id);
+    if (ok) toastSuccess('Anuncio eliminado correctamente');
   };
 
   const resetForm = () => {

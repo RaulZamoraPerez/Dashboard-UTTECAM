@@ -11,7 +11,6 @@ import Avatars from "./pages/UiElements/Avatars";
 import Buttons from "./pages/UiElements/Buttons";
 import LineChart from "./pages/Charts/LineChart";
 import BarChart from "./pages/Charts/BarChart";
-import Calendar from "./pages/Calendar";
 import BasicTables from "./pages/Tables/BasicTables";
 import FormElements from "./pages/Forms/FormElements";
 import Blank from "./pages/Blank";
@@ -23,13 +22,17 @@ import { PublicRoute } from "./components/auth/PublicRoute";
 
 // UTTECAM Pages
 import { 
- 
   GestionCarreras, 
-  GestionNoticias,
   CalendarioAcademico,
- 
 } from "./pages/UTTECAM";
+import ExtensionSection from "./pages/UTTECAM/ExtensionUniversitaria/ExtensionSection";
+import ExtensionDocuments from "./pages/UTTECAM/ExtensionUniversitaria/ExtensionDocuments";
 
+import Organigrama from "./pages/quienes-somos/Organigrama";
+import Directorio from "./pages/quienes-somos/Directorio";
+import Nosotros from "./pages/quienes-somos/Nosotros";
+import Normatividad from "./pages/quienes-somos/Normatividad"; 
+import PortalEstudiantes from "./pages/Accesos/PortalEstudiantes";
 
 // Home Content Pages
 import HeroSlidesAdmin from "./pages/HomeContent/HeroSlides";
@@ -49,13 +52,11 @@ import {
   GestionAmbiental,
   InformacionEstadia,
   GestionCalidad,
-  CordinacionGenero
+  CordinacionGenero,
+  Vinculacion,
+  ServicioSocial
 } from "./pages/ServiciosGestion";
-import NormatividadPage from "./pages/quienes-somos/Normatividad";
-import Directorio from "./pages/quienes-somos/Directorio";
-import Organigrama from "./pages/quienes-somos/Organigrama";
-import Nosotros from "./pages/quienes-somos/Nosotros";
-
+import Pit from "./pages/Accesos/Pit";
 
 
 export default function App() {
@@ -109,8 +110,15 @@ export default function App() {
             
             <Route path="/calendar" element={<CalendarioAcademico />} />
             <Route path="/Nosotros" element={<Nosotros />} />
-            <Route path="/Disposicion-juridica" element={< NormatividadPage/>} />
-            <Route path="/uttecam/noticias" element={<GestionNoticias />} />
+            <Route path="/disposicion-juridica" element={<Normatividad />} />
+
+            {/* Accesos Pages */}
+            <Route path="/accesos/pit" element={<Pit />} />
+            <Route path="/Accesos/PortalEstudiantes" element={<PortalEstudiantes />} />
+
+            {/* Extension Universitaria */}
+            <Route path="/uttecam/extension/section/:slug" element={<ExtensionSection />} />
+            <Route path="/uttecam/extension/documents/:category" element={<ExtensionDocuments />} />
 
             {/* Servicios y Gestión Pages */}
             <Route path="/ServiciosGestion/Finanzas" element={<Finanzas />} />
@@ -119,10 +127,13 @@ export default function App() {
             <Route path="/ServiciosGestion/GestionAmbiental" element={<GestionAmbiental />} />
             <Route path="/ServiciosGestion/GestionCalidad" element={<GestionCalidad />} />
             <Route path="/ServiciosGestion/CordinacionGenero" element={<CordinacionGenero />} />
+            <Route path="/ServiciosGestion/Vinculacion" element={<Vinculacion />} />
+            <Route path="/ServiciosGestion/ServicioSocial" element={<ServicioSocial />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
-            <Route path="/calendar" element={<Calendar />} />
+            {/* <Route path="/calendar" element={<Calendar />} /> */}
+            <Route path="/blank" element={<Blank />} />
             <Route path="/blank" element={<Blank />} />
 
             {/* Forms */}

@@ -95,10 +95,10 @@ export const useNosotros = (): UseNosotrosReturn => {
     try {
       setError(null);
       await updateNosotrosContent(newContent);
-      
+
       // Recargar el contenido desde el servidor para asegurar consistencia
       await fetchContent();
-      
+
       return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al actualizar el contenido';
@@ -145,7 +145,7 @@ export const useNosotros = (): UseNosotrosReturn => {
       return true;
     } catch (err) {
       let errorMessage = 'Error al subir la imagen';
-      
+
       if (err instanceof Error) {
         if (err.message.includes('Debe especificar la sección')) {
           errorMessage = 'Error de configuración: sección no válida. Use vision, mision o valores.';
@@ -161,7 +161,7 @@ export const useNosotros = (): UseNosotrosReturn => {
           errorMessage = err.message;
         }
       }
-      
+
       setError(errorMessage);
       console.error('Error uploading image:', err);
       return false;

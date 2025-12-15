@@ -16,7 +16,7 @@ export const relojDigitalApi = {
   // Obtener configuración activa del reloj digital
   getActive: async (): Promise<RelojDigital> => {
     const response = await fetchWithAuth<{ success: boolean; data: RelojDigital }>(
-      '/reloj-digital/activo'
+      '/api/reloj-digital/activo'
     );
     return response.data;
   },
@@ -24,7 +24,7 @@ export const relojDigitalApi = {
   // Obtener todas las configuraciones de relojes digitales
   getAll: async (): Promise<RelojDigital[]> => {
     const response = await fetchWithAuth<{ success: boolean; data: RelojDigital[] }>(
-      '/reloj-digital'
+      '/api/reloj-digital'
     );
     return response.data;
   },
@@ -32,7 +32,7 @@ export const relojDigitalApi = {
   // Crear nueva configuración de reloj digital
   create: async (relojData: Omit<RelojDigital, 'id' | 'createdAt' | 'updatedAt'>): Promise<RelojDigital> => {
     const response = await fetchWithAuth<{ success: boolean; data: RelojDigital }>(
-      '/reloj-digital',
+      '/api/reloj-digital',
       {
         method: 'POST',
         headers: {
@@ -47,7 +47,7 @@ export const relojDigitalApi = {
   // Actualizar configuración de reloj digital
   update: async (id: number, relojData: Partial<RelojDigital>): Promise<RelojDigital> => {
     const response = await fetchWithAuth<{ success: boolean; data: RelojDigital }>(
-      `/reloj-digital/${id}`,
+      `/api/reloj-digital/${id}`,
       {
         method: 'PUT',
         headers: {
@@ -61,7 +61,7 @@ export const relojDigitalApi = {
 
   // Eliminar configuración de reloj digital
   delete: async (id: number): Promise<void> => {
-    await fetchWithAuth(`/reloj-digital/${id}`, {
+    await fetchWithAuth(`/api/reloj-digital/${id}`, {
       method: 'DELETE',
     });
   },

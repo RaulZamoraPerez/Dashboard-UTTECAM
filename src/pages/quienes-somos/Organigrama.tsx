@@ -37,7 +37,7 @@ function NodeCard({ node, onEdit, onAddChild, onDelete, level }: NodeCardProps) 
   const [expanded, setExpanded] = useState(true);
   const hasChildren = node.children && node.children.length > 0;
 
-  const imageUrl = node.data.image 
+  const imageUrl = node.data?.image 
     ? (node.data.image.startsWith('http') ? node.data.image : 
        node.data.image.startsWith('/uploads') ? `${BACKEND_URL}${node.data.image}` :
        `${BACKEND_URL}/uploads/organigrama/${node.data.image}`)

@@ -20,7 +20,7 @@ export const videoInstitucionalApi = {
   // Obtener video institucional activo
   getActive: async (): Promise<VideoInstitucional> => {
     const response = await fetchWithAuth<{ success: boolean; data: VideoInstitucional }>(
-      '/video-institucional/activo'
+      '/api/video-institucional/activo'
     );
     return response.data;
   },
@@ -28,7 +28,7 @@ export const videoInstitucionalApi = {
   // Obtener todos los videos institucionales
   getAll: async (): Promise<VideoInstitucional[]> => {
     const response = await fetchWithAuth<{ success: boolean; data: VideoInstitucional[] }>(
-      '/video-institucional'
+      '/api/video-institucional'
     );
     return response.data;
   },
@@ -36,7 +36,7 @@ export const videoInstitucionalApi = {
   // Crear nuevo video institucional
   create: async (videoData: Omit<VideoInstitucional, 'id' | 'createdAt' | 'updatedAt'>): Promise<VideoInstitucional> => {
     const response = await fetchWithAuth<{ success: boolean; data: VideoInstitucional }>(
-      '/video-institucional',
+      '/api/video-institucional',
       {
         method: 'POST',
         headers: {
@@ -51,7 +51,7 @@ export const videoInstitucionalApi = {
   // Actualizar video institucional
   update: async (id: number, videoData: Partial<VideoInstitucional>): Promise<VideoInstitucional> => {
     const response = await fetchWithAuth<{ success: boolean; data: VideoInstitucional }>(
-      `/video-institucional/${id}`,
+      `/api/video-institucional/${id}`,
       {
         method: 'PUT',
         headers: {
@@ -65,7 +65,7 @@ export const videoInstitucionalApi = {
 
   // Eliminar video institucional
   delete: async (id: number): Promise<void> => {
-    await fetchWithAuth(`/video-institucional/${id}`, {
+    await fetchWithAuth(`/api/video-institucional/${id}`, {
       method: 'DELETE',
     });
   },

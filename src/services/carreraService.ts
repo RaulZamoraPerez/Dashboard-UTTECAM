@@ -41,19 +41,23 @@ export const createCarrera = async (data: CreateCarreraRequest, token: string): 
   formData.append('nombre', data.nombre);
   formData.append('siglas', data.siglas);
   formData.append('nivel', data.nivel);
-  formData.append('modalidad', data.modalidad);
   formData.append('duracion', data.duracion);
   formData.append('objetivo', data.objetivo);
   formData.append('perfil_ingreso', data.perfil_ingreso);
   formData.append('perfil_egreso', data.perfil_egreso);
   formData.append('campo_laboral', data.campo_laboral);
-  formData.append('orden', data.orden.toString());
-  formData.append('activo', data.activo.toString());
-  formData.append('imagen', data.imagen);
-  
-  if (data.plan_estudios) {
-    formData.append('plan_estudios', data.plan_estudios);
+  if (data.competencias) formData.append('competencias', data.competencias);
+  if (data.atributos_egreso) formData.append('atributos_egreso', data.atributos_egreso);
+  if (data.objetivos_educacionales) formData.append('objetivos_educacionales', data.objetivos_educacionales);
+  if (data.mapa_curricular !== undefined && data.mapa_curricular !== null) {
+    formData.append('mapa_curricular', typeof data.mapa_curricular === 'string' ? data.mapa_curricular : JSON.stringify(data.mapa_curricular));
   }
+  formData.append('activo', String(data.activo));
+  
+  formData.append('imagen', data.imagen);
+  if (data.imagen_portada) formData.append('imagen_portada', data.imagen_portada);
+  if (data.video) formData.append('video', data.video);
+  if (data.plan_estudios) formData.append('plan_estudios', data.plan_estudios);
 
   const response = await fetch(`${API_URL}/api/carreras`, {
     method: 'POST',
@@ -70,19 +74,25 @@ export const createCarrera = async (data: CreateCarreraRequest, token: string): 
 // PUT - Actualizar carrera
 export const updateCarrera = async (id: number, data: UpdateCarreraRequest, token: string): Promise<Carrera> => {
   const formData = new FormData();
-  
   if (data.nombre) formData.append('nombre', data.nombre);
   if (data.siglas) formData.append('siglas', data.siglas);
   if (data.nivel) formData.append('nivel', data.nivel);
-  if (data.modalidad) formData.append('modalidad', data.modalidad);
   if (data.duracion) formData.append('duracion', data.duracion);
   if (data.objetivo) formData.append('objetivo', data.objetivo);
   if (data.perfil_ingreso) formData.append('perfil_ingreso', data.perfil_ingreso);
   if (data.perfil_egreso) formData.append('perfil_egreso', data.perfil_egreso);
   if (data.campo_laboral) formData.append('campo_laboral', data.campo_laboral);
-  if (data.orden !== undefined) formData.append('orden', data.orden.toString());
-  if (data.activo !== undefined) formData.append('activo', data.activo.toString());
+  if (data.competencias) formData.append('competencias', data.competencias);
+  if (data.atributos_egreso) formData.append('atributos_egreso', data.atributos_egreso);
+  if (data.objetivos_educacionales) formData.append('objetivos_educacionales', data.objetivos_educacionales);
+  if (data.mapa_curricular !== undefined && data.mapa_curricular !== null) {
+    formData.append('mapa_curricular', typeof data.mapa_curricular === 'string' ? data.mapa_curricular : JSON.stringify(data.mapa_curricular));
+  }
+  if (data.activo !== undefined) formData.append('activo', String(data.activo));
+
   if (data.imagen) formData.append('imagen', data.imagen);
+  if (data.imagen_portada) formData.append('imagen_portada', data.imagen_portada);
+  if (data.video) formData.append('video', data.video);
   if (data.plan_estudios) formData.append('plan_estudios', data.plan_estudios);
 
   const response = await fetch(`${API_URL}/api/carreras/${id}`, {
@@ -94,6 +104,21 @@ export const updateCarrera = async (id: number, data: UpdateCarreraRequest, toke
   });
 
   if (!response.ok) throw new Error('Error al actualizar carrera');
+  return response.json();
+};
+
+// PUT - Actualizar orden
+export const updateCarrerasOrder = async (orden: { id: number; orden: number }[], token: string): Promise<void> => {
+  const response = await fetch(`${API_URL}/api/carreras/order`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ orden }),
+  });
+
+  if (!response.ok) throw new Error('Error al actualizar orden');
   return response.json();
 };
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { confirmDialog, toastSuccess, toastError } from '../../utils/alert';
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
@@ -148,9 +149,15 @@ export default function GestionNoticias() {
     return coincideBusqueda && coincideCategoria && coincideEstado;
   });
 
-  const handleEliminar = (id: number) => {
-    if (confirm('¿Está seguro de eliminar esta noticia? Esta acción no se puede deshacer.')) {
+  const handleEliminar = async (id: number) => {
+    const confirmed = await confirmDialog({ title: 'Eliminar noticia', text: '¿Está seguro de eliminar esta noticia? Esta acción no se puede deshacer.' });
+    if (!confirmed) return;
+    try {
       setNoticias(noticias.filter(n => n.id !== id));
+      toastSuccess('Noticia eliminada correctamente');
+    } catch (err) {
+      console.error(err);
+      toastError('Error al eliminar la noticia');
     }
   };
 
@@ -611,7 +618,7 @@ function ModalNoticia({ noticia, onCerrar, onGuardar, categoriaOptions, autoresO
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 pt-24">
+    <div className="fixed inset-0 z-[99999] flex items-start justify-center bg-black/50 p-4 pt-24">
       <div className="w-full max-w-4xl max-h-[calc(100vh-10rem)] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">

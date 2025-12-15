@@ -1,103 +1,65 @@
 import { useState } from 'react';
+import { confirmDialog, toastSuccess, toastError } from '../../../utils/alert';
 import { useCarreras } from '../../../hooks/useCarreras';
-import { getCarreraImageUrl, getCarreraPlanUrl } from '../../../services/carreraService';
+import { getCarreraImageUrl } from '../../../services/carreraService';
 import type { Carrera } from '../../../types/carrera';
+import ModalCarrera from './ModalCarrera';
 
 const CarrerasAdmin = () => {
   const { carreras, loading, error, createItem, updateItem, deleteItem } = useCarreras();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCarrera, setEditingCarrera] = useState<Carrera | null>(null);
-  const [selectedNivel, setSelectedNivel] = useState<'all' | 'TSU' | 'Ingenieria' | 'Licenciatura'>('all');
-  
-  const [formData, setFormData] = useState({
-    nombre: '',
-    siglas: '',
-    nivel: 'TSU' as 'TSU' | 'Ingenieria' | 'Licenciatura',
-    modalidad: 'Escolarizada' as 'Escolarizada' | 'Ejecutiva' | 'Mixta',
-    duracion: '',
-    objetivo: '',
-    perfil_ingreso: '',
-    perfil_egreso: '',
-    campo_laboral: '',
-    orden: 0,
-    activo: true,
-  });
-  
-  const [imagen, setImagen] = useState<File | null>(null);
-  const [planEstudios, setPlanEstudios] = useState<File | null>(null);
+  const [selectedNivel, setSelectedNivel] = useState<'all' | 'Ingenieria' | 'Licenciatura'>('all');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!imagen && !editingCarrera) {
-      alert('Debe seleccionar una imagen');
-      return;
-    }
-
-    let success = false;
-
+  const handleSave = async (data: any) => {
+    let result: any = null;
     if (editingCarrera) {
-      const updateData: any = {
-        ...formData,
-        ...(imagen && { imagen }),
-        ...(planEstudios && { plan_estudios: planEstudios }),
-      };
-      success = await updateItem(editingCarrera.id, updateData);
-    } else if (imagen) {
-      const createData: any = {
-        ...formData,
-        imagen,
-        ...(planEstudios && { plan_estudios: planEstudios }),
-      };
-      success = await createItem(createData);
+      result = await updateItem(editingCarrera.id, data);
+    } else {
+      result = await createItem(data);
     }
-
+    const success = !!result;
     if (success) {
-      resetForm();
       setIsModalOpen(false);
+      setEditingCarrera(null);
     }
+    return success;
   };
 
   const handleEdit = (carrera: Carrera) => {
     setEditingCarrera(carrera);
-    setFormData({
-      nombre: carrera.nombre,
-      siglas: carrera.siglas,
-      nivel: carrera.nivel,
-      modalidad: carrera.modalidad,
-      duracion: carrera.duracion,
-      objetivo: carrera.objetivo,
-      perfil_ingreso: carrera.perfil_ingreso,
-      perfil_egreso: carrera.perfil_egreso,
-      campo_laboral: carrera.campo_laboral,
-      orden: carrera.orden,
-      activo: carrera.activo,
-    });
     setIsModalOpen(true);
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('¿Está seguro de eliminar esta carrera?')) {
-      await deleteItem(id);
+    const confirmed = await confirmDialog({ title: 'Eliminar carrera', text: '¿Está seguro de eliminar esta carrera?' });
+    if (confirmed) {
+      const ok = await deleteItem(id);
+      if (ok) toastSuccess('Carrera eliminada correctamente');
+      else toastError('Error al eliminar la carrera');
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      nombre: '',
-      siglas: '',
-      nivel: 'TSU',
-      modalidad: 'Escolarizada',
-      duracion: '',
-      objetivo: '',
-      perfil_ingreso: '',
-      perfil_egreso: '',
-      campo_laboral: '',
-      orden: 0,
-      activo: true,
+  const handleToggleActive = async (carrera: Carrera) => {
+    const newStatus = !carrera.activo;
+    const confirmed = await confirmDialog({
+      title: `${newStatus ? 'Activar' : 'Desactivar'} carrera`,
+      text: `¿Desea ${newStatus ? 'activar' : 'desactivar'} la carrera ${carrera.nombre}?`,
+      confirmText: newStatus ? 'Activar' : 'Desactivar'
     });
-    setImagen(null);
-    setPlanEstudios(null);
+    if (confirmed) {
+      const ok = await updateItem(carrera.id, { activo: newStatus });
+      if (ok) toastSuccess(`Carrera ${newStatus ? 'activada' : 'desactivada'} correctamente`); else toastError('Error al actualizar estado');
+    }
+  };
+
+  const handleCreate = () => {
+    setEditingCarrera(null);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
     setEditingCarrera(null);
   };
 
@@ -105,344 +67,169 @@ const CarrerasAdmin = () => {
     ? carreras 
     : carreras.filter(c => c.nivel === selectedNivel);
 
-  if (loading) return <div className="p-4">Cargando...</div>;
+  if (loading) return <div className="p-4 dark:text-white">Cargando...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Gestión de Carreras</h1>
-        <button
-          onClick={() => {
-            resetForm();
-            setIsModalOpen(true);
-          }}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Nueva Carrera
-        </button>
-      </div>
+    <div className="min-h-screen bg-gray-50/50 p-6 md:p-10 font-sans dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight dark:text-white">Gestión de Carreras</h1>
+            <p className="text-gray-500 mt-1 dark:text-gray-400">Administra la oferta académica de la institución</p>
+          </div>
+          <button
+            onClick={handleCreate}
+            className="group relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-medium text-white transition-all duration-200 bg-blue-600 rounded-lg hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500"
+          >
+            <span className="mr-2 text-xl leading-none">+</span> Nueva Carrera
+          </button>
+        </div>
 
-      {/* Filtros */}
-      <div className="mb-4 flex gap-2">
-        <button
-          onClick={() => setSelectedNivel('all')}
-          className={`px-4 py-2 rounded ${selectedNivel === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-        >
-          Todas ({carreras.length})
-        </button>
-        <button
-          onClick={() => setSelectedNivel('TSU')}
-          className={`px-4 py-2 rounded ${selectedNivel === 'TSU' ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
-        >
-          TSU ({carreras.filter(c => c.nivel === 'TSU').length})
-        </button>
-        <button
-          onClick={() => setSelectedNivel('Ingenieria')}
-          className={`px-4 py-2 rounded ${selectedNivel === 'Ingenieria' ? 'bg-purple-600 text-white' : 'bg-gray-200'}`}
-        >
-          Ingenierías ({carreras.filter(c => c.nivel === 'Ingenieria').length})
-        </button>
-        <button
-          onClick={() => setSelectedNivel('Licenciatura')}
-          className={`px-4 py-2 rounded ${selectedNivel === 'Licenciatura' ? 'bg-orange-600 text-white' : 'bg-gray-200'}`}
-        >
-          Licenciaturas ({carreras.filter(c => c.nivel === 'Licenciatura').length})
-        </button>
-      </div>
+        {/* Filtros Estilo "Pill/Tabs" */}
+        <div className="mb-8 overflow-x-auto pb-2">
+          <div className="inline-flex p-1 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            {[
+              { id: 'all', label: 'Todas', count: carreras.length },
+              { id: 'Ingenieria', label: 'Ingenierías', count: carreras.filter(c => c.nivel === 'Ingenieria').length, color: 'text-purple-600 dark:text-purple-400' },
+              { id: 'Licenciatura', label: 'Licenciaturas', count: carreras.filter(c => c.nivel === 'Licenciatura').length, color: 'text-orange-600 dark:text-orange-400' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setSelectedNivel(tab.id as any)}
+                className={`
+                  flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap
+                  ${selectedNivel === tab.id 
+                    ? 'bg-gray-100 text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white' 
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700/50'
+                  }
+                `}
+              >
+                <span className={selectedNivel === tab.id && tab.color ? tab.color : ''}>{tab.label}</span>
+                <span className={`ml-2 py-0.5 px-2 rounded-full text-xs ${selectedNivel === tab.id ? 'bg-white shadow-sm dark:bg-gray-600' : 'bg-gray-100 dark:bg-gray-700'}`}>
+                  {tab.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Imagen</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Carrera</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nivel</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Modalidad</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plan</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredCarreras.map((carrera) => (
-              <tr key={carrera.id}>
-                <td className="px-6 py-4">
-                  <img 
-                    src={getCarreraImageUrl(carrera.imagen)} 
-                    alt={carrera.nombre}
-                    className="h-16 w-24 object-cover rounded"
-                  />
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm font-medium text-gray-900">{carrera.nombre}</div>
-                  <div className="text-sm text-gray-500">{carrera.siglas}</div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`px-2 py-1 text-xs rounded ${
-                    carrera.nivel === 'TSU' ? 'bg-green-100 text-green-800' :
-                    carrera.nivel === 'Ingenieria' ? 'bg-purple-100 text-purple-800' :
-                    'bg-orange-100 text-orange-800'
-                  }`}>
-                    {carrera.nivel}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900">{carrera.modalidad}</td>
-                <td className="px-6 py-4">
-                  {carrera.plan_estudios_url ? (
-                    <a 
-                      href={getCarreraPlanUrl(carrera.plan_estudios_url)} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 text-sm"
-                    >
-                      Ver PDF
-                    </a>
-                  ) : (
-                    <span className="text-gray-400 text-sm">Sin plan</span>
-                  )}
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`px-2 py-1 text-xs rounded ${carrera.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+        {/* Grid de Tarjetas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredCarreras.map((carrera) => (
+            <div 
+              key={carrera.id} 
+              className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col overflow-hidden h-full dark:bg-gray-800 dark:border-gray-700"
+            >
+              {/* Imagen Header */}
+              <div className="relative h-48 overflow-hidden bg-gray-100 dark:bg-gray-700">
+                <img
+                  src={getCarreraImageUrl(carrera.imagen_portada || carrera.imagen)}
+                  alt={carrera.nombre}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
+                  }}
+                />
+                <div className="absolute top-3 right-3">
+                  <span className={`
+                    px-2.5 py-1 text-xs font-semibold rounded-full shadow-sm backdrop-blur-md
+                    ${carrera.activo 
+                      ? 'bg-green-100/90 text-green-700 border border-green-200 dark:bg-green-900/80 dark:text-green-300 dark:border-green-800' 
+                      : 'bg-red-100/90 text-red-700 border border-red-200 dark:bg-red-900/80 dark:text-red-300 dark:border-red-800'}
+                  `}>
                     {carrera.activo ? 'Activo' : 'Inactivo'}
                   </span>
-                </td>
-                <td className="px-6 py-4 text-sm space-x-2">
+                </div>
+              </div>
+
+              {/* Contenido */}
+              <div className="p-5 flex-1 flex flex-col">
+                <div className="flex justify-between items-start mb-2">
+                  <span className={`
+                    px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded border
+                    ${carrera.nivel === 'Ingenieria' ? 'bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800' :
+                      'bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800'
+                    }
+                  `}>
+                    {carrera.nivel}
+                  </span>
+                </div>
+
+                <h3 className="text-lg font-bold text-gray-900 leading-tight mb-1 line-clamp-2 dark:text-white" title={carrera.nombre}>
+                  {carrera.nombre}
+                </h3>
+                <p className="text-sm text-gray-500 font-medium mb-4 dark:text-gray-400">{carrera.siglas}</p>
+
+                <div className="space-y-2 mt-auto text-sm text-gray-600 dark:text-gray-300">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span className="truncate">{carrera.duracion}</span>
+                  </div>
+                </div>
+
+                {/* Footer Botones */}
+                <div className="grid grid-cols-3 gap-2 mt-5 pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <button
+                    onClick={() => handleToggleActive(carrera)}
+                    aria-pressed={carrera.activo}
+                    aria-label={carrera.activo ? 'Desactivar carrera' : 'Activar carrera'}
+                    className={`flex items-center justify-center p-2 text-xs font-medium border rounded-lg transition-colors ${
+                      carrera.activo 
+                        ? 'text-orange-600 bg-orange-50 border-orange-200 hover:bg-orange-100 dark:text-orange-400 dark:bg-orange-900/20 dark:border-orange-800 dark:hover:bg-orange-900/30' 
+                        : 'text-green-600 bg-green-50 border-green-200 hover:bg-green-100 dark:text-green-400 dark:bg-green-900/20 dark:border-green-800 dark:hover:bg-green-900/30'
+                    }`}
+                    title={carrera.activo ? 'Desactivar' : 'Activar'}
+                  >
+                    {carrera.activo ? (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                      </svg>
+                    )}
+                    <span className="sr-only">{carrera.activo ? 'Desactivar' : 'Activar'}</span>
+                  </button>
                   <button
                     onClick={() => handleEdit(carrera)}
-                    className="text-blue-600 hover:text-blue-800"
+                    title="Editar"
+                    aria-label="Editar carrera"
+                    className="flex items-center justify-center p-2 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600"
                   >
-                    Editar
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    <span className="sr-only">Editar</span>
                   </button>
                   <button
                     onClick={() => handleDelete(carrera.id)}
-                    className="text-red-600 hover:text-red-800"
+                    title="Eliminar"
+                    aria-label="Eliminar carrera"
+                    className="flex items-center justify-center p-2 text-xs font-medium text-red-600 bg-red-50 border border-transparent rounded-lg hover:bg-red-100 transition-colors dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30"
                   >
-                    Eliminar
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    <span className="sr-only">Eliminar</span>
                   </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl my-8 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">
-              {editingCarrera ? 'Editar Carrera' : 'Nueva Carrera'}
-            </h2>
-            <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-2 gap-4">
-                {/* Nombre */}
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre Completo *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.nombre}
-                    onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-
-                {/* Siglas */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Siglas *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.siglas}
-                    onChange={(e) => setFormData({ ...formData, siglas: e.target.value })}
-                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-
-                {/* Nivel */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nivel *
-                  </label>
-                  <select
-                    value={formData.nivel}
-                    onChange={(e) => setFormData({ ...formData, nivel: e.target.value as any })}
-                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="TSU">TSU</option>
-                    <option value="Ingenieria">Ingeniería</option>
-                    <option value="Licenciatura">Licenciatura</option>
-                  </select>
-                </div>
-
-                {/* Modalidad */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Modalidad *
-                  </label>
-                  <select
-                    value={formData.modalidad}
-                    onChange={(e) => setFormData({ ...formData, modalidad: e.target.value as any })}
-                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="Escolarizada">Escolarizada</option>
-                    <option value="Ejecutiva">Ejecutiva</option>
-                    <option value="Mixta">Mixta</option>
-                  </select>
-                </div>
-
-                {/* Duración */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Duración *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.duracion}
-                    onChange={(e) => setFormData({ ...formData, duracion: e.target.value })}
-                    placeholder="Ej: 2 años (6 cuatrimestres)"
-                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-
-                {/* Objetivo */}
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Objetivo *
-                  </label>
-                  <textarea
-                    value={formData.objetivo}
-                    onChange={(e) => setFormData({ ...formData, objetivo: e.target.value })}
-                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
-                    rows={3}
-                    required
-                  />
-                </div>
-
-                {/* Perfil de Ingreso */}
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Perfil de Ingreso *
-                  </label>
-                  <textarea
-                    value={formData.perfil_ingreso}
-                    onChange={(e) => setFormData({ ...formData, perfil_ingreso: e.target.value })}
-                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
-                    rows={3}
-                    required
-                  />
-                </div>
-
-                {/* Perfil de Egreso */}
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Perfil de Egreso *
-                  </label>
-                  <textarea
-                    value={formData.perfil_egreso}
-                    onChange={(e) => setFormData({ ...formData, perfil_egreso: e.target.value })}
-                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
-                    rows={3}
-                    required
-                  />
-                </div>
-
-                {/* Campo Laboral */}
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Campo Laboral *
-                  </label>
-                  <textarea
-                    value={formData.campo_laboral}
-                    onChange={(e) => setFormData({ ...formData, campo_laboral: e.target.value })}
-                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
-                    rows={3}
-                    required
-                  />
-                </div>
-
-                {/* Imagen */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Imagen {editingCarrera && '(dejar vacío para mantener actual)'}
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setImagen(e.target.files?.[0] || null)}
-                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
-                    required={!editingCarrera}
-                  />
-                </div>
-
-                {/* Plan de Estudios */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Plan de Estudios (PDF) {editingCarrera && '(opcional)'}
-                  </label>
-                  <input
-                    type="file"
-                    accept="application/pdf"
-                    onChange={(e) => setPlanEstudios(e.target.files?.[0] || null)}
-                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Orden */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Orden
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.orden}
-                    onChange={(e) => setFormData({ ...formData, orden: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Activo */}
-                <div className="flex items-center">
-                  <label className="flex items-center mt-6">
-                    <input
-                      type="checkbox"
-                      checked={formData.activo}
-                      onChange={(e) => setFormData({ ...formData, activo: e.target.checked })}
-                      className="mr-2"
-                    />
-                    <span className="text-sm font-medium text-gray-700">Activo</span>
-                  </label>
                 </div>
               </div>
-
-              <div className="flex justify-end space-x-2 mt-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsModalOpen(false);
-                    resetForm();
-                  }}
-                  className="px-4 py-2 border rounded hover:bg-gray-100"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  {editingCarrera ? 'Actualizar' : 'Crear'}
-                </button>
-              </div>
-            </form>
-          </div>
+            </div>
+          ))}
         </div>
-      )}
+
+        <ModalCarrera
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          carrera={editingCarrera}
+          onSave={handleSave}
+        />
+      </div>
     </div>
   );
 };

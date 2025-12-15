@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Apartado, Documento } from '../../types/apartados';
-import { useApartados } from '../../hooks/useApartados';
-import { ListaApartados, VistaApartado } from '../../components/apartados';
-import { ModalCrearApartado, ModalSubirDocumento } from '../../components/modals';
+
+import { Apartado, Documento } from '../src/types/apartados';
+import { useApartados } from '../src/hooks/useApartados';
+import { ListaApartados, VistaApartado } from '../src/components/apartados';
+import { ModalCrearApartado, ModalSubirDocumento } from '../src/components/modals';
 
 const apartadosIniciales: Apartado[] = [
     

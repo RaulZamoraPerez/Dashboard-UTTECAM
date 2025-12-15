@@ -54,19 +54,13 @@ const DraggableContact = ({
         handlerId: monitor.getHandlerId(),
       };
     },
-    hover(item: any, monitor) {
+    hover(item: any) {
       if (!ref.current) return;
       if (!isDraggable) return;
       const dragIndex = item.index;
       const hoverIndex = index;
 
       if (dragIndex === hoverIndex) return;
-
-      // Determine rectangle on screen
-      const hoverBoundingRect = ref.current?.getBoundingClientRect();
-      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-      const clientOffset = monitor.getClientOffset();
-      const hoverClientY = (clientOffset as any).y - hoverBoundingRect.top;
 
       // Dragging downwards
       // if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
@@ -223,11 +217,11 @@ export default function DirectorioPage() {
       const rows = res.data || res;
       const items = (rows || []).map((row: any) => ({
         id: row.id,
-        title: row.titulo,
-        name: row.nombre,
-        phone: row.telefono,
+        title: row.titulo || '',
+        name: row.nombre || '',
+        phone: row.telefono || '',
         extension: row.extension,
-        email: row.correo,
+        email: row.correo || '',
         imagenUrl: row.imagen ? buildImageUrl(row.imagen) : row.imagen,
         activo: row.activo !== undefined ? row.activo : true,
         orden: row.orden || 0
@@ -420,34 +414,13 @@ export default function DirectorioPage() {
     setContacts((prevContacts) => {
         const updated = [...prevContacts];
         const [draggedItem] = updated.splice(dragIndex, 1);
+        if (!draggedItem) return prevContacts;
         updated.splice(hoverIndex, 0, draggedItem);
         return updated;
     });
   };
 
-  const handleDropSave = async () => {
-    if (search.trim()) return;
-    // We need to access current contacts state for IDs. 
-    // Since this is a closure, 'contacts' might be stale if not careful, 
-    // but 'contacts' in body scope updates on render.
-    // However, inside useEffect/callbacks it might be stale.
-    // react-dnd's 'drop' callback might rely on fresh closure.
-    // Let's rely on setBusy to block interaction if needed or just fire.
-    
-    // Actually, 'contacts' variable here will be from the render frame where DraggableContact was created? 
-    // No, useDrop callback runs in its own context.
-    // To be safe, we can trigger the API call. 
-    // Since 'contacts' state *has* been updated by moveContact during hover, 
-    // when drop() happens, 'contacts' should be the new order? 
-    // Wait, state updates are async. Hover calls setContacts.
-    // When drop happens, we just need to send the list.
-    // The safest way is to let the 'move' finish, and then save.
-    // But 'drop' happens after last 'hover'.
-    // We'll read 'contacts' from a ref if needed, or assume 'contacts' is up to date enough?
-    // Actually, let's just use the 'contacts' array.
-    // But wait, 'contacts' in handleDropSave scope updates every render.
-    // Since 'DraggableContact' is re-rendered with new 'onDropEnd' closure on every list change, it captures new contacts.
-  };
+
 
   // We actually need a useEffect to save? or just call it?
   // Easier: updateOrder(currentContacts.map(c=>c.id)).

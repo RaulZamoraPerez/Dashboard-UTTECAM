@@ -95,7 +95,7 @@ export const getAuthHeaders = (): any => {
  */
 export const verifyToken = async (): Promise<UserProfile | null> => {
   const token = getToken();
-  
+
   if (!token) {
     return null;
   }
@@ -132,7 +132,7 @@ export const verifyToken = async (): Promise<UserProfile | null> => {
  */
 export const isTokenExpired = (): boolean => {
   const token = getToken();
-  
+
   if (!token) {
     return true;
   }
@@ -149,7 +149,7 @@ export const isTokenExpired = (): boolean => {
     );
 
     const payload = JSON.parse(jsonPayload);
-    
+
     // El payload debe tener un campo 'exp' con el timestamp de expiración
     if (!payload.exp) {
       return false; // Si no tiene expiración, asumimos que es válido

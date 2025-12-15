@@ -121,6 +121,7 @@ const Tramites = () => {
     setMostrarFormulario(true);
   };
 
+  /*
   const handleCancelarEdicion = () => {
     setModoEdicion(false);
     setTramiteEditando(null);
@@ -133,6 +134,7 @@ const Tramites = () => {
     });
     setMostrarFormulario(false);
   };
+  */
 
   const handleEliminarTramite = (id: string) => {
     setTramites(tramites.filter(t => t.id !== id));
@@ -141,11 +143,13 @@ const Tramites = () => {
     }
   };
 
+  /*
   const handleEditarTramite = (id: string, updates: Partial<TramiteCard>) => {
     setTramites(tramites.map(t => 
       t.id === id ? { ...t, ...updates } : t
     ));
   };
+  */
 
   return (
     <div className="bg-white dark:bg-black min-h-screen">
