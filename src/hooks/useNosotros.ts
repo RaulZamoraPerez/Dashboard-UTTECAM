@@ -17,6 +17,7 @@ interface UseNosotrosReturn {
   content: NosotrosContent | null;
   loading: boolean;
   error: string | null;
+  lastResponse?: any | null;
   refetch: () => Promise<void>;
   updateSection: (section: SectionKey, data: UpdateSectionRequest) => Promise<boolean>;
   updateAllContent: (newContent: NosotrosContent) => Promise<boolean>;
@@ -27,6 +28,7 @@ export const useNosotros = (): UseNosotrosReturn => {
   const [content, setContent] = useState<NosotrosContent | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastResponse, setLastResponse] = useState<any | null>(null);
 
   const fetchContent = useCallback(async () => {
     try {
@@ -35,8 +37,18 @@ export const useNosotros = (): UseNosotrosReturn => {
       const data = await getNosotrosContent();
       setContent(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar el contenido');
-      console.error('Error fetching nosotros content:', err);
+      const message = err instanceof Error ? err.message : String(err);
+
+      // El backend devuelve este mensaje cuando no existe contenido aún.
+      // En ese caso no queremos tratarlo como un 'error' que bloquea la UI,
+      // sino mostrar el formulario para crear contenido inicial.
+      if (message && message.includes("El contenido de 'Nosotros' no ha sido creado aún")) {
+        setError(null);
+        setContent(null);
+      } else {
+        setError(message || 'Error al cargar el contenido');
+        console.error('Error fetching nosotros content:', err);
+      }
     } finally {
       setLoading(false);
     }
@@ -48,15 +60,27 @@ export const useNosotros = (): UseNosotrosReturn => {
   ): Promise<boolean> => {
     try {
       setError(null);
-      await updateNosotrosSection(section, data);
+      const resp = await updateNosotrosSection(section, data);
+      setLastResponse(resp);
 
-      // Actualizar el estado local
-      if (content) {
-        setContent({
-          ...content,
-          [section]: data
-        });
+      // Si la API devolvió la sección actualizada, aplicar actualización localmente
+      try {
+        if (resp && typeof resp === 'object') {
+          // resp puede tener la forma { message: '...', [section]: { ... } }
+          const updated = (resp as any)[section];
+          if (updated) {
+            setContent(prev => {
+              if (!prev) return prev;
+              return { ...prev, [section]: updated } as NosotrosContent;
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('No se pudo aplicar la actualización optimista:', e);
       }
+
+      // Hacer un refetch para asegurar consistencia final (no bloquear si falla)
+      fetchContent().catch(e => console.warn('Refetch tras updateSection falló:', e));
 
       return true;
     } catch (err) {
@@ -65,13 +89,16 @@ export const useNosotros = (): UseNosotrosReturn => {
       console.error('Error updating section:', err);
       return false;
     }
-  }, [content]);
+  }, [fetchContent]);
 
   const updateAllContent = useCallback(async (newContent: NosotrosContent): Promise<boolean> => {
     try {
       setError(null);
       await updateNosotrosContent(newContent);
-      setContent(newContent);
+
+      // Recargar el contenido desde el servidor para asegurar consistencia
+      await fetchContent();
+
       return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al actualizar el contenido';
@@ -79,7 +106,7 @@ export const useNosotros = (): UseNosotrosReturn => {
       console.error('Error updating content:', err);
       return false;
     }
-  }, []);
+  }, [fetchContent]);
 
   const uploadImage = useCallback(async (
     section: ImageSectionKey,
@@ -88,20 +115,37 @@ export const useNosotros = (): UseNosotrosReturn => {
   ): Promise<boolean> => {
     try {
       setError(null);
-      const response = await uploadImageAndUpdateSection(section, file, additionalData, content || undefined);
+      const resp = await uploadImageAndUpdateSection(section, file, additionalData, content || undefined);
+      setLastResponse(resp);
 
-      // Actualizar el estado local con la nueva información
-      if (content && response.content) {
-        setContent({
-          ...content,
-          ...response.content
-        });
+      // Aplicar actualización optimista localmente si API regresó la nueva imagen/texto
+      try {
+        if (resp && typeof resp === 'object') {
+          const updated = (resp as any)[section];
+          if (updated) {
+            setContent(prev => {
+              if (!prev) return prev;
+              return { ...prev, [section]: updated } as NosotrosContent;
+            });
+          } else if ((resp as any).imageSrc) {
+            // caso en el que backend devuelve imageSrc directamente
+            setContent(prev => {
+              if (!prev) return prev;
+              return { ...prev, [section]: { ...(prev as any)[section], imageSrc: (resp as any).imageSrc } } as NosotrosContent;
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('No se pudo aplicar la actualización optimista tras upload:', e);
       }
+
+      // Intentar refetch para consistencia, sin bloquear el return
+      fetchContent().catch(e => console.warn('Refetch tras uploadImage falló:', e));
 
       return true;
     } catch (err) {
       let errorMessage = 'Error al subir la imagen';
-      
+
       if (err instanceof Error) {
         if (err.message.includes('Debe especificar la sección')) {
           errorMessage = 'Error de configuración: sección no válida. Use vision, mision o valores.';
@@ -117,12 +161,12 @@ export const useNosotros = (): UseNosotrosReturn => {
           errorMessage = err.message;
         }
       }
-      
+
       setError(errorMessage);
       console.error('Error uploading image:', err);
       return false;
     }
-  }, [content]);
+  }, [fetchContent]);
 
   useEffect(() => {
     fetchContent();
@@ -132,6 +176,7 @@ export const useNosotros = (): UseNosotrosReturn => {
     content,
     loading,
     error,
+    lastResponse,
     refetch: fetchContent,
     updateSection,
     updateAllContent,

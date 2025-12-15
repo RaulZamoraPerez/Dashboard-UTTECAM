@@ -27,12 +27,12 @@ export const getFileUrl = (filePath: string): string => {
 };
 
 export const getAllCalendarios = async (): Promise<Calendario[]> => {
-  const response = await fetchWithAuth<{ data: Calendario[] }>('/api/calendario');
+  const response = await fetchWithAuth<{ data: Calendario[] }>('/api/quienes-somos/calendario');
   return response.data;
 };
 
 export const getCalendarioById = async (id: number): Promise<Calendario> => {
-  const response = await fetchWithAuth<{ data: Calendario }>(`/api/calendario/${id}`);
+  const response = await fetchWithAuth<{ data: Calendario }>(`/api/quienes-somos/calendario/${id}`);
   return response.data;
 };
 
@@ -44,7 +44,7 @@ export const createCalendario = async (
   if (data.descripcion) formData.append('descripcion', data.descripcion);
   formData.append('archivo', data.archivo);
 
-  const response = await fetchWithAuth<{ data: Calendario }>('/api/calendario', {
+  const response = await fetchWithAuth<{ data: Calendario }>('/api/quienes-somos/calendario', {
     method: 'POST',
     body: formData,
     headers: {
@@ -63,7 +63,7 @@ export const updateCalendario = async (
   if (data.descripcion !== undefined) formData.append('descripcion', data.descripcion);
   if (data.archivo) formData.append('archivo', data.archivo);
 
-  const response = await fetchWithAuth<{ data: Calendario }>(`/api/calendario/${id}`, {
+  const response = await fetchWithAuth<{ data: Calendario }>(`/api/quienes-somos/calendario/${id}`, {
     method: 'PUT',
     body: formData,
     headers: {
@@ -74,7 +74,7 @@ export const updateCalendario = async (
 };
 
 export const deleteCalendario = async (id: number): Promise<void> => {
-  await fetchWithAuth(`/api/calendario/${id}`, {
+  await fetchWithAuth(`/api/quienes-somos/calendario/${id}`, {
     method: 'DELETE',
   });
 };
