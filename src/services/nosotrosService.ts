@@ -36,14 +36,16 @@ export const getImageUrl = (imagePath: string | undefined): string => {
 
   // Para otros casos, intentar acceder directamente
   return `/${imagePath}`;
-};/**
+};
+
+/**
  * Verifica si una imagen existe en el servidor
  * @param imagePath - Ruta de la imagen a verificar
  * @returns Promise que resuelve a true si la imagen existe
  */
 export const checkImageExists = async (imagePath: string): Promise<boolean> => {
   if (!imagePath) return false;
-  
+
   try {
     const response = await fetch(getImageUrl(imagePath), { method: 'HEAD' });
     return response.ok;
@@ -56,26 +58,17 @@ export const checkImageExists = async (imagePath: string): Promise<boolean> => {
  * Obtiene todo el contenido de "Nosotros"
  */
 export const getNosotrosContent = async (): Promise<NosotrosContent> => {
-  const rawData = await fetchWithAuth<Partial<NosotrosContent>>(`${API_BASE}/content`);
-  
-  // Deserializar los campos que vienen como JSON strings desde la base de datos
-  const data = {
-    ...rawData,
-    politicaIntegral: rawData.politicaIntegral ? (typeof rawData.politicaIntegral === 'string' ? JSON.parse(rawData.politicaIntegral) : rawData.politicaIntegral) : { imageSrc: '', title: '', description: '' },
-    vision: rawData.vision ? (typeof rawData.vision === 'string' ? JSON.parse(rawData.vision) : rawData.vision) : { imageSrc: '', title: '', description: '' },
-    mision: rawData.mision ? (typeof rawData.mision === 'string' ? JSON.parse(rawData.mision) : rawData.mision) : { imageSrc: '', title: '', description: '' },
-    valores: rawData.valores ? (typeof rawData.valores === 'string' ? JSON.parse(rawData.valores) : rawData.valores) : { imageSrc: '', title: '', description: [] },
-    noDiscriminacion: rawData.noDiscriminacion ? (typeof rawData.noDiscriminacion === 'string' ? JSON.parse(rawData.noDiscriminacion) : rawData.noDiscriminacion) : []
-  };
+  const rawData = await fetchWithAuth<any>(`${API_BASE}/content`);
 
-  // Normalizar los datos para asegurar que todos los campos requeridos estén presentes
+  // La nueva API ya devuelve los datos en el formato correcto
   return {
-    politicaIntegral: data.politicaIntegral,
-    objetivoIntegral: data.objetivoIntegral || '',
-    vision: data.vision,
-    mision: data.mision,
-    valores: data.valores,
-    noDiscriminacion: data.noDiscriminacion
+    vision: rawData.vision || { title: 'Visión', description: '', imageSrc: null },
+    mision: rawData.mision || { title: 'Misión', description: '', imageSrc: null },
+    valores: rawData.valores || { title: 'Valores', description: [], imageSrc: null },
+    politicaIntegral: rawData.politicaIntegral || { text: '', imageSrc: null },
+    objetivoIntegral: rawData.objetivoIntegral || { text: '' },
+    noDiscriminacion: rawData.noDiscriminacion || { items: [] },
+    organigrama: rawData.organigrama || { imageSrc: null }
   };
 };
 
@@ -120,14 +113,13 @@ export const updateNosotrosSection = async (
   section: SectionKey,
   data: UpdateSectionRequest
 ): Promise<ApiResponse<Partial<NosotrosContent>>> => {
-  // Enviar los datos envueltos en un objeto con la clave de la sección
-  // El backend espera { [section]: data }
+  // Enviar los datos directamente, el backend simplificado los espera así
   return await fetchWithAuth<ApiResponse<Partial<NosotrosContent>>>(`${API_BASE}/content/${section}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ [section]: data }),
+    body: JSON.stringify(data),
   });
 };
 
@@ -147,35 +139,29 @@ export const uploadImageAndUpdateSection = async (
   section: ImageSectionKey,
   file: File,
   additionalData?: Partial<UpdateSectionRequest>,
-  currentContent?: Partial<NosotrosContent>
+  _currentContent?: Partial<NosotrosContent>
 ): Promise<ApiResponse<Partial<NosotrosContent>>> => {
   const formData = new FormData();
   formData.append('image', file);
-  formData.append('section', section); // Campo separado como en el ejemplo de curl
+  formData.append('section', section);
 
-  // Obtener los datos actuales de la sección para preservarlos
-  let sectionData: any = {};
-
-  if (currentContent && currentContent[section]) {
-    sectionData = { ...currentContent[section] };
-  }
-
-  // Combinar con los datos adicionales proporcionados
+  // Añadir datos adicionales si se proporcionan
   if (additionalData) {
-    sectionData = { ...sectionData, ...additionalData };
+    Object.entries(additionalData).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (typeof value === 'string') {
+          formData.append(key, value);
+        } else if (Array.isArray(value)) {
+          formData.append(key, JSON.stringify(value));
+        } else {
+          formData.append(key, String(value));
+        }
+      }
+    });
   }
 
-  // Agregar todos los campos de la sección al FormData
-  Object.entries(sectionData).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && key !== 'imageSrc') {
-      // No enviar imageSrc ya que se actualizará con la nueva imagen
-      formData.append(key, typeof value === 'string' ? value : JSON.stringify(value));
-    }
-  });
-
-  // Usar fetchWithAuth corregido sin redirección automática en caso de 401
   return await fetchWithAuth<ApiResponse<Partial<NosotrosContent>>>(`${API_BASE}/upload-image`, {
     method: 'POST',
     body: formData,
-  }, false); // false = no redirigir automáticamente en caso de 401
+  }, false);
 };

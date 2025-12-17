@@ -8,6 +8,7 @@ interface InputProps {
   placeholder?: string;
   value?: string | number;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  accept?: string;
   className?: string;
   min?: string;
   max?: string;
@@ -26,6 +27,7 @@ const Input: FC<InputProps> = ({
   placeholder,
   value,
   onChange,
+  accept,
   className = "",
   min,
   max,
@@ -55,11 +57,12 @@ const Input: FC<InputProps> = ({
         id={id}
         name={name}
         placeholder={placeholder}
-        value={value}
+        value={type === 'file' ? (undefined as any) : value}
         onChange={onChange}
         min={min}
         max={max}
         step={step}
+        accept={accept}
         disabled={disabled}
         required={required}
         className={inputClasses}

@@ -81,7 +81,7 @@ export const isAuthenticated = (): boolean => {
 /**
  * Obtiene los headers de autorización con el token
  */
-export const getAuthHeaders = (): HeadersInit => {
+export const getAuthHeaders = (): any => {
   const token = getToken();
   return {
     'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ export const getAuthHeaders = (): HeadersInit => {
  */
 export const verifyToken = async (): Promise<UserProfile | null> => {
   const token = getToken();
-  
+
   if (!token) {
     return null;
   }
@@ -132,7 +132,7 @@ export const verifyToken = async (): Promise<UserProfile | null> => {
  */
 export const isTokenExpired = (): boolean => {
   const token = getToken();
-  
+
   if (!token) {
     return true;
   }
@@ -149,7 +149,7 @@ export const isTokenExpired = (): boolean => {
     );
 
     const payload = JSON.parse(jsonPayload);
-    
+
     // El payload debe tener un campo 'exp' con el timestamp de expiración
     if (!payload.exp) {
       return false; // Si no tiene expiración, asumimos que es válido

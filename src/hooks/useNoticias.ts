@@ -3,15 +3,16 @@ import { getToken } from '../services/authService';
 import * as homeService from '../services/homeService';
 import type { Noticia, CreateNoticiaRequest, UpdateNoticiaRequest } from '../types/home';
 
-export const useNoticias = () => {
+export const useNoticias = (includeInactiveInitial: boolean = false) => {
   const [noticias, setNoticias] = useState<Noticia[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [includeInactive, setIncludeInactive] = useState(includeInactiveInitial);
 
-  const fetchNoticias = async () => {
+  const fetchNoticias = async (all?: boolean) => {
     try {
       setLoading(true);
-      const data = await homeService.getNoticias();
+      const data = await homeService.getNoticias(all ?? includeInactive);
       setNoticias(data);
       setError(null);
     } catch (err) {
@@ -24,7 +25,7 @@ export const useNoticias = () => {
 
   useEffect(() => {
     fetchNoticias();
-  }, []);
+  }, [includeInactive]);
 
   const createItem = async (data: CreateNoticiaRequest): Promise<boolean> => {
     try {
@@ -71,6 +72,22 @@ export const useNoticias = () => {
     }
   };
 
+  const reorderNoticias = async (orderedNoticias: Noticia[]): Promise<boolean> => {
+    try {
+      const token = getToken();
+      if (!token) throw new Error('No hay token de autenticación');
+      for (const noticia of orderedNoticias) {
+        await homeService.updateNoticia(noticia.id, { orden: noticia.orden }, token);
+      }
+      await fetchNoticias();
+      return true;
+    } catch (err) {
+      console.error('Error al reordenar noticias:', err);
+      setError('Error al reordenar noticias');
+      return false;
+    }
+  };
+
   return {
     noticias,
     loading,
@@ -79,5 +96,8 @@ export const useNoticias = () => {
     updateItem,
     deleteItem,
     refresh: fetchNoticias,
+    reorderNoticias,
+    includeInactive,
+    setIncludeInactive,
   };
 };

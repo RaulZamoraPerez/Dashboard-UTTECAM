@@ -30,6 +30,11 @@ export interface Evento {
   titulo: string;
   descripcion?: string;
   fecha_evento: string;
+  tema?: string;
+  color?: string;
+  imagen_fondo_url?: string;
+  texto_boton?: string;
+  url_boton?: string;
   activo: boolean;
   fecha_creacion: string;
   fecha_actualizacion: string;
@@ -39,6 +44,11 @@ export interface CreateEventoRequest {
   titulo: string;
   descripcion?: string;
   fecha_evento: string;
+  tema?: string;
+  color?: string;
+  imagen_fondo?: File;
+  texto_boton?: string;
+  url_boton?: string;
   activo?: boolean;
 }
 
@@ -46,8 +56,15 @@ export interface UpdateEventoRequest {
   titulo?: string;
   descripcion?: string;
   fecha_evento?: string;
+  tema?: string;
+  color?: string;
+  imagen_fondo?: File;
+  imagen_fondo_remove?: boolean;
+  texto_boton?: string;
+  url_boton?: string;
   activo?: boolean;
 }
+// (clean end of Evento/Evento request types)
 
 // Tipos para Noticias
 export interface Noticia {

@@ -1,6 +1,8 @@
 import { isTokenExpired, removeToken } from './authService';
 
-const API_URL = import.meta.env.VITE_BACKENDURL || '';
+const _BACKEND_RAW = import.meta.env.VITE_BACKENDURL || import.meta.env.VITE_API_URL || '';
+// Keep base URL clean (no trailing slashes, no '/api' suffix). Endpoints should include '/api' prefix.
+export const API_BASE = String(_BACKEND_RAW).replace(/\/+$|\/api$|\/api\/$/g, '');
 
 /**
  * Realiza una petición HTTP con autenticación
@@ -46,7 +48,7 @@ export const fetchWithAuth = async <T>(
       headers['Content-Type'] = 'application/json';
     }
 
-    const response = await fetch(`${API_URL}${endpoint}`, {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
       ...options,
       headers,
     });
@@ -140,7 +142,7 @@ export const fetchWithAuthResponse = async (
   }
 
   try {
-    const response = await fetch(`${API_URL}${endpoint}`, {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
       ...options,
       headers,
     });
