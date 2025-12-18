@@ -111,8 +111,9 @@ export default function Finanzas() {
                 onClose={() => setMostrarModalApartado(false)}
                 onSubmit={handleCrearApartado}
                 titulo={nuevoApartadoTitulo}
-                setTitulo={setNuevoApartadoTitulo}
-            />
+                setTitulo={setNuevoApartadoTitulo} descripcion={''} setDescripcion={function (value: string): void {
+                    throw new Error('Function not implemented.');
+                } }            />
 
             {/* Modal para subir documento */}
             <ModalSubirDocumento
