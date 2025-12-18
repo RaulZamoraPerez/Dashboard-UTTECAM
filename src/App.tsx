@@ -57,6 +57,11 @@ import {
   ServicioSocial
 } from "./pages/ServiciosGestion";
 import Pit from "./pages/Accesos/Pit";
+import ProcesoAdmisionPage from "./pages/ServiciosEscolares/ProcesoAdmisionPage";
+import ConvocatoriaTituloPage from "./pages/ServiciosEscolares/ConvocatoriaTituloPage";
+import TramitesPage from "./pages/ServiciosEscolares/TramitesPage";
+import TramiteFormularioPage from "./pages/ServiciosEscolares/TramiteFormularioPage";
+import ReinscripcionPage from "./pages/ServiciosEscolares/ReinscripcionPage";
 
 
 export default function App() {
@@ -127,6 +132,16 @@ export default function App() {
             <Route path="/ServiciosGestion/GestionAmbiental" element={<GestionAmbiental />} />
             <Route path="/ServiciosGestion/GestionCalidad" element={<GestionCalidad />} />
             <Route path="/ServiciosGestion/CordinacionGenero" element={<CordinacionGenero />} />
+
+            {/* Rutas de Servicios Escolares */}
+            <Route path="ServiciosEscolares/ProcesoAdmision" element={<ProcesoAdmisionPage/>}/>
+            <Route path="ServiciosEscolares/ConvocatoriaTitulo" element={<ConvocatoriaTituloPage/>}/>
+            <Route path="ServiciosEscolares/Tramites" element={<TramitesPage/>}/>
+            <Route path="ServiciosEscolares/Tramites/:tramiteId" element={<TramiteFormularioPage/>}/>
+            <Route path="ServiciosEscolares/Tramites/Reinscripcion" element={<ReinscripcionPage/>}/>
+
+            
+
             <Route path="/ServiciosGestion/Vinculacion" element={<Vinculacion />} />
             <Route path="/ServiciosGestion/ServicioSocial" element={<ServicioSocial />} />
 

@@ -40,7 +40,7 @@ export default function Finanzas() {
         }
     };
 
-    const handleSubirDocumento = (nombre: string, archivo: File | null) => {
+    const handleSubirDocugutmento = (nombre: string, archivo: File | null) => {
         if (modoEdicion && documentoEditando) {
             if (editarDocumento(documentoEditando, nombre, archivo)) {
                 resetearFormularioDocumento();
@@ -111,12 +111,9 @@ export default function Finanzas() {
                 onClose={() => setMostrarModalApartado(false)}
                 onSubmit={handleCrearApartado}
                 titulo={nuevoApartadoTitulo}
-                
-                setTitulo={setNuevoApartadoTitulo}
-                descripcion=''
-                
-    
-            />
+                setTitulo={setNuevoApartadoTitulo} descripcion={''} setDescripcion={function (value: string): void {
+                    throw new Error('Function not implemented.');
+                } }            />
 
             {/* Modal para subir documento */}
             <ModalSubirDocumento

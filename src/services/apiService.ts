@@ -74,8 +74,19 @@ export const fetchWithAuth = async <T>(
     }
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Error en la petición' }));
-      throw new Error(error.message || `Error ${response.status}: ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({ message: 'Error en la petición' }));
+      
+      // Manejar errores de validación del backend (array de errores)
+      if (errorData.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+        // Crear un mensaje con todos los errores de validación
+        const errorMessages = errorData.errors
+          .map((err: { msg?: string; message?: string; path?: string }) => err.msg || err.message)
+          .filter(Boolean)
+          .join('. ');
+        throw new Error(errorMessages || 'Error de validación');
+      }
+      
+      throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
     }
 
     return await response.json();

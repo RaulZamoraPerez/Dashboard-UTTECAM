@@ -636,7 +636,7 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
 
       {/* Modal Crear Categoría */}
       {mostrarModalCategoria && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 sm:p-6 w-full max-w-[95%] sm:max-w-md mx-auto max-h-[90vh] overflow-y-auto animate-fadeIn">
             <div className="flex justify-between items-center mb-4 sm:mb-6">
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
@@ -692,7 +692,7 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
 
       {/* Modal Subir Archivo */}
       {mostrarModalArchivo && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 sm:p-6 w-full max-w-[95%] sm:max-w-2xl mx-auto max-h-[90vh] overflow-y-auto animate-fadeIn">
             <div className="flex justify-between items-center mb-4 sm:mb-6">
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">

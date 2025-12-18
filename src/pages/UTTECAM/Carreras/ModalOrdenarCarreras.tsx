@@ -98,7 +98,7 @@ export default function ModalOrdenarCarreras({ carreras, onCerrar, onGuardar }: 
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-start justify-center bg-black/50 p-4 pt-24 overflow-y-auto">
+    <div className="fixed inset-0 z-[999999] flex items-start justify-center bg-black/50 p-4 pt-24 overflow-y-auto">
       <div className="w-full max-w-6xl bg-white dark:bg-gray-800 rounded-lg shadow-lg my-8">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
