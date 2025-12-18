@@ -522,7 +522,7 @@ const ProcesoAdmision: React.FC = () => {
 
       {/* Modal de Preview */}
       {showPreview && previewItem && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black bg-opacity-75 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black bg-opacity-75 backdrop-blur-sm">
           <div className="relative max-w-4xl max-h-[90vh] bg-white dark:bg-black rounded-lg overflow-hidden shadow-2xl border border-stroke dark:border-gray-600">
             {/* Header del modal */}
             <div className="flex items-center justify-between p-6 border-b border-stroke dark:border-strokedark bg-gray-50 dark:bg-gray-800/50">

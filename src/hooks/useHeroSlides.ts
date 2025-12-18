@@ -8,10 +8,12 @@ export const useHeroSlides = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchHeroSlides = async () => {
+  const [includeInactive, setIncludeInactive] = useState(false);
+
+  const fetchHeroSlides = async (all?: boolean) => {
     try {
       setLoading(true);
-      const data = await homeService.getHeroSlides();
+      const data = await homeService.getHeroSlides(all ?? includeInactive);
       setHeroSlides(data);
       setError(null);
     } catch (err) {
@@ -23,8 +25,8 @@ export const useHeroSlides = () => {
   };
 
   useEffect(() => {
-    fetchHeroSlides();
-  }, []);
+    fetchHeroSlides(includeInactive);
+  }, [includeInactive]);
 
   const createItem = async (data: CreateHeroSlideRequest): Promise<boolean> => {
     try {
@@ -71,6 +73,23 @@ export const useHeroSlides = () => {
     }
   };
 
+  const reorderSlides = async (orderedSlides: HeroSlide[]): Promise<boolean> => {
+    try {
+      const token = getToken();
+      if (!token) throw new Error('No hay token de autenticación');
+      // Update each slide with new orden
+      for (const slide of orderedSlides) {
+        await homeService.updateHeroSlide(slide.id, { orden: slide.orden }, token);
+      }
+      await fetchHeroSlides();
+      return true;
+    } catch (err) {
+      console.error('Error al reordenar hero slides:', err);
+      setError('Error al reordenar');
+      return false;
+    }
+  };
+
   return {
     heroSlides,
     loading,
@@ -79,5 +98,8 @@ export const useHeroSlides = () => {
     updateItem,
     deleteItem,
     refresh: fetchHeroSlides,
+    includeInactive,
+    setIncludeInactive,
+    reorderSlides,
   };
 };

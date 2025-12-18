@@ -136,9 +136,20 @@ export const deleteCarrera = async (id: number, token: string): Promise<void> =>
 
 // Helpers para obtener URLs de archivos
 export const getCarreraImageUrl = (filename: string): string => {
+  if (!filename) return '';
+  if (filename.startsWith('http://') || filename.startsWith('https://')) return filename;
+  // Si ya incluye /uploads/, no duplicar la ruta
+  if (filename.startsWith('/uploads/')) {
+    return API_URL ? `${API_URL}${filename}` : filename;
+  }
   return `${API_URL}/uploads/carreras/${filename}`;
 };
 
 export const getCarreraPlanUrl = (filename: string): string => {
+  if (!filename) return '';
+  if (filename.startsWith('http://') || filename.startsWith('https://')) return filename;
+  if (filename.startsWith('/uploads/')) {
+    return API_URL ? `${API_URL}${filename}` : filename;
+  }
   return `${API_URL}/uploads/carreras/planes/${filename}`;
 };

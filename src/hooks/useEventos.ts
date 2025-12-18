@@ -3,7 +3,7 @@ import { getToken } from '../services/authService';
 import * as homeService from '../services/homeService';
 import type { Evento, CreateEventoRequest, UpdateEventoRequest } from '../types/home';
 
-export const useEventos = () => {
+export const useEventos = (includeInactive: boolean = false, includePast: boolean = false) => {
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [eventoActivo, setEventoActivo] = useState<Evento | null>(null);
   const [loading, setLoading] = useState(true);
@@ -12,7 +12,7 @@ export const useEventos = () => {
   const fetchEventos = async () => {
     try {
       setLoading(true);
-      const data = await homeService.getEventos();
+      const data = await homeService.getEventos(includeInactive, includePast);
       setEventos(data);
       setError(null);
     } catch (err) {

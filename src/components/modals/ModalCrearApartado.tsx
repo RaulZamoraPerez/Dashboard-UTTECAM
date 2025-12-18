@@ -44,7 +44,7 @@ export const ModalCrearApartado: React.FC<ModalCrearApartadoProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all"
+      className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all"
       onClick={handleBackdropClick}
     >
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 sm:p-6 w-full max-w-[95%] sm:max-w-md mx-auto max-h-[90vh] overflow-y-auto animate-fadeIn">

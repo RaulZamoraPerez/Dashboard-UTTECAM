@@ -2,8 +2,9 @@
 import { useState, useEffect } from 'react';
 import { useOrganigrama } from '../../hooks/useOrganigrama';
 import { Organigrama, OrganigramaFormData } from '../../types/organigrama';
-import { getImageUrl } from '../../services/organigramaService';
+// import { getImageUrl } from '../../services/organigramaService';
 import { X, Upload, User } from 'lucide-react';
+import { getImageUrl } from '../../services/directorioService';
 
 interface Props {
   organigrama?: Organigrama | null;

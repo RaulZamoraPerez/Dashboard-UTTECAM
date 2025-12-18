@@ -378,7 +378,7 @@ function ModalPersonal({ persona, onCerrar, onGuardar, departamentosOptions }: M
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] flex items-start justify-center bg-black/50 p-4 pt-24">
+    <div className="fixed inset-0 z-[999999] flex items-start justify-center bg-black/50 p-4 pt-24">
       <div className="w-full max-w-2xl max-h-[calc(100vh-10rem)] overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">

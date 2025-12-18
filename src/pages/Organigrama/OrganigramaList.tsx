@@ -3,7 +3,7 @@ import { useState } from 'react';
 import * as React from 'react';
 import { useOrganigrama } from '../../hooks/useOrganigrama';
 import { Organigrama } from '../../types/organigrama';
-import { getImageUrl } from '../../services/organigramaService';
+import { getImageUrl } from '../../services/directorioService';
 import { Pencil, Trash2, Plus, User, ChevronRight } from 'lucide-react';
 import OrganigramaForm from './OrganigramaForm';
 

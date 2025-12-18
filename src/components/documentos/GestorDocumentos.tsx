@@ -7,7 +7,8 @@ import {
   eliminarCategoria,
   subirArchivo,
   eliminarArchivo,
-  obtenerAreas
+  obtenerAreas,
+  obtenerArea
 } from '../../services/documentosService';
 
 interface GestorDocumentosProps {
@@ -89,7 +90,18 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
       const areas = await obtenerAreas();
       console.log('Áreas disponibles:', areas);
 
-      const areaExiste = areas.some(area => area.ID_Area === areaId);
+      let areaExiste = areas.some(area => area.ID_Area === areaId);
+      // Si el área no figura en el listado, intentar obtenerla por id (caso de seed/DB reciente)
+      if (!areaExiste) {
+        try {
+          const areaRemoto = await obtenerArea(areaId);
+          if (areaRemoto) {
+            areaExiste = true;
+          }
+        } catch (err) {
+          // no hacer nada, controlaremos abajo
+        }
+      }
       console.log(`¿Área ${areaId} existe?`, areaExiste);
 
       if (!areaExiste) {
@@ -624,7 +636,7 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
 
       {/* Modal Crear Categoría */}
       {mostrarModalCategoria && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 sm:p-6 w-full max-w-[95%] sm:max-w-md mx-auto max-h-[90vh] overflow-y-auto animate-fadeIn">
             <div className="flex justify-between items-center mb-4 sm:mb-6">
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
@@ -680,7 +692,7 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
 
       {/* Modal Subir Archivo */}
       {mostrarModalArchivo && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-4 sm:p-6 w-full max-w-[95%] sm:max-w-2xl mx-auto max-h-[90vh] overflow-y-auto animate-fadeIn">
             <div className="flex justify-between items-center mb-4 sm:mb-6">
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
@@ -734,7 +746,7 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
                     type="file"
                     multiple
                     onChange={handleFileInputChange}
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar"
+                    accept={areaId === 10 ? ".pdf,.jpg,.jpeg,.png,.gif,.webp" : ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar"}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
                   
@@ -752,7 +764,9 @@ export default function GestorDocumentos({ areaId, areaNombre }: GestorDocumento
                         <span className="text-[#d1672a] font-semibold cursor-pointer">haz clic para seleccionar</span>
                       </p>
                       <p className="text-xs text-gray-500">
-                        Máximo 100MB por archivo. Formatos: PDF, Word, Excel, PowerPoint, TXT, ZIP, RAR
+                        {areaId === 10 
+                          ? 'Máximo 100MB por archivo. Formatos: PDF, JPG, PNG, GIF, WebP'
+                          : 'Máximo 100MB por archivo. Formatos: PDF, Word, Excel, PowerPoint, TXT, ZIP, RAR'}
                       </p>
                     </div>
                   </div>

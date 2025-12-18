@@ -1,11 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { confirmDialog, toastError, toastSuccess } from '../../../utils/alert';
 import { useHeroSlides } from '../../../hooks/useHeroSlides';
+import type { HeroSlide } from '../../../types/home';
 import { getHeroSlideFileUrl } from '../../../services/homeService';
 import type { CreateHeroSlideRequest, UpdateHeroSlideRequest } from '../../../types/home';
 
 const HeroSlidesAdmin = () => {
-  const { heroSlides, loading, error, createItem, updateItem, deleteItem } = useHeroSlides();
+  const {
+    heroSlides,
+    loading,
+    error,
+    createItem,
+    updateItem,
+    deleteItem,
+    includeInactive,
+    setIncludeInactive,
+    reorderSlides,
+  } = useHeroSlides();
+
+  const [orderedSlides, setOrderedSlides] = useState<HeroSlide[]>([]);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<{ url: string; tipo: 'imagen' | 'video'; titulo?: string } | null>(null);
+  const [previewLoadError, setPreviewLoadError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
@@ -21,6 +38,13 @@ const HeroSlidesAdmin = () => {
     
     if (!selectedFile && !editingId) {
       toastError('Debe seleccionar un archivo');
+      return;
+    }
+
+    // Validar tamaño de archivo en cliente con el límite configurado
+    const maxMbEnv = Number(import.meta.env.VITE_HERO_SLIDE_MAX_FILE_SIZE_MB) || 200;
+    if (selectedFile && selectedFile.size > maxMbEnv * 1024 * 1024) {
+      toastError(`El archivo supera el tamaño máximo permitido de ${maxMbEnv}MB`);
       return;
     }
 
@@ -74,14 +98,42 @@ const HeroSlidesAdmin = () => {
     setEditingId(null);
   };
 
+  // Close preview on Escape key
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPreviewOpen(false);
+    };
+    if (previewOpen) {
+      window.addEventListener('keydown', onKey);
+    }
+    return () => window.removeEventListener('keydown', onKey);
+  }, [previewOpen]);
+
+  // keep orderedSlides in sync with heroSlides
+  useEffect(() => {
+    setOrderedSlides(heroSlides.slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)));
+  }, [heroSlides]);
+
   if (loading) return <div className="p-4">Cargando...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
         <h1 className="text-2xl font-bold">Gestión de Hero Slides</h1>
-        <button
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 text-sm">
+            <span>Mostrar:</span>
+            <select
+              value={includeInactive ? 'all' : 'active'}
+              onChange={(e) => setIncludeInactive(e.target.value === 'all')}
+              className="px-2 py-1 border rounded"
+            >
+              <option value="active">Activos</option>
+              <option value="all">Todos</option>
+            </select>
+          </label>
+          <button
           onClick={() => {
             resetForm();
             setIsModalOpen(true);
@@ -90,68 +142,150 @@ const HeroSlidesAdmin = () => {
         >
           Nuevo Slide
         </button>
+        </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Preview</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Título</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orden</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {heroSlides.map((slide) => (
-              <tr key={slide.id}>
-                <td className="px-6 py-4">
-                  {slide.tipo === 'imagen' ? (
-                    <img 
-                      src={getHeroSlideFileUrl(slide.archivo)} 
-                      alt={slide.titulo}
-                      className="h-16 w-24 object-cover rounded"
-                    />
-                  ) : (
-                    <video 
-                      src={getHeroSlideFileUrl(slide.archivo)}
-                      className="h-16 w-24 object-cover rounded"
-                    />
-                  )}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900">{slide.titulo}</td>
-                <td className="px-6 py-4 text-sm text-gray-900">{slide.tipo}</td>
-                <td className="px-6 py-4 text-sm text-gray-900">{slide.orden}</td>
-                <td className="px-6 py-4">
-                  <span className={`px-2 py-1 text-xs rounded ${slide.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                    {slide.activo ? 'Activo' : 'Inactivo'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm space-x-2">
-                  <button
-                    onClick={() => handleEdit(slide.id)}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(slide.id)}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {heroSlides.length === 0 && (
+          <div className="col-span-full bg-white rounded-lg shadow p-6 text-center">
+            <h3 className="text-lg font-medium">No hay slides</h3>
+            <p className="text-sm text-gray-500 mt-2">Crea tu primer slide usando el botón 'Nuevo Slide'.</p>
+          </div>
+        )}
+          {orderedSlides.map((slide, idx) => (
+          <div key={slide.id} className="bg-white rounded-lg shadow p-4 flex flex-col">
+            <div
+              className={`w-full rounded overflow-hidden bg-gray-100 relative ${dragIndex === idx ? 'opacity-70' : ''}`}
+              draggable
+              onDragStart={(e) => {
+                setDragIndex(idx);
+                e.dataTransfer.setData('text/plain', String(idx));
+                e.dataTransfer.effectAllowed = 'move';
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+              }}
+              onDragEnd={() => setDragIndex(null)}
+              onDrop={async (e) => {
+                e.preventDefault();
+                const sourceStr = e.dataTransfer.getData('text/plain');
+                if (!sourceStr) return;
+                const sourceIndex = parseInt(sourceStr, 10);
+                const targetIndex = idx;
+                if (isNaN(sourceIndex)) return;
+                // Create new order
+                const newOrder = [...orderedSlides];
+                const [moved] = newOrder.splice(sourceIndex, 1);
+                newOrder.splice(targetIndex, 0, moved);
+                // Update order values
+                const updated = newOrder.map((s, i) => ({ ...s, orden: i + 1 }));
+                setOrderedSlides(updated);
+                try {
+                  await reorderSlides(updated);
+                  toastSuccess('Orden guardado');
+                } catch (err) {
+                  toastError('Error al guardar el orden');
+                  // revert
+                  setOrderedSlides([...orderedSlides]);
+                }
+                setDragIndex(null);
+                // no-op
+              }}
+            >
+              {slide.archivo ? (
+                slide.tipo === 'imagen' ? (
+                  <img
+                    src={getHeroSlideFileUrl(slide.archivo)}
+                    alt={slide.titulo}
+                    className="w-full h-40 object-cover"
+                  />
+                ) : (
+                  <video
+                    src={getHeroSlideFileUrl(slide.archivo)}
+                    className="w-full h-40 object-cover"
+                    controls
+                    aria-label={slide.titulo}
+                  />
+                )
+              ) : (
+                <div className="w-full h-40 flex items-center justify-center bg-gray-100 text-gray-400">Sin archivo</div>
+              )}
+              <button
+                className="absolute top-2 right-2 bg-white/80 rounded p-1 border border-gray-200 hover:bg-white"
+                onClick={(e) => {
+                  // Prevent drag events and stop propagation so preview opens reliably
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!slide.archivo) {
+                    toastError('Archivo no disponible para previsualizar');
+                    return;
+                  }
+                  const url = getHeroSlideFileUrl(slide.archivo);
+                  if (!url) {
+                    toastError('URL de archivo inválida');
+                    return;
+                  }
+                  // Clear any drag state before showing modal
+                  setDragIndex(null);
+                  setPreviewData({ url, tipo: slide.tipo, titulo: slide.titulo });
+                  setPreviewLoadError(null);
+                  setPreviewOpen(true);
+                }}
+                aria-label={`Previsualizar ${slide.titulo}`}
+                title={slide.archivo ? `Previsualizar ${slide.titulo}` : 'Archivo no disponible'}
+                disabled={!slide.archivo}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A2 2 0 0122 9.618v4.764a2 2 0 01-2.447 1.894L15 14M4 6h8v12H4z" />
+                </svg>
+              </button>
+            </div>
+            <div className="mt-3 flex-grow">
+              <h3 className="font-medium text-lg text-gray-900 truncate">{slide.titulo}</h3>
+              <p className="text-sm text-gray-500 mt-1">Tipo: <span className="font-medium text-gray-700">{slide.tipo}</span></p>
+              <p className="text-sm text-gray-500">Orden: <span className="font-medium text-gray-700">{slide.orden}</span></p>
+            </div>
+              <div className="mt-3 flex items-center justify-between">
+              <span className={`px-2 py-1 text-xs rounded ${slide.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                {slide.activo ? 'Activo' : 'Inactivo'}
+              </span>
+              <div className="space-x-2">
+                <button onClick={() => handleEdit(slide.id)} className="px-2 py-1 bg-white border border-gray-200 text-blue-600 rounded hover:bg-gray-50" aria-label={`Editar ${slide.titulo}`}>Editar</button>
+                <button onClick={() => handleDelete(slide.id)} className="px-2 py-1 bg-white border border-gray-200 text-red-600 rounded hover:bg-gray-50" aria-label={`Eliminar ${slide.titulo}`}>Eliminar</button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
+
+      {/* Preview Modal */}
+      {previewOpen && previewData && (
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black bg-opacity-60">
+          <div className="relative max-w-4xl w-full mx-4">
+            <button
+              className="absolute -top-3 -right-3 bg-white rounded-full p-1 shadow"
+              onClick={() => setPreviewOpen(false)}
+              aria-label="Cerrar previsualización"
+            >
+              ✕
+            </button>
+            <div className="bg-white rounded overflow-hidden p-4 max-h-[80vh] overflow-auto">
+              <h3 className="text-lg font-semibold mb-2">{previewData.titulo}</h3>
+              {previewData.tipo === 'imagen' ? (
+                <img src={previewData.url} alt={previewData.titulo} className="w-full object-contain" onError={() => setPreviewLoadError('No se pudo cargar la imagen')} />
+              ) : (
+                <video src={previewData.url} className="w-full" controls aria-label={previewData.titulo} onError={() => setPreviewLoadError('No se pudo cargar el video')} />
+              )}
+              {previewLoadError && <div className="text-sm text-red-600 mt-2">{previewLoadError}</div>}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[999999]">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">
               {editingId ? 'Editar Slide' : 'Nuevo Slide'}
