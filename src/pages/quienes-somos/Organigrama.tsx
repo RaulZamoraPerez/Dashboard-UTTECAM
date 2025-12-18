@@ -46,7 +46,7 @@ function NodeCard({ node, onEdit, onAddChild, onDelete, level }: NodeCardProps) 
   return (
     <div className="flex flex-col items-center">
       {/* Card */}
-      <div className={`relative group bg-white rounded-xl shadow-sm border border-slate-200 p-3 w-56 transition-all hover:shadow-md hover:border-blue-200 ${level === 0 ? 'border-t-4 border-t-blue-600' : ''}`}>
+      <div className={`relative group bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-slate-200 dark:border-gray-700 p-3 w-56 transition-all hover:shadow-md hover:border-blue-200 dark:hover:border-blue-600 ${level === 0 ? 'border-t-4 border-t-blue-600' : ''}`}>
         
         {/* Actions Dropdown/Buttons */}
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
@@ -74,7 +74,7 @@ function NodeCard({ node, onEdit, onAddChild, onDelete, level }: NodeCardProps) 
         </div>
 
         <div className="flex flex-col items-center text-center">
-          <div className="w-12 h-12 rounded-full bg-slate-100 mb-2 overflow-hidden border-2 border-white shadow-sm flex-shrink-0">
+          <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-gray-700 mb-2 overflow-hidden border-2 border-white dark:border-gray-600 shadow-sm flex-shrink-0">
             {imageUrl ? (
               <img src={imageUrl} alt={node.data.name} className="w-full h-full object-cover" />
             ) : (
@@ -83,10 +83,22 @@ function NodeCard({ node, onEdit, onAddChild, onDelete, level }: NodeCardProps) 
               </div>
             )}
           </div>
-          <h3 className="font-semibold text-slate-900 text-xs leading-tight mb-0.5">{node.data.name}</h3>
+          <h3 className="font-semibold text-slate-900 dark:text-white text-xs leading-tight mb-0.5">{node.data.name}</h3>
           <p className="text-[10px] text-blue-600 font-medium mb-1">{node.data.title}</p>
           {node.data.text && (
-            <p className="text-[9px] text-slate-400 line-clamp-2 leading-tight">{node.data.text}</p>
+            <div className="relative group/tooltip w-full">
+              <p className="text-[9px] text-slate-400 line-clamp-2 leading-tight cursor-help transition-colors hover:text-slate-600 dark:hover:text-slate-300">
+                {node.data.text}
+              </p>
+              {/* Tooltip on hover */}
+              <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-lg shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 pointer-events-none scale-95 group-hover/tooltip:scale-100">
+                <div className="relative z-10 text-[11px] text-slate-600 dark:text-gray-300 leading-relaxed text-left max-h-48 overflow-y-auto custom-scrollbar">
+                  {node.data.text}
+                </div>
+                {/* Arrow */}
+                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white dark:bg-gray-800 border-r border-b border-slate-200 dark:border-gray-700 rotate-45"></div>
+              </div>
+            </div>
           )}
         </div>
 
@@ -457,7 +469,7 @@ export default function OrganigramaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 md:p-8 font-sans text-slate-800">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900 p-6 md:p-8 font-sans text-slate-800 dark:text-slate-200">
       <style>{`
         .swal2-container {
           z-index: 99999 !important;
@@ -475,8 +487,8 @@ export default function OrganigramaPage() {
       {/* Header */}
       <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Organigrama</h1>
-          <p className="text-slate-500 mt-1">Gestiona la estructura jerárquica de la institución.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Organigrama</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Gestiona la estructura jerárquica de la institución.</p>
         </div>
         <button 
           onClick={handleAddRoot}
@@ -488,28 +500,28 @@ export default function OrganigramaPage() {
       </header>
 
       {/* Main Content - Strictly contained Pan/Zoom Area */}
-      <div className="w-full bg-slate-50/50 rounded-3xl shadow-sm border border-slate-200 overflow-hidden h-[650px] relative select-none">
+      <div className="w-full bg-slate-50/50 dark:bg-gray-800/50 rounded-3xl shadow-sm border border-slate-200 dark:border-gray-700 overflow-hidden h-[650px] relative select-none">
         
         {/* Transform Controls */}
-        <div className="absolute bottom-4 right-4 z-20 flex flex-col gap-2 bg-white shadow-lg border border-slate-100 rounded-xl p-2">
-           <button 
-             onClick={() => setScale(s => Math.min(s + 0.1, 2))}
-             className="p-2 hover:bg-slate-50 text-slate-600 rounded-lg transition-colors"
-             title="Acercar"
-           >
-             <Plus className="w-5 h-5" />
-           </button>
-           <button 
-             onClick={() => setScale(s => Math.max(s - 0.1, 0.2))}
-             className="p-2 hover:bg-slate-50 text-slate-600 rounded-lg transition-colors"
-             title="Alejar"
-           >
-             <div className="w-5 h-5 flex items-center justify-center font-bold text-lg">-</div>
-           </button>
-           <div className="h-px bg-slate-100 my-1"></div>
+        <div className="absolute bottom-4 right-4 z-20 flex flex-col gap-2 bg-white dark:bg-gray-800 shadow-lg border border-slate-100 dark:border-gray-700 rounded-xl p-2">
+            <button 
+              onClick={() => setScale(s => Math.min(s + 0.1, 2))}
+              className="p-2 hover:bg-slate-50 dark:hover:bg-gray-700 text-slate-600 dark:text-gray-300 rounded-lg transition-colors"
+              title="Acercar"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={() => setScale(s => Math.max(s - 0.1, 0.2))}
+              className="p-2 hover:bg-slate-50 dark:hover:bg-gray-700 text-slate-600 dark:text-gray-300 rounded-lg transition-colors"
+              title="Alejar"
+            >
+              <div className="w-5 h-5 flex items-center justify-center font-bold text-lg">-</div>
+            </button>
+           <div className="h-px bg-slate-100 dark:bg-gray-700 my-1"></div>
            <button 
              onClick={() => { setScale(0.6); setPosition({x:0, y:0}); }}
-             className="p-2 hover:bg-slate-50 text-slate-600 rounded-lg transition-colors"
+             className="p-2 hover:bg-slate-50 dark:hover:bg-gray-700 text-slate-600 dark:text-gray-300 rounded-lg transition-colors"
              title="Resetear Vista"
            >
              <div className="text-xs font-bold">RST</div>

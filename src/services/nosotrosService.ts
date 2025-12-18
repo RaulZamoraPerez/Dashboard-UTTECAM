@@ -23,19 +23,21 @@ export const getImageUrl = (imagePath: string | undefined): string => {
     return imagePath;
   }
 
-  // Si la ruta ya incluye /uploads/, devolverla directamente (el proxy la manejará)
+  // Obtener la URL base del backend
+  const backendUrl = import.meta.env.VITE_BACKENDURL || '';
+
+  // Si la ruta ya incluye /uploads/, agregar el backend URL
   if (imagePath.startsWith('/uploads/')) {
-    return imagePath;
+    return `${backendUrl}${imagePath}`;
   }
 
   // Si la ruta es relativa (como 'nosotros/vision.jpg'), construir la ruta completa
-  // Asumiendo que todas las imágenes están en /uploads/nosotros/
   if (imagePath.startsWith('nosotros/')) {
-    return `/uploads/${imagePath}`;
+    return `${backendUrl}/uploads/${imagePath}`;
   }
 
-  // Para otros casos, intentar acceder directamente
-  return `/${imagePath}`;
+  // Para otros casos, intentar acceder con el backend
+  return `${backendUrl}/${imagePath}`;
 };
 
 /**
@@ -61,14 +63,26 @@ export const getNosotrosContent = async (): Promise<NosotrosContent> => {
   const rawData = await fetchWithAuth<any>(`${API_BASE}/content`);
 
   // La nueva API ya devuelve los datos en el formato correcto
+  const data = rawData || {}; // Handle null response for empty DB
+
+  // objetivoIntegral viene como string de la BD, convertirlo a objeto para el frontend
+  let objetivoIntegralObj = { text: '' };
+  if (data.objetivoIntegral) {
+    if (typeof data.objetivoIntegral === 'string') {
+      objetivoIntegralObj = { text: data.objetivoIntegral };
+    } else if (typeof data.objetivoIntegral === 'object' && 'text' in data.objetivoIntegral) {
+      objetivoIntegralObj = data.objetivoIntegral;
+    }
+  }
+
   return {
-    vision: rawData.vision || { title: 'Visión', description: '', imageSrc: null },
-    mision: rawData.mision || { title: 'Misión', description: '', imageSrc: null },
-    valores: rawData.valores || { title: 'Valores', description: [], imageSrc: null },
-    politicaIntegral: rawData.politicaIntegral || { text: '', imageSrc: null },
-    objetivoIntegral: rawData.objetivoIntegral || { text: '' },
-    noDiscriminacion: rawData.noDiscriminacion || { items: [] },
-    organigrama: rawData.organigrama || { imageSrc: null }
+    vision: data.vision || { title: 'Visión', description: '', imageSrc: null },
+    mision: data.mision || { title: 'Misión', description: '', imageSrc: null },
+    valores: data.valores || { title: 'Valores', description: [], imageSrc: null },
+    politicaIntegral: data.politicaIntegral || { text: '', imageSrc: null },
+    objetivoIntegral: objetivoIntegralObj,
+    noDiscriminacion: data.noDiscriminacion || { items: [] },
+    organigrama: data.organigrama || { imageSrc: null }
   };
 };
 

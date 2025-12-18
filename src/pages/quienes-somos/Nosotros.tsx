@@ -216,7 +216,7 @@ export default function NosotrosPage() {
   const hasContent = content && (content.vision || content.mision || content.valores);
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 md:p-8 font-sans text-slate-800">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900 p-6 md:p-8 font-sans text-slate-800 dark:text-slate-200">
       <style>{`
         .swal2-container {
           z-index: 99999 !important;
@@ -225,17 +225,17 @@ export default function NosotrosPage() {
 
       {/* Header */}
       <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Nosotros</h1>
-        <p className="text-slate-500 mt-1">Administra la información institucional: Misión, Visión, Valores y más.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Nosotros</h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-1">Administra la información institucional: Misión, Visión, Valores y más.</p>
       </header>
 
       {!hasContent ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
-          <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6 text-blue-600">
+        <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-700">
+          <div className="w-24 h-24 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-6 text-blue-600 dark:text-blue-400">
             <Flag className="w-12 h-12" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Sin Contenido</h2>
-          <p className="text-slate-500 max-w-md text-center mb-8">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Sin Contenido</h2>
+          <p className="text-slate-500 dark:text-slate-400 max-w-md text-center mb-8">
             Aún no se ha definido la información institucional. Haz clic abajo para crear la estructura inicial.
           </p>
           <button
@@ -455,20 +455,20 @@ function SectionCard({ sectionKey, content, onEdit, isList = false }: { sectionK
   const Icon = config.icon;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow">
-      <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-700 overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow">
+      <div className="p-6 border-b border-slate-50 dark:border-gray-700 flex items-center justify-between bg-slate-50/30 dark:bg-gray-700/30">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+          <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
             <Icon className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-semibold text-slate-900">{config.title}</h3>
-            <p className="text-xs text-slate-500">{config.description}</p>
+            <h3 className="font-semibold text-slate-900 dark:text-white">{config.title}</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{config.description}</p>
           </div>
         </div>
         <button 
           onClick={onEdit}
-          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
           title="Editar"
         >
           <Edit2 className="w-4 h-4" />
@@ -479,18 +479,18 @@ function SectionCard({ sectionKey, content, onEdit, isList = false }: { sectionK
           Array.isArray(content) && content.length > 0 ? (
             <ul className="space-y-2">
               {content.map((item: string, i: number) => (
-                <li key={i} className="flex items-start gap-2 text-slate-600 text-sm">
+                <li key={i} className="flex items-start gap-2 text-slate-600 dark:text-slate-300 text-sm">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0" />
                   <span>{item}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-slate-400 italic text-sm">Sin valores definidos.</p>
+            <p className="text-slate-400 dark:text-slate-500 italic text-sm">Sin valores definidos.</p>
           )
         ) : (
-          <p className="text-slate-600 whitespace-pre-line leading-relaxed text-sm">
-            {content || <span className="text-slate-400 italic">Sin contenido definido.</span>}
+          <p className="text-slate-600 dark:text-slate-300 whitespace-pre-line leading-relaxed text-sm">
+            {content || <span className="text-slate-400 dark:text-slate-500 italic">Sin contenido definido.</span>}
           </p>
         )}
       </div>

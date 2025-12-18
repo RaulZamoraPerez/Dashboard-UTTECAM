@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import Badge from "../../components/ui/badge/Badge";
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_BACKENDURL || '';
 
 interface Programa {
   id: number;
@@ -33,12 +34,23 @@ const ProgramasDesarrollo = () => {
   const fetchProgramas = async () => {
     try {
       const response = await fetch(`${API_URL}/api/programas-desarrollo?admin=true`);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) {
+        // Si es 404 o error de BD vacía, simplemente dejamos array vacío
+        if (response.status === 404) {
+          setProgramas([]);
+          setLoading(false);
+          return;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
-      setProgramas(data);
+      setProgramas(Array.isArray(data) ? data : []);
+      setError(''); // Limpiar errores previos
       setLoading(false);
     } catch (err: any) {
-      setError(`Error al cargar programas: ${err.message}`);
+      // Network error o BD vacía - no mostramos error, solo lista vacía
+      console.warn('Error al cargar programas:', err.message);
+      setProgramas([]);
       setLoading(false);
     }
   };
@@ -86,24 +98,51 @@ const ProgramasDesarrollo = () => {
       
       if (!response.ok) throw new Error('Action failed');
       
+      Swal.fire({
+        icon: 'success',
+        title: editingId ? 'Actualizado' : 'Creado',
+        text: `Programa ${editingId ? 'actualizado' : 'creado'} correctamente`,
+        timer: 2000,
+        showConfirmButton: false
+      });
+      
       fetchProgramas();
       setIsModalOpen(false);
       resetForm();
     } catch (err) {
-      setError('Error al guardar programa');
+      Swal.fire('Error', 'No se pudo guardar el programa', 'error');
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('¿Estás seguro de eliminar este programa?')) {
+    const result = await Swal.fire({
+      title: '¿Eliminar programa?',
+      text: 'Esta acción no se puede deshacer',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
       try {
         const response = await fetch(`${API_URL}/api/programas-desarrollo/${id}`, {
-            method: 'DELETE'
+          method: 'DELETE'
         });
         if (!response.ok) throw new Error('Delete failed');
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Eliminado',
+          text: 'El programa ha sido eliminado correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
         fetchProgramas();
       } catch (err) {
-        setError('Error al eliminar programa');
+        Swal.fire('Error', 'No se pudo eliminar el programa', 'error');
       }
     }
   };
@@ -156,19 +195,37 @@ const ProgramasDesarrollo = () => {
       </div>
 
       {error && (
-          <div className="mb-6 bg-red-50 text-red-700 p-4 rounded-xl border border-red-100">
+          <div className="mb-6 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-4 rounded-xl border border-red-100 dark:border-red-800">
               {error}
           </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {programas.map((programa) => (
-          <div key={programa.id} className="group relative rounded-xl bg-white p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200">
+        {programas.length === 0 ? (
+          <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-20 h-20 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4">
+              <svg className="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">No hay programas de desarrollo</h3>
+            <p className="text-gray-500 dark:text-gray-400 max-w-sm mb-4">
+              Comienza agregando tu primer programa de desarrollo usando el botón "Nuevo Programa".
+            </p>
+            <button
+              onClick={() => { resetForm(); setIsModalOpen(true); }}
+              className="text-blue-600 font-medium hover:underline"
+            >
+              Crear primer programa
+            </button>
+          </div>
+        ) : programas.map((programa) => (
+          <div key={programa.id} className="group relative rounded-xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
              
              {/* Header Card */}
              <div className="flex justify-between items-start mb-4">
                  <div className="flex-1 pr-4">
-                     <h3 className="text-lg font-bold text-gray-800 line-clamp-2 leading-tight">
+                     <h3 className="text-lg font-bold text-gray-800 dark:text-white line-clamp-2 leading-tight">
                         {programa.titulo}
                      </h3>
                  </div>
@@ -181,15 +238,15 @@ const ProgramasDesarrollo = () => {
              </div>
              
              {/* Description */}
-             <p className="text-sm text-gray-500 mb-6 line-clamp-3 h-15">
+             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 line-clamp-3 h-15">
                 {programa.descripcion || "Sin descripción disponible."}
              </p>
 
              {/* Footer Actions */}
-             <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+             <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
                 {programa.archivo ? (
                     <a href={`${API_URL}${programa.archivo}`} target="_blank" rel="noopener noreferrer" 
-                       className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors bg-white border border-gray-200 hover:bg-gray-50 px-3 py-1.5 rounded-lg shadow-sm">
+                       className="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 px-3 py-1.5 rounded-lg shadow-sm">
                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                        Ver PDF
                     </a>

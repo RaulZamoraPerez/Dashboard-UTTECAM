@@ -93,13 +93,15 @@ const DraggableContact = ({
     <div 
       ref={ref}
       data-handler-id={handlerId}
-      className={`group bg-white rounded-2xl p-6 shadow-sm border transition-all hover:shadow-md ${
-        !contact.activo ? 'border-slate-200 bg-slate-50/50 opacity-75' : 'border-slate-100'
+      className={`group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border transition-all hover:shadow-md ${
+        !contact.activo 
+          ? 'border-slate-200 dark:border-gray-700 bg-slate-50/50 dark:bg-gray-800/50 opacity-75' 
+          : 'border-slate-100 dark:border-gray-700'
       } ${isDragging ? 'opacity-0' : 'opacity-100'} ${isDraggable ? 'cursor-move' : ''}`}
     >
         <div className="flex items-start gap-4">
               <div className="relative flex-shrink-0">
-                <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-100 border border-slate-200">
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-100 dark:bg-gray-700 border border-slate-200 dark:border-gray-600">
                   {contact.imagenUrl ? (
                     <img src={contact.imagenUrl} alt={contact.name} className="w-full h-full object-cover" />
                   ) : (
@@ -109,31 +111,31 @@ const DraggableContact = ({
                   )}
                 </div>
                 {!contact.activo && (
-                  <div className="absolute -bottom-1 -right-1 bg-slate-500 text-white p-1 rounded-full border-2 border-white" title="Inactivo / Oculto">
+                  <div className="absolute -bottom-1 -right-1 bg-slate-500 text-white p-1 rounded-full border-2 border-white dark:border-gray-800" title="Inactivo / Oculto">
                     <EyeOff className="w-3 h-3" />
                   </div>
                 )}
               </div>
               
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-slate-900 truncate text-lg" title={contact.name}>
+                <h3 className="font-semibold text-slate-900 dark:text-white truncate text-lg" title={contact.name}>
                   {contact.name}
                 </h3>
-                <p className="text-blue-600 text-sm font-medium truncate flex items-center gap-1.5 mb-2">
+                <p className="text-blue-600 dark:text-blue-400 text-sm font-medium truncate flex items-center gap-1.5 mb-2">
                   <Briefcase className="w-3.5 h-3.5" />
                   {contact.title}
                 </p>
                 
                 <div className="space-y-1.5">
-                  <div className="flex items-center gap-2 text-sm text-slate-500">
+                  <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                     <Mail className="w-3.5 h-3.5 flex-shrink-0" />
                     <span className="truncate" title={contact.email}>{contact.email}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-500">
+                  <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                     <Phone className="w-3.5 h-3.5 flex-shrink-0" />
                     <span className="truncate">
                       {contact.phone}
-                      {contact.extension && <span className="text-slate-400 ml-1">ext. {contact.extension}</span>}
+                      {contact.extension && <span className="text-slate-400 dark:text-slate-500 ml-1">ext. {contact.extension}</span>}
                     </span>
                   </div>
                   {/*
@@ -145,13 +147,13 @@ const DraggableContact = ({
               </div>
         </div>
 
-        <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-gray-700 flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                <button 
                 onClick={() => toggleActivo(contact)}
                 className={`p-2 rounded-lg transition-colors ${
                   !contact.activo 
-                    ? 'text-slate-400 hover:text-blue-600 hover:bg-blue-50' 
-                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                    ? 'text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30' 
+                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-gray-700'
                 }`}
                 title={!contact.activo ? "Activar (Hacer visible)" : "Desactivar (Ocultar)"}
               >
@@ -159,14 +161,14 @@ const DraggableContact = ({
               </button>
               <button 
                 onClick={() => handleOpenModal(contact)}
-                className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors"
                 title="Editar"
               >
                 <Edit2 className="w-4 h-4" />
               </button>
               <button 
                 onClick={() => handleDelete(contact.id)}
-                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                 title="Eliminar"
               >
                 <Trash2 className="w-4 h-4" />
@@ -200,6 +202,51 @@ export default function DirectorioPage() {
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  
+  // Validation State
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string | undefined>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  // Validación de campo individual
+  const validateField = (field: string, value: string): string | undefined => {
+    switch (field) {
+      case 'name':
+        if (!value?.trim()) return 'El nombre es obligatorio';
+        if (value.length > 100) return 'Máximo 100 caracteres';
+        break;
+      case 'title':
+        if (!value?.trim()) return 'El cargo es obligatorio';
+        if (value.length > 100) return 'Máximo 100 caracteres';
+        break;
+      case 'email':
+        if (!value?.trim()) return 'El correo es obligatorio';
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) return 'Formato de correo inválido';
+        break;
+      case 'phone':
+        if (value?.trim()) {
+          const phoneRegex = /^[\d\s\-\(\)\+]+$/;
+          if (!phoneRegex.test(value)) return 'Solo números, espacios y guiones';
+          if (value.length > 20) return 'Máximo 20 caracteres';
+        }
+        break;
+      case 'extension':
+        if (value?.trim()) {
+          if (!/^\d*$/.test(value)) return 'Solo números';
+          if (value.length > 10) return 'Máximo 10 dígitos';
+        }
+        break;
+    }
+    return undefined;
+  };
+
+  // Manejar cambio con validación en tiempo real
+  const handleFieldChange = (field: string, value: string) => {
+    setFormData({...formData, [field]: value});
+    setTouched(prev => ({ ...prev, [field]: true }));
+    const error = validateField(field, value);
+    setFieldErrors(prev => ({ ...prev, [field]: error }));
+  };
 
   const buildImageUrl = (filename?: string) => {
     if (!filename) return undefined;
@@ -445,7 +492,7 @@ export default function DirectorioPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 md:p-8 font-sans text-slate-800">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900 p-6 md:p-8 font-sans text-slate-800 dark:text-slate-200">
       <style>{`
         .swal2-container {
           z-index: 99999 !important;
@@ -455,8 +502,8 @@ export default function DirectorioPage() {
       {/* Header */}
       <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Directorio Institucional</h1>
-          <p className="text-slate-500 mt-1">Arrastra y suelta las tarjetas para ordenar la prioridad en el sitio web.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Directorio Institucional</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Arrastra y suelta las tarjetas para ordenar la prioridad en el sitio web.</p>
         </div>
         <button 
           onClick={() => handleOpenModal()}
@@ -468,19 +515,19 @@ export default function DirectorioPage() {
       </header>
 
       {/* Toolbar */}
-      <div className="mb-8 bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row gap-4 items-center">
+      <div className="mb-8 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-700 flex flex-col sm:flex-row gap-4 items-center">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Buscar por nombre, cargo, correo..."
-            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
           />
         </div>
         <div className="flex items-center gap-2 text-sm text-slate-500">
-          <span className="bg-white border border-slate-200 px-3 py-1 rounded-lg shadow-sm">
-            Total: <strong className="text-slate-800">{contacts.length}</strong>
+          <span className="bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 px-3 py-1 rounded-lg shadow-sm">
+            Total: <strong className="text-slate-800 dark:text-slate-200">{contacts.length}</strong>
           </span>
         </div>
       </div>
@@ -506,11 +553,11 @@ export default function DirectorioPage() {
 
       {filteredContacts.length === 0 && (
         <div className="text-center py-20">
-          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+          <div className="w-20 h-20 bg-slate-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300 dark:text-gray-600">
             <Search className="w-10 h-10" />
           </div>
-          <h3 className="text-lg font-medium text-slate-900">No se encontraron contactos</h3>
-          <p className="text-slate-500">Intenta con otros términos de búsqueda.</p>
+          <h3 className="text-lg font-medium text-slate-900 dark:text-white">No se encontraron contactos</h3>
+          <p className="text-slate-500 dark:text-slate-400">Intenta con otros términos de búsqueda.</p>
         </div>
       )}
 
@@ -553,80 +600,129 @@ export default function DirectorioPage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Nombre */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Nombre Completo *</label>
+                    <label className={`text-sm font-medium ${touched.name && fieldErrors.name ? 'text-red-600' : 'text-slate-700'}`}>
+                      Nombre Completo <span className="text-red-500 font-bold">*</span>
+                    </label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <User className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${touched.name && fieldErrors.name ? 'text-red-400' : 'text-slate-400'}`} />
                       <input 
                         value={formData.name || ''}
-                        onChange={e => setFormData({...formData, name: e.target.value})}
-                        className="w-full pl-10 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                        onChange={e => handleFieldChange('name', e.target.value)}
+                        className={`w-full pl-10 border-2 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${
+                          touched.name && fieldErrors.name 
+                            ? 'border-red-500 bg-red-50 focus:ring-red-500/20 focus:border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' 
+                            : 'border-slate-200 focus:ring-blue-500/20 focus:border-blue-500'
+                        }`}
                         placeholder="Ej. Juan Pérez"
                       />
                     </div>
+                    {touched.name && fieldErrors.name && (
+                      <p className="text-sm text-red-600 font-medium bg-red-50 px-3 py-1.5 rounded-lg border border-red-200">
+                        {fieldErrors.name}
+                      </p>
+                    )}
                   </div>
 
+                  {/* Cargo */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Cargo / Título *</label>
+                    <label className={`text-sm font-medium ${touched.title && fieldErrors.title ? 'text-red-600' : 'text-slate-700'}`}>
+                      Cargo / Título <span className="text-red-500 font-bold">*</span>
+                    </label>
                     <div className="relative">
-                      <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Briefcase className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${touched.title && fieldErrors.title ? 'text-red-400' : 'text-slate-400'}`} />
                       <input 
                         value={formData.title || ''}
-                        onChange={e => setFormData({...formData, title: e.target.value})}
-                        className="w-full pl-10 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                        onChange={e => handleFieldChange('title', e.target.value)}
+                        className={`w-full pl-10 border-2 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${
+                          touched.title && fieldErrors.title 
+                            ? 'border-red-500 bg-red-50 focus:ring-red-500/20 focus:border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' 
+                            : 'border-slate-200 focus:ring-blue-500/20 focus:border-blue-500'
+                        }`}
                         placeholder="Ej. Director Académico"
                       />
                     </div>
+                    {touched.title && fieldErrors.title && (
+                      <p className="text-sm text-red-600 font-medium bg-red-50 px-3 py-1.5 rounded-lg border border-red-200">
+                        {fieldErrors.title}
+                      </p>
+                    )}
                   </div>
 
+                  {/* Correo */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Correo Electrónico *</label>
+                    <label className={`text-sm font-medium ${touched.email && fieldErrors.email ? 'text-red-600' : 'text-slate-700'}`}>
+                      Correo Electrónico <span className="text-red-500 font-bold">*</span>
+                    </label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${touched.email && fieldErrors.email ? 'text-red-400' : 'text-slate-400'}`} />
                       <input 
                         type="email"
                         value={formData.email || ''}
-                        onChange={e => setFormData({...formData, email: e.target.value})}
-                        className="w-full pl-10 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                        onChange={e => handleFieldChange('email', e.target.value)}
+                        className={`w-full pl-10 border-2 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${
+                          touched.email && fieldErrors.email 
+                            ? 'border-red-500 bg-red-50 focus:ring-red-500/20 focus:border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' 
+                            : 'border-slate-200 focus:ring-blue-500/20 focus:border-blue-500'
+                        }`}
                         placeholder="ejemplo@uttecam.edu.mx"
                       />
                     </div>
+                    {touched.email && fieldErrors.email && (
+                      <p className="text-sm text-red-600 font-medium bg-red-50 px-3 py-1.5 rounded-lg border border-red-200">
+                        {fieldErrors.email}
+                      </p>
+                    )}
                   </div>
 
+                  {/* Teléfono, Extensión, Orden */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Teléfono */}
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700">Teléfono</label>
+                      <label className={`text-sm font-medium ${touched.phone && fieldErrors.phone ? 'text-red-600' : 'text-slate-700'}`}>
+                        Teléfono
+                      </label>
                       <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Phone className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${touched.phone && fieldErrors.phone ? 'text-red-400' : 'text-slate-400'}`} />
                         <input 
                           value={formData.phone || ''}
-                          onChange={e => setFormData({...formData, phone: e.target.value})}
-                          className="w-full pl-10 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                          onChange={e => handleFieldChange('phone', e.target.value)}
+                          className={`w-full pl-10 border-2 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${
+                            touched.phone && fieldErrors.phone 
+                              ? 'border-red-500 bg-red-50 focus:ring-red-500/20 focus:border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' 
+                              : 'border-slate-200 focus:ring-blue-500/20 focus:border-blue-500'
+                          }`}
                           placeholder="249..."
                         />
                       </div>
+                      {touched.phone && fieldErrors.phone && (
+                        <p className="text-xs text-red-600 font-medium">
+                          {fieldErrors.phone}
+                        </p>
+                      )}
                     </div>
+                    
+                    {/* Extensión */}
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700">Extensión</label>
+                      <label className={`text-sm font-medium ${touched.extension && fieldErrors.extension ? 'text-red-600' : 'text-slate-700'}`}>
+                        Extensión
+                      </label>
                       <input 
                         value={formData.extension || ''}
-                        onChange={e => setFormData({...formData, extension: e.target.value})}
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                        onChange={e => handleFieldChange('extension', e.target.value)}
+                        className={`w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all ${
+                          touched.extension && fieldErrors.extension 
+                            ? 'border-red-500 bg-red-50 focus:ring-red-500/20 focus:border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' 
+                            : 'border-slate-200 focus:ring-blue-500/20 focus:border-blue-500'
+                        }`}
                         placeholder="101"
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700">Orden (Manual)</label>
-                      <div className="relative">
-                        <input 
-                          type="number"
-                          value={formData.orden || 0}
-                          onChange={e => setFormData({...formData, orden: parseInt(e.target.value)})}
-                          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                          placeholder="0"
-                        />
-                      </div>
-                      <p className="text-[10px] text-slate-500 pt-1">Arrastra las tarjetas para reordenar</p>
+                      {touched.extension && fieldErrors.extension && (
+                        <p className="text-xs text-red-600 font-medium">
+                          {fieldErrors.extension}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

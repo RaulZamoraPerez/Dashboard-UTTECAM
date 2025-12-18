@@ -365,7 +365,7 @@ const CalendarioAcademico: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 md:p-8 font-sans text-slate-800">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900 p-6 md:p-8 font-sans text-slate-800 dark:text-slate-200">
       <style>{`
         .swal2-container {
           z-index: 99999 !important;
@@ -375,8 +375,8 @@ const CalendarioAcademico: React.FC = () => {
       {/* Header */}
       <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Calendario Académico</h1>
-          <p className="text-slate-500 mt-1">Gestión y publicación de calendarios escolares.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Calendario Académico</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Gestión y publicación de calendarios escolares.</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
@@ -388,19 +388,19 @@ const CalendarioAcademico: React.FC = () => {
       </header>
 
       {/* Toolbar */}
-      <div className="mb-8 bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row gap-4 items-center">
+      <div className="mb-8 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-700 flex flex-col sm:flex-row gap-4 items-center">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Buscar calendario..."
-            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+            className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-gray-700 border border-slate-200 dark:border-gray-600 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
           />
         </div>
         <div className="flex items-center gap-2 text-sm text-slate-500">
-          <span className="bg-white border border-slate-200 px-3 py-1 rounded-lg shadow-sm">
-            Total: <strong className="text-slate-800">{calendarios.length}</strong>
+          <span className="bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 px-3 py-1 rounded-lg shadow-sm">
+            Total: <strong className="text-slate-800 dark:text-slate-200">{calendarios.length}</strong>
           </span>
         </div>
       </div>
@@ -414,9 +414,9 @@ const CalendarioAcademico: React.FC = () => {
           {filteredCalendars.map((calendario) => (
             <div 
               key={calendario.id} 
-              className="group bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-md transition-all flex flex-col"
+              className="group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm border border-slate-100 dark:border-gray-700 hover:shadow-md transition-all flex flex-col"
             >
-              <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden group-hover:opacity-90 transition-opacity cursor-pointer" onClick={() => handlePreview(calendario)}>
+              <div className="aspect-[4/3] bg-slate-100 dark:bg-gray-700 relative overflow-hidden group-hover:opacity-90 transition-opacity cursor-pointer" onClick={() => handlePreview(calendario)}>
                 {renderFilePreview(calendario)}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                   <Eye className="w-8 h-8 text-white drop-shadow-md" />
@@ -424,31 +424,31 @@ const CalendarioAcademico: React.FC = () => {
               </div>
               
               <div className="p-4 flex-1 flex flex-col">
-                <h3 className="font-semibold text-slate-900 truncate mb-1" title={calendario.titulo}>
+                <h3 className="font-semibold text-slate-900 dark:text-white truncate mb-1" title={calendario.titulo}>
                   {calendario.titulo}
                 </h3>
-                <p className="text-xs text-slate-500 mb-4">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
                   Subido el {new Date(calendario.fechaSubida).toLocaleDateString('es-ES')}
                 </p>
                 
                 <div className="mt-auto flex items-center justify-end gap-2">
                   <button
                     onClick={() => handlePreview(calendario)}
-                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                     title="Ver"
                   >
                     <Eye className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleEdit(calendario)}
-                    className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                    className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors"
                     title="Editar"
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(calendario.id)}
-                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                     title="Eliminar"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -462,11 +462,11 @@ const CalendarioAcademico: React.FC = () => {
 
       {filteredCalendars.length === 0 && !loading && (
         <div className="text-center py-20">
-          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+          <div className="w-20 h-20 bg-slate-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300 dark:text-gray-600">
             <Calendar className="w-10 h-10" />
           </div>
-          <h3 className="text-lg font-medium text-slate-900">No hay calendarios</h3>
-          <p className="text-slate-500">Sube un nuevo calendario para comenzar.</p>
+          <h3 className="text-lg font-medium text-slate-900 dark:text-white">No hay calendarios</h3>
+          <p className="text-slate-500 dark:text-slate-400">Sube un nuevo calendario para comenzar.</p>
         </div>
       )}
 

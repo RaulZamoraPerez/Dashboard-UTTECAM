@@ -26,3 +26,9 @@ dist-ssr
 .env
 .env.local
 *:Zone.Identifier
+.pdf 
+.pdf    
+.jpg
+logs/
+*.log
+*-audit.json

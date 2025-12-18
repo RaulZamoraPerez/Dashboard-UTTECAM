@@ -55,7 +55,7 @@ export const createOrganigrama = async (data: any, image?: File | null) => {
   Object.keys(data).forEach(key => {
     if (data[key] !== undefined && data[key] !== null) fd.append(key, String(data[key]));
   });
-  if (image) fd.append('image', image);
+  if (image) fd.append('imagen', image);
   return createNode(fd);
 };
 
@@ -64,7 +64,7 @@ export const updateOrganigrama = async (id: number, data: any, image?: File | nu
   Object.keys(data).forEach(key => {
     if (data[key] !== undefined && data[key] !== null) fd.append(key, String(data[key]));
   });
-  if (image) fd.append('image', image);
+  if (image) fd.append('imagen', image);
   return updateNode(id, fd);
 };
 

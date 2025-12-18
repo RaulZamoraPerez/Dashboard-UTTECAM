@@ -487,7 +487,7 @@ export default function NormatividadPage() {
     : docsInCategory;
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 md:p-8 font-sans text-slate-800">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900 p-6 md:p-8 font-sans text-slate-800 dark:text-slate-200">
       <style>{`
         .swal2-container {
           z-index: 99999 !important;
@@ -511,8 +511,8 @@ export default function NormatividadPage() {
       {/* Header */}
       <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Normatividad</h1>
-          <p className="text-slate-500 mt-1">Gestión centralizada de documentos y regulaciones.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Normatividad</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Gestión centralizada de documentos y regulaciones.</p>
         </div>
       </header>
 
@@ -520,9 +520,9 @@ export default function NormatividadPage() {
         
         {/* Sidebar: Categories */}
         <aside className="lg:col-span-3 space-y-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[calc(100vh-12rem)] sticky top-8">
-            <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-              <h2 className="font-semibold text-slate-700 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-700 overflow-hidden flex flex-col h-[calc(100vh-12rem)] sticky top-8">
+            <div className="p-4 border-b border-slate-100 dark:border-gray-700 bg-slate-50/50 dark:bg-gray-700/50 flex items-center justify-between">
+              <h2 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2">
                 <Folder className="w-4 h-4 text-slate-400" />
                 Categorías
               </h2>
@@ -705,19 +705,19 @@ export default function NormatividadPage() {
                 </button>
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-slate-100 dark:divide-gray-700">
                 {filteredDocs.map(doc => (
-                  <div key={doc.id} className="group p-4 hover:bg-slate-50 transition-colors flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0 text-red-500 shadow-sm">
+                  <div key={doc.id} className="group p-4 hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center flex-shrink-0 text-red-500 dark:text-red-400 shadow-sm">
                       <FileText className="w-5 h-5" />
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-slate-900 truncate" title={doc.titulo}>
+                      <h4 className="font-medium text-slate-900 dark:text-white truncate" title={doc.titulo}>
                         {doc.titulo}
                       </h4>
-                      <p className="text-xs text-slate-500 truncate mt-0.5 flex items-center gap-2">
-                        <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 font-mono text-[10px] uppercase tracking-wider border border-slate-200">PDF</span>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5 flex items-center gap-2">
+                        <span className="bg-slate-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300 font-mono text-[10px] uppercase tracking-wider border border-slate-200 dark:border-gray-600">PDF</span>
                         {doc.archivoName || 'Documento PDF'}
                       </p>
                     </div>
@@ -725,7 +725,7 @@ export default function NormatividadPage() {
                     <div className="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       <button 
                         onClick={() => window.open(buildFileUrl(doc.archivo), '_blank')}
-                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                         title="Ver documento"
                       >
                         <Eye className="w-4 h-4" />
@@ -734,22 +734,22 @@ export default function NormatividadPage() {
                         href={buildFileUrl(doc.archivo)} 
                         target="_blank" 
                         rel="noreferrer"
-                        className="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                        className="p-2 text-slate-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors"
                         title="Descargar"
                       >
                         <Download className="w-4 h-4" />
                       </a>
-                      <div className="w-px h-4 bg-slate-200 mx-1"></div>
+                      <div className="w-px h-4 bg-slate-200 dark:bg-gray-700 mx-1"></div>
                       <button 
                         onClick={() => setEditingDoc({ id: doc.id, titulo: doc.titulo })}
-                        className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                        className="p-2 text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors"
                         title="Editar"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => handleDeleteDocument(doc.id)}
-                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                         title="Eliminar"
                       >
                         <Trash2 className="w-4 h-4" />

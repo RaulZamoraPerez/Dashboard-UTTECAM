@@ -4,7 +4,7 @@ import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import Badge from "../../components/ui/badge/Badge";
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_BACKENDURL || '';
 
 interface Documento {
     id: number;
@@ -42,9 +42,17 @@ const Comites = () => {
     const fetchComites = async () => {
         try {
             const response = await fetch(`${API_URL}/api/comites?admin=true`);
-            if (!response.ok) throw new Error('Error fetching comites');
+            if (!response.ok) {
+                // Si es 404, simplemente no hay datos
+                if (response.status === 404) {
+                    setComites([]);
+                    setLoading(false);
+                    return;
+                }
+                throw new Error('Error fetching comites');
+            }
             const data = await response.json();
-            setComites(data);
+            setComites(Array.isArray(data) ? data : []);
             
             // Update selected comite if exists
             if (selectedComite) {
@@ -53,8 +61,8 @@ const Comites = () => {
             }
             setLoading(false);
         } catch (error) {
-            console.error(error);
-            Swal.fire('Error', 'No se pudieron cargar los comités', 'error');
+            console.warn('Error al cargar comités:', error);
+            setComites([]);
             setLoading(false);
         }
     };
@@ -190,9 +198,9 @@ const Comites = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)] min-h-[600px]">
                 {/* LISTA DE COMITÉS (Left Panel) */}
-                <div className="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden">
-                    <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                        <h3 className="font-bold text-gray-800">Comités</h3>
+                <div className="lg:col-span-1 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden">
+                    <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-700/50">
+                        <h3 className="font-bold text-gray-800 dark:text-white">Comités</h3>
                         <button 
                             onClick={() => { setComiteForm({ id: 0, titulo: '', descripcion: '', activo: true }); setIsComiteModalOpen(true); }}
                             className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-700 transition"
@@ -201,17 +209,33 @@ const Comites = () => {
                         </button>
                     </div>
                     <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                        {comites.map(comite => (
+                        {comites.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center h-full py-12 text-center px-4">
+                                <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4">
+                                    <svg className="w-8 h-8 text-blue-400 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    </svg>
+                                </div>
+                                <h4 className="font-semibold text-gray-700 dark:text-gray-200 mb-2">Sin comités</h4>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Crea tu primer comité para comenzar</p>
+                                <button 
+                                    onClick={() => { setComiteForm({ id: 0, titulo: '', descripcion: '', activo: true }); setIsComiteModalOpen(true); }}
+                                    className="text-blue-600 font-medium text-sm hover:underline"
+                                >
+                                    + Crear comité
+                                </button>
+                            </div>
+                        ) : comites.map(comite => (
                             <div 
                                 key={comite.id}
                                 onClick={() => setSelectedComite(comite)}
                                 className={`p-4 rounded-xl cursor-pointer border transition-all duration-200 group relative
                                     ${selectedComite?.id === comite.id 
-                                        ? 'bg-blue-50 border-blue-200 shadow-sm ring-1 ring-blue-100' 
-                                        : 'bg-white border-transparent hover:bg-gray-50 hover:border-gray-100'}`}
+                                        ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 shadow-sm ring-1 ring-blue-100 dark:ring-blue-900/50' 
+                                        : 'bg-white dark:bg-gray-800 border-transparent dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-100 dark:hover:border-gray-600'}`}
                             >
                                 <div className="flex justify-between items-start">
-                                    <h4 className={`font-semibold ${selectedComite?.id === comite.id ? 'text-blue-800' : 'text-gray-700'}`}>{comite.titulo}</h4>
+                                    <h4 className={`font-semibold ${selectedComite?.id === comite.id ? 'text-blue-800 dark:text-blue-300' : 'text-gray-700 dark:text-gray-200'}`}>{comite.titulo}</h4>
                                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button 
                                             onClick={(e) => { e.stopPropagation(); handleEditComite(comite); }}
@@ -227,10 +251,10 @@ const Comites = () => {
                                         </button>
                                     </div>
                                 </div>
-                                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{comite.descripcion}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{comite.descripcion}</p>
                                 <div className="mt-2 flex justify-between items-center">
                                     <Badge size="sm" color={comite.activo ? 'success' : 'error'}>{comite.activo ? 'Activo' : 'Inactivo'}</Badge>
-                                    <span className="text-xs text-gray-400 font-medium">{comite.documentos?.length || 0} Docs</span>
+                                    <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">{comite.documentos?.length || 0} Docs</span>
                                 </div>
                             </div>
                         ))}
@@ -238,13 +262,13 @@ const Comites = () => {
                 </div>
 
                 {/* DETALLE Y DOCUMENTOS (Right Panel) */}
-                <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
+                <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col h-full">
                     {selectedComite ? (
                         <>
-                            <div className="p-6 border-b border-gray-100 flex justify-between items-start bg-gray-50/30">
+                            <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-start bg-gray-50/30 dark:bg-gray-700/30">
                                 <div>
-                                    <h2 className="text-xl font-bold text-gray-800">{selectedComite.titulo}</h2>
-                                    <p className="text-sm text-gray-500 mt-1">{selectedComite.descripcion}</p>
+                                    <h2 className="text-xl font-bold text-gray-800 dark:text-white">{selectedComite.titulo}</h2>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{selectedComite.descripcion}</p>
                                 </div>
                                 <button
                                     onClick={() => { setDocForm({ titulo: '', archivo: null, activo: true }); setIsDocModalOpen(true); }}
@@ -259,18 +283,18 @@ const Comites = () => {
                                 {selectedComite.documentos && selectedComite.documentos.length > 0 ? (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {selectedComite.documentos.map(doc => (
-                                            <div key={doc.id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex items-start justify-between group">
+                                            <div key={doc.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow flex items-start justify-between group">
                                                 <div className="flex items-start gap-3 overflow-hidden">
-                                                    <div className="bg-red-50 text-red-500 p-2.5 rounded-lg shrink-0">
+                                                    <div className="bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 p-2.5 rounded-lg shrink-0">
                                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                                                     </div>
                                                     <div className="min-w-0">
-                                                        <h5 className="font-semibold text-gray-800 text-sm truncate block" title={doc.titulo}>{doc.titulo}</h5>
+                                                        <h5 className="font-semibold text-gray-800 dark:text-white text-sm truncate block" title={doc.titulo}>{doc.titulo}</h5>
                                                         <a 
                                                             href={`${API_URL}${doc.archivo}`} 
                                                             target="_blank" 
                                                             rel="noopener noreferrer"
-                                                            className="text-xs text-blue-500 hover:underline mt-1 inline-block"
+                                                            className="text-xs text-blue-500 dark:text-blue-400 hover:underline mt-1 inline-block"
                                                         >
                                                             Ver archivo
                                                         </a>
@@ -278,7 +302,7 @@ const Comites = () => {
                                                 </div>
                                                 <button 
                                                     onClick={() => handleDeleteDoc(doc.id)}
-                                                    className="text-gray-300 hover:text-red-500 p-1.5 rounded-full hover:bg-red-50 transition opacity-0 group-hover:opacity-100"
+                                                    className="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition opacity-0 group-hover:opacity-100"
                                                 >
                                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                                 </button>
@@ -286,9 +310,9 @@ const Comites = () => {
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-4">
-                                        <div className="bg-gray-50 p-4 rounded-full">
-                                            <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 space-y-4">
+                                        <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-full">
+                                            <svg className="w-12 h-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                                         </div>
                                         <p>No hay documentos en este comité</p>
                                     </div>
@@ -296,8 +320,8 @@ const Comites = () => {
                             </div>
                         </>
                     ) : (
-                         <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-4">
-                            <p className="text-lg font-medium text-gray-500">Selecciona un comité para ver sus documentos</p>
+                         <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 space-y-4">
+                            <p className="text-lg font-medium text-gray-500 dark:text-gray-400">Selecciona un comité para ver sus documentos</p>
                             <p className="text-sm">O crea uno nuevo desde el panel izquierdo.</p>
                          </div>
                     )}
