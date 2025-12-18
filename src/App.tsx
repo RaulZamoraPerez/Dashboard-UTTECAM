@@ -21,9 +21,10 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { PublicRoute } from "./components/auth/PublicRoute";
 
 // UTTECAM Pages
-import { 
-  GestionCarreras, 
+import {
+  GestionCarreras,
   CalendarioAcademico,
+  Becas,
 } from "./pages/UTTECAM";
 import ExtensionSection from "./pages/UTTECAM/ExtensionUniversitaria/ExtensionSection";
 import ExtensionDocuments from "./pages/UTTECAM/ExtensionUniversitaria/ExtensionDocuments";
@@ -31,7 +32,7 @@ import ExtensionDocuments from "./pages/UTTECAM/ExtensionUniversitaria/Extension
 import Organigrama from "./pages/quienes-somos/Organigrama";
 import Directorio from "./pages/quienes-somos/Directorio";
 import Nosotros from "./pages/quienes-somos/Nosotros";
-import Normatividad from "./pages/quienes-somos/Normatividad"; 
+import Normatividad from "./pages/quienes-somos/Normatividad";
 import PortalEstudiantes from "./pages/Accesos/PortalEstudiantes";
 
 // Home Content Pages
@@ -98,13 +99,13 @@ export default function App() {
             <Route path="/home-content/video-institucional" element={<VideoInstitucionalAdmin />} />
             <Route path="/home-content/reloj-digital" element={<RelojDigitalAdmin />} />
             <Route path="/programas-desarrollo" element={<ProgramasDesarrollo />} />
-            
+
             {/* Comites Routes */}
             <Route path="/comites-academico" element={<ComiteDocumentsManager slug="academico" pageTitle="Comité Académico" />} />
             <Route path="/comites-vinculacion" element={<ComiteDocumentsManager slug="vinculacion" pageTitle="Comité de Vinculación" />} />
             <Route path="/comites-calidad" element={<ComiteDocumentsManager slug="calidad" pageTitle="Comité de Calidad" />} />
             <Route path="/comites-investigacion" element={<ComiteDocumentsManager slug="investigacion" pageTitle="Comité de Investigación" />} />
-            
+
             {/* Dashboard Overview */}
             <Route path="/dashboard" element={<Home />} />
 
@@ -112,7 +113,7 @@ export default function App() {
             <Route path="/organigrama" element={<Organigrama />} />
             <Route path="/directorio" element={<Directorio />} />
             <Route path="/carreras" element={<GestionCarreras />} />
-            
+
             <Route path="/calendar" element={<CalendarioAcademico />} />
             <Route path="/Nosotros" element={<Nosotros />} />
             <Route path="/disposicion-juridica" element={<Normatividad />} />
@@ -133,14 +134,16 @@ export default function App() {
             <Route path="/ServiciosGestion/GestionCalidad" element={<GestionCalidad />} />
             <Route path="/ServiciosGestion/CordinacionGenero" element={<CordinacionGenero />} />
 
-            {/* Rutas de Servicios Escolares */}
-            <Route path="ServiciosEscolares/ProcesoAdmision" element={<ProcesoAdmisionPage/>}/>
-            <Route path="ServiciosEscolares/ConvocatoriaTitulo" element={<ConvocatoriaTituloPage/>}/>
-            <Route path="ServiciosEscolares/Tramites" element={<TramitesPage/>}/>
-            <Route path="ServiciosEscolares/Tramites/:tramiteId" element={<TramiteFormularioPage/>}/>
-            <Route path="ServiciosEscolares/Tramites/Reinscripcion" element={<ReinscripcionPage/>}/>
+            <Route path="/admision/becas" element={<Becas />} />
 
-            
+            {/* Rutas de Servicios Escolares */}
+            <Route path="ServiciosEscolares/ProcesoAdmision" element={<ProcesoAdmisionPage />} />
+            <Route path="ServiciosEscolares/ConvocatoriaTitulo" element={<ConvocatoriaTituloPage />} />
+            <Route path="ServiciosEscolares/Tramites" element={<TramitesPage />} />
+            <Route path="ServiciosEscolares/Tramites/:tramiteId" element={<TramiteFormularioPage />} />
+            <Route path="ServiciosEscolares/Tramites/Reinscripcion" element={<ReinscripcionPage />} />
+
+
 
             <Route path="/ServiciosGestion/Vinculacion" element={<Vinculacion />} />
             <Route path="/ServiciosGestion/ServicioSocial" element={<ServicioSocial />} />

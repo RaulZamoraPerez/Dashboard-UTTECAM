@@ -153,15 +153,15 @@ const BecasApoyo = () => {
     if (nuevaBeca.titulo.trim() && nuevaBeca.descripcion.trim() && (archivoSeleccionado || modoEdicion)) {
       if (modoEdicion && becaEditando) {
         // Modo edición
-        setBecas(becas.map(b => 
-          b.id === becaEditando 
+        setBecas(becas.map(b =>
+          b.id === becaEditando
             ? {
-                ...b,
-                titulo: nuevaBeca.titulo,
-                descripcion: nuevaBeca.descripcion,
-                activa: nuevaBeca.activa,
-                categoria: nuevaBeca.categoria as 'requisitos' | 'convocatoria' | 'programa' | 'recurso'
-              }
+              ...b,
+              titulo: nuevaBeca.titulo,
+              descripcion: nuevaBeca.descripcion,
+              activa: nuevaBeca.activa,
+              categoria: nuevaBeca.categoria as 'requisitos' | 'convocatoria' | 'programa' | 'recurso'
+            }
             : b
         ));
         setModoEdicion(false);
@@ -214,7 +214,7 @@ const BecasApoyo = () => {
   return (
     <div className="bg-white dark:bg-black min-h-screen">
       <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-gray-600 dark:bg-black sm:px-7.5 xl:pb-1">
-        
+
         {/* Header */}
         <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
@@ -300,8 +300,8 @@ const BecasApoyo = () => {
                 <div
                   {...getRootProps()}
                   className={`dropzone rounded-lg p-6 cursor-pointer transition-all duration-200
-                    ${isDragActive 
-                      ? "border-primary bg-primary/5 dark:bg-primary/10" 
+                    ${isDragActive
+                      ? "border-primary bg-primary/5 dark:bg-primary/10"
                       : "bg-gray-50/50 dark:bg-black/50 hover:bg-gray-100/50 dark:hover:bg-gray-900/50"
                     }`}
                 >

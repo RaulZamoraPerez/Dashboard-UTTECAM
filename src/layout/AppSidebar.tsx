@@ -32,7 +32,7 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Contenido del Sitio",
-      subItems: [
+    subItems: [
       { name: "Hero Slides", path: "/home/hero-slides", pro: false },
       { name: "Eventos", path: "/home/eventos", pro: false },
       { name: "Noticias", path: "/home/noticias", pro: false },
@@ -56,7 +56,7 @@ const navItems: NavItem[] = [
     icon: <GroupIcon />,
     name: "Comites",
     path: "/comites",
-    subItems:[
+    subItems: [
       { name: "Comité Académico", path: "/comites-academico", pro: false },
       { name: "Comité  de Vinculación", path: "/comites-vinculacion", pro: false },
       { name: "Comité de calidad", path: "/comites-calidad", pro: false },
@@ -66,11 +66,11 @@ const navItems: NavItem[] = [
   {
     icon: <UserCircleIcon />,
     name: "Servicios Escolares",
-    subItems:[
+    subItems: [
       { name: "Proceso de admisión", path: "ServiciosEscolares/ProcesoAdmision", pro: false },
       { name: "Trámites", path: "ServiciosEscolares/Tramites", pro: false },
       { name: "Convocatoria a trámite de título profesional", path: "ServiciosEscolares/ConvocatoriaTitulo", pro: false },
-      { name: "Becas y apoyo", path: "/becas", pro: false },
+      { name: "Becas y apoyo", path: "/admision/becas", pro: false },
     ],
   },
   {
@@ -176,7 +176,7 @@ const Vinculacio: NavItem[] = [
   {
     icon: <BoltIcon />,
     name: "Movilidad internacional",
-    path:"/movilidad-internacional",
+    path: "/movilidad-internacional",
   },
   {
     icon: <BoxIconLine />,
@@ -189,28 +189,28 @@ const Vinculacio: NavItem[] = [
   {
     icon: <PageIcon />,
     name: "Entidad de certificación y evaluación",
-    path:"/entidad-certificacion-evaluacion",
+    path: "/entidad-certificacion-evaluacion",
   },
   {
     icon: <GroupIcon />,
     name: "Docente miembros del Sistema Nacional de Investigadoras e Investigadores SNII",
-    path:"/docente-snii",
+    path: "/docente-snii",
   },
   {
     icon: (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-microscope-icon lucide-microscope">
-      <path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/>
-    </svg>),
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-microscope-icon lucide-microscope">
+        <path d="M6 18h8" /><path d="M3 22h18" /><path d="M14 22a7 7 0 1 0 0-14h-1" /><path d="M9 14h2" /><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z" /><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3" />
+      </svg>),
     name: "Repositorio digital de productos de investigación",
-    path:"/repositorio-investigacion",
+    path: "/repositorio-investigacion",
   },
   {
     icon: (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-coffee-icon lucide-coffee">
-      <path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/>
-    </svg>),
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-coffee-icon lucide-coffee">
+        <path d="M10 2v2" /><path d="M14 2v2" /><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1" /><path d="M6 2v2" />
+      </svg>),
     name: "Seminario café científico",
-    path:"/seminario-cafe-cientifico",
+    path: "/seminario-cafe-cientifico",
   },
 ];
 
@@ -218,9 +218,9 @@ const Accesos: NavItem[] = [
   {
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-graduation-cap">
-        <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/>
-        <path d="M22 10v6"/>
-        <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>
+        <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" />
+        <path d="M22 10v6" />
+        <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />
       </svg>
     ),
     name: "Portal Estudiantes",
@@ -229,9 +229,9 @@ const Accesos: NavItem[] = [
   {
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-graduation-cap">
-        <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/>
-        <path d="M22 10v6"/>
-        <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>
+        <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" />
+        <path d="M22 10v6" />
+        <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />
       </svg>
     ),
     name: "PIT",
@@ -239,7 +239,7 @@ const Accesos: NavItem[] = [
   },
 ];
 
-const ServiciosGestion : NavItem[] = [
+const ServiciosGestion: NavItem[] = [
   {
     icon: <PieChartIcon />,
     name: "Finanzas",
@@ -247,8 +247,8 @@ const ServiciosGestion : NavItem[] = [
   },
   {
     icon: (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-round-cog-icon lucide-user-round-cog">
-        <path d="m14.305 19.53.923-.382"/><path d="m15.228 16.852-.923-.383"/><path d="m16.852 15.228-.383-.923"/><path d="m16.852 20.772-.383.924"/><path d="m19.148 15.228.383-.923"/><path d="m19.53 21.696-.382-.924"/><path d="M2 21a8 8 0 0 1 10.434-7.62"/><path d="m20.772 16.852.924-.383"/><path d="m20.772 19.148.924.383"/><circle cx="10" cy="8" r="5"/><circle cx="18" cy="18" r="3"/>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-round-cog-icon lucide-user-round-cog">
+        <path d="m14.305 19.53.923-.382" /><path d="m15.228 16.852-.923-.383" /><path d="m16.852 15.228-.383-.923" /><path d="m16.852 20.772-.383.924" /><path d="m19.148 15.228.383-.923" /><path d="m19.53 21.696-.382-.924" /><path d="M2 21a8 8 0 0 1 10.434-7.62" /><path d="m20.772 16.852.924-.383" /><path d="m20.772 19.148.924.383" /><circle cx="10" cy="8" r="5" /><circle cx="18" cy="18" r="3" />
       </svg>
     ),
     name: "Recursos Humanos",
@@ -256,8 +256,8 @@ const ServiciosGestion : NavItem[] = [
   },
   {
     icon: (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-briefcase-business-icon lucide-briefcase-business">
-        <path d="M12 12h.01"/><path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M22 13a18.15 18.15 0 0 1-20 0"/><rect width="20" height="14" x="2" y="6" rx="2"/>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-briefcase-business-icon lucide-briefcase-business">
+        <path d="M12 12h.01" /><path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /><path d="M22 13a18.15 18.15 0 0 1-20 0" /><rect width="20" height="14" x="2" y="6" rx="2" />
       </svg>
     ),
     name: "Información y Estadística",
@@ -266,8 +266,8 @@ const ServiciosGestion : NavItem[] = [
   {
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-leaf-icon">
-        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
-        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14 12 13 13 12"/>
+        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14 12 13 13 12" />
       </svg>
     ),
     name: "Sistema de gestion ambiental",
@@ -280,8 +280,8 @@ const ServiciosGestion : NavItem[] = [
   },
   {
     icon: (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-venus-and-mars-icon lucide-venus-and-mars">
-        <path d="M10 20h4"/><path d="M12 16v6"/><path d="M17 2h4v4"/><path d="m21 2-5.46 5.46"/><circle cx="12" cy="11" r="5"/>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-venus-and-mars-icon lucide-venus-and-mars">
+        <path d="M10 20h4" /><path d="M12 16v6" /><path d="M17 2h4v4" /><path d="m21 2-5.46 5.46" /><circle cx="12" cy="11" r="5" />
       </svg>
     ),
     name: "Sitio Web Coordinación De Género",
@@ -311,12 +311,12 @@ const AppSidebar: React.FC = () => {
   useEffect(() => {
     let submenuMatched = false;
     ["main", "uttecam", "Vinculacio", "Accesos", "ServiciosGestion"].forEach((menuType) => {
-      const items = 
-        menuType === "main" ? navItems : 
-        menuType === "uttecam" ? uttecamItems :
-        menuType === "Vinculacio" ? Vinculacio :
-        menuType === "Accesos" ? Accesos :
-        ServiciosGestion;
+      const items =
+        menuType === "main" ? navItems :
+          menuType === "uttecam" ? uttecamItems :
+            menuType === "Vinculacio" ? Vinculacio :
+              menuType === "Accesos" ? Accesos :
+                ServiciosGestion;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
@@ -369,22 +369,19 @@ const AppSidebar: React.FC = () => {
           {nav.subItems ? (
             <button
               onClick={() => handleSubmenuToggle(index, menuType)}
-              className={`menu-item group ${
-                openSubmenu?.type === menuType && openSubmenu?.index === index
+              className={`menu-item group ${openSubmenu?.type === menuType && openSubmenu?.index === index
                   ? "menu-item-active"
                   : "menu-item-inactive"
-              } cursor-pointer ${
-                !isExpanded && !isHovered
+                } cursor-pointer ${!isExpanded && !isHovered
                   ? "lg:justify-center"
                   : "lg:justify-start"
-              }`}
+                }`}
             >
               <span
-                className={`menu-item-icon-size  ${
-                  openSubmenu?.type === menuType && openSubmenu?.index === index
+                className={`menu-item-icon-size  ${openSubmenu?.type === menuType && openSubmenu?.index === index
                     ? "menu-item-icon-active"
                     : "menu-item-icon-inactive"
-                }`}
+                  }`}
               >
                 {nav.icon}
               </span>
@@ -393,12 +390,11 @@ const AppSidebar: React.FC = () => {
               )}
               {(isExpanded || isHovered || isMobileOpen) && (
                 <ChevronDownIcon
-                  className={`ml-auto w-5 h-5 transition-transform duration-200 ${
-                    openSubmenu?.type === menuType &&
-                    openSubmenu?.index === index
+                  className={`ml-auto w-5 h-5 transition-transform duration-200 ${openSubmenu?.type === menuType &&
+                      openSubmenu?.index === index
                       ? "rotate-180 text-brand-500"
                       : ""
-                  }`}
+                    }`}
                 />
               )}
             </button>
@@ -406,16 +402,14 @@ const AppSidebar: React.FC = () => {
             nav.path && (
               <Link
                 to={nav.path}
-                className={`menu-item group ${
-                  isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
-                }`}
+                className={`menu-item group ${isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
+                  }`}
               >
                 <span
-                  className={`menu-item-icon-size ${
-                    isActive(nav.path)
+                  className={`menu-item-icon-size ${isActive(nav.path)
                       ? "menu-item-icon-active"
                       : "menu-item-icon-inactive"
-                  }`}
+                    }`}
                 >
                   {nav.icon}
                 </span>
@@ -443,32 +437,29 @@ const AppSidebar: React.FC = () => {
                   <li key={subItem.name}>
                     <Link
                       to={subItem.path}
-                      className={`menu-dropdown-item ${
-                        isActive(subItem.path)
+                      className={`menu-dropdown-item ${isActive(subItem.path)
                           ? "menu-dropdown-item-active"
                           : "menu-dropdown-item-inactive"
-                      }`}
+                        }`}
                     >
                       {subItem.name}
                       <span className="flex items-center gap-1 ml-auto">
                         {subItem.new && (
                           <span
-                            className={`ml-auto ${
-                              isActive(subItem.path)
+                            className={`ml-auto ${isActive(subItem.path)
                                 ? "menu-dropdown-badge-active"
                                 : "menu-dropdown-badge-inactive"
-                            } menu-dropdown-badge`}
+                              } menu-dropdown-badge`}
                           >
                             new
                           </span>
                         )}
                         {subItem.pro && (
                           <span
-                            className={`ml-auto ${
-                              isActive(subItem.path)
+                            className={`ml-auto ${isActive(subItem.path)
                                 ? "menu-dropdown-badge-active"
                                 : "menu-dropdown-badge-inactive"
-                            } menu-dropdown-badge`}
+                              } menu-dropdown-badge`}
                           >
                             pro
                           </span>
@@ -488,10 +479,9 @@ const AppSidebar: React.FC = () => {
   return (
     <aside
       className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
-        ${
-          isExpanded || isMobileOpen
-            ? "w-[290px]"
-            : isHovered
+        ${isExpanded || isMobileOpen
+          ? "w-[290px]"
+          : isHovered
             ? "w-[290px]"
             : "w-[90px]"
         }
@@ -501,9 +491,8 @@ const AppSidebar: React.FC = () => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
-        className={`py-8 flex ${
-          !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-        }`}
+        className={`py-8 flex ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+          }`}
       >
 
         {/*sidebar - lgo */}
@@ -511,13 +500,13 @@ const AppSidebar: React.FC = () => {
           {isExpanded || isHovered || isMobileOpen ? (
             <>
               <img
-                
+
                 src="/images/logo/logo_uttecam.png"
                 alt="Logo"
                 width={150}
                 height={40}
               />
-             
+
             </>
           ) : (
             <img
@@ -534,11 +523,10 @@ const AppSidebar: React.FC = () => {
           <div className="flex flex-col gap-4">
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-primary font-semibold  ${
-                  !isExpanded && !isHovered
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-primary font-semibold  ${!isExpanded && !isHovered
                     ? "lg:justify-center"
                     : "justify-start"
-                }`}
+                  }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
                   "Menu"
@@ -550,11 +538,10 @@ const AppSidebar: React.FC = () => {
             </div>
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-primary font-semibold  ${
-                  !isExpanded && !isHovered
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-primary font-semibold  ${!isExpanded && !isHovered
                     ? "lg:justify-center"
                     : "justify-start"
-                }`}
+                  }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
                   "Vinculación"
@@ -562,15 +549,14 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(Vinculacio, "Vinculacio")} 
+              {renderMenuItems(Vinculacio, "Vinculacio")}
             </div>
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-primary font-semibold ${
-                  !isExpanded && !isHovered
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-primary font-semibold ${!isExpanded && !isHovered
                     ? "lg:justify-center"
                     : "justify-start"
-                }`}
+                  }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
                   "Accesos"
@@ -578,15 +564,14 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(Accesos, "Accesos")} 
+              {renderMenuItems(Accesos, "Accesos")}
             </div>
             <div className="">
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-primary dark:text-blue-400 font-semibold ${
-                  !isExpanded && !isHovered
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-primary dark:text-blue-400 font-semibold ${!isExpanded && !isHovered
                     ? "lg:justify-center"
                     : "justify-start"
-                }`}
+                  }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
                   "UTTECAM"
@@ -598,11 +583,10 @@ const AppSidebar: React.FC = () => {
             </div>
             <div>
               <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-primary font-semibold ${
-                  !isExpanded && !isHovered
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-primary font-semibold ${!isExpanded && !isHovered
                     ? "lg:justify-center"
                     : "justify-start"
-                }`}
+                  }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
                   "Servicios y Gestión"
@@ -610,7 +594,7 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(ServiciosGestion, "ServiciosGestion")} 
+              {renderMenuItems(ServiciosGestion, "ServiciosGestion")}
             </div>
           </div>
         </nav>
