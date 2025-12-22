@@ -16,12 +16,6 @@ export interface Carrera {
   activo: boolean;
   createdAt: string;
   updatedAt: string;
-  competencias?: string;
-  atributos_egreso?: string;
-  objetivos_educacionales?: string;
-  mapa_curricular?: string | any;
-  imagen_portada?: string;
-  video_url?: string;
 }
 
 export interface CreateCarreraRequest {

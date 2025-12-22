@@ -2,8 +2,6 @@
 import { fetchWithAuth } from './apiService';
 import { Organigrama, CreateOrganigramaRequest, OrganigramaNode } from '../types/organigrama';
 
-export type { OrganigramaNode };
-
 const API_BASE_URL = import.meta.env.VITE_BACKENDURL || '';
 
 export const getImageUrl = (imagePath?: string): string => {
@@ -20,8 +18,6 @@ export const getAllOrganigrama = async (): Promise<Organigrama[]> => {
   const response = await fetchWithAuth<{ data: Organigrama[] }>('/api/organigrama/flat');
   return response.data;
 };
-
-export const getOrganigrama = getAllOrganigrama;
 
 export const getOrganigramaTree = async (): Promise<OrganigramaNode[]> => {
   const response = await fetchWithAuth<{ data: OrganigramaNode[] }>('/api/organigrama');
@@ -59,8 +55,6 @@ export const createOrganigrama = async (
   return response.data;
 };
 
-export const createNode = createOrganigrama;
-
 export const updateOrganigrama = async (
   id: number,
   data: CreateOrganigramaRequest,
@@ -88,12 +82,8 @@ export const updateOrganigrama = async (
   return response.data;
 };
 
-export const updateNode = updateOrganigrama;
-
 export const deleteOrganigrama = async (id: number): Promise<void> => {
   await fetchWithAuth(`/api/organigrama/${id}`, {
     method: 'DELETE',
   });
 };
-
-export const deleteNode = deleteOrganigrama;

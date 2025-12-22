@@ -99,7 +99,7 @@ const getIcon = (iconName?: string) => {
     }
 };
 
-export const AvisosSection = ({ cards = [], onEdit }: AvisosSectionProps) => {
+export const AvisosSection = ({ id, cards = [], onEdit }: AvisosSectionProps) => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     return (

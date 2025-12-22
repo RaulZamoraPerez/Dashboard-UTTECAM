@@ -32,8 +32,7 @@ export default {
     fd.append('archivo', file);
     if (titulo) fd.append('titulo', titulo);
 
-    const authHeaders = getAuthHeaders();
-    const token = (authHeaders as Record<string, string>)['Authorization'];
+    const token = getAuthHeaders().Authorization;
     const headers: Record<string, string> = {};
     if (token) headers['Authorization'] = token as string;
 
@@ -94,8 +93,7 @@ export default {
   },
 
   async updateDocument(id: number | string, data: { titulo?: string; file?: File }) {
-    const authHeaders = getAuthHeaders();
-    const headers = { ...authHeaders } as Record<string, string>;
+    const headers = getAuthHeaders();
     // Always use FormData because the backend route uses multer
     const fd = new FormData();
     if (data.titulo) fd.append('titulo', data.titulo);

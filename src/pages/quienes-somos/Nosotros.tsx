@@ -52,12 +52,7 @@ export default function NosotrosPage() {
     else if (section === 'mision') initialValue = content.mision?.description || '';
     else if (section === 'valores') initialValue = Array.isArray(content.valores?.description) ? content.valores.description.join('\n') : '';
     else if (section === 'noDiscriminacion') {
-      const noDisc = content.noDiscriminacion;
-      if (noDisc && typeof noDisc === 'object' && 'items' in noDisc) {
-        initialValue = noDisc.items.join('\n');
-      } else if (Array.isArray(noDisc)) {
-        initialValue = noDisc.flat().join('\n');
-      }
+      initialValue = content.noDiscriminacion?.items ? content.noDiscriminacion.items.join('\n') : '';
       setEditText((content.noDiscriminacion as any)?.text || '');
     }
     else if (section === 'politicaIntegral') {
@@ -66,10 +61,7 @@ export default function NosotrosPage() {
         setPreviewUrl(getImageUrl(content.politicaIntegral.imageSrc));
       }
     }
-    else if (section === 'objetivoIntegral') {
-      const objetivo = content.objetivoIntegral;
-      initialValue = typeof objetivo === 'string' ? objetivo : objetivo?.text || '';
-    }
+    else if (section === 'objetivoIntegral') initialValue = content.objetivoIntegral?.text || '';
 
     setEditValue(initialValue);
   };
@@ -282,14 +274,14 @@ export default function NosotrosPage() {
           {/* Objetivo Integral */}
           <SectionCard 
             sectionKey="objetivoIntegral"
-            content={typeof content?.objetivoIntegral === 'string' ? content.objetivoIntegral : content?.objetivoIntegral?.text}
+            content={content?.objetivoIntegral?.text}
             onEdit={() => handleEdit('objetivoIntegral')}
           />
 
           {/* Política de Igualdad */}
           <SectionCard 
             sectionKey="noDiscriminacion"
-            content={content?.noDiscriminacion && typeof content.noDiscriminacion === 'object' && 'items' in content.noDiscriminacion ? content.noDiscriminacion.items : Array.isArray(content?.noDiscriminacion) ? content.noDiscriminacion.flat() : []}
+            content={content?.noDiscriminacion?.items}
             onEdit={() => handleEdit('noDiscriminacion')}
             isList
           />

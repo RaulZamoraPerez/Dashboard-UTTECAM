@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { 
-  getOrganigramaTree,
-  createOrganigrama,
-  updateOrganigrama,
-  deleteOrganigrama,
+  getOrganigrama, 
+  createNode, 
+  updateNode, 
+  deleteNode, 
   OrganigramaNode 
 } from '../../services/organigramaService';
 import { 
@@ -128,7 +128,7 @@ function NodeCard({ node, onEdit, onAddChild, onDelete, level }: NodeCardProps) 
             )}
             
              <div className="flex items-start gap-6">
-                {node.children!.map((child: OrganigramaNode, index: number) => (
+                {node.children!.map((child, index) => (
                   <div key={child.id || index} className="flex flex-col items-center relative">
                     {/* Vertical connector to child */}
                     <div className="w-px h-4 bg-slate-300 -mt-4 mb-4"></div>
@@ -366,7 +366,7 @@ export default function OrganigramaPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const data = await getOrganigramaTree();
+      const data = await getOrganigrama();
       setNodes(data);
     } catch (error) {
       console.error(error);
@@ -421,7 +421,7 @@ export default function OrganigramaPage() {
     if (!result.isConfirmed) return;
 
     try {
-      await deleteOrganigrama(id);
+      await deleteNode(id);
       await fetchData();
       Swal.fire({
         icon: 'success',
@@ -440,12 +440,12 @@ export default function OrganigramaPage() {
     }
   };
 
-  const handleSave = async (data: any, imagen?: File) => {
+  const handleSave = async (formData: FormData) => {
     try {
       if (editingNode && editingNode.id) {
-        await updateOrganigrama(editingNode.id, data, imagen);
+        await updateNode(editingNode.id, formData);
       } else {
-        await createOrganigrama(data, imagen);
+        await createNode(formData);
       }
       await fetchData();
       Swal.fire({

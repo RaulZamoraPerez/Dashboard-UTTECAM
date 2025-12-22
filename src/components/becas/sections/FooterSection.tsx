@@ -20,7 +20,7 @@ interface FooterSectionProps {
     onEdit: () => void;
 }
 
-export const FooterSection = ({ data, onEdit }: FooterSectionProps) => {
+export const FooterSection = ({ id, data, onEdit }: FooterSectionProps) => {
     // Default values if data is missing
     const content = {
         title: data?.title || '¿Tienes dudas?',
