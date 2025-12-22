@@ -41,6 +41,7 @@ export interface UpdateOrganigramaRequest extends CreateOrganigramaRequest {
 }
 
 export interface OrganigramaNode {
+  id?: number;
   key?: string;
   expanded?: boolean;
   type?: string;
@@ -52,3 +53,5 @@ export interface OrganigramaNode {
   };
   children?: OrganigramaNode[];
 }
+
+export type { OrganigramaNode as OrganigramaNodeExport };

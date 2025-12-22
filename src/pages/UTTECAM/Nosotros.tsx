@@ -395,10 +395,14 @@ export default function Nosotros() {
             ) : (
               <div>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                  {content.objetivoIntegral && content.objetivoIntegral.trim() !== '' ? content.objetivoIntegral : 'Contenido no disponible'}
+                  {(() => {
+                    const objetivo = content.objetivoIntegral;
+                    const objetivoStr = typeof objetivo === 'string' ? objetivo : objetivo?.text || '';
+                    return objetivoStr && objetivoStr.trim() !== '' ? objetivoStr : 'Contenido no disponible';
+                  })()}
                 </p>
                 <Button
-                  onClick={() => handleEdit('objetivoIntegral', content.objetivoIntegral || '')}
+                  onClick={() => handleEdit('objetivoIntegral', typeof content.objetivoIntegral === 'string' ? content.objetivoIntegral : content.objetivoIntegral?.text || '')}
                   variant="outline"
                   size="sm"
                   className="mt-4"

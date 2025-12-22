@@ -26,7 +26,7 @@ export default function ModalCarrera({
   const [formData, setFormData] = useState({
     nombre: '',
     siglas: '',
-    nivel: 'Ingenieria' as 'Ingenieria' | 'Licenciatura',
+    nivel: 'Ingenieria' as 'TSU' | 'Ingenieria' | 'Licenciatura',
     duracion: '',
     objetivo: '',
     perfil_ingreso: '',

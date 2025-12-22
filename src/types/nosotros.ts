@@ -21,15 +21,16 @@ export interface PoliticaIntegral {
   imageSrc: string;
   title: string;
   description: string;
+  text?: string;
 }
 
 export interface NosotrosContent {
   politicaIntegral: PoliticaIntegral;
-  objetivoIntegral: string;
+  objetivoIntegral: string | { text: string };
   vision: Vision;
   mision: Mision;
   valores: Valores;
-  noDiscriminacion: string[][];
+  noDiscriminacion: string[][] | { items: string[] };
 }
 
 export type SectionKey = keyof NosotrosContent;
