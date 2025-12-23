@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
 import becasService, { BecaSection } from '../../../services/becasService';
 import { BannerForm, BannerData } from './BannerForm';
+import { toastError, toastSuccess } from '../../../utils/alert';
 
 interface ModalEditarBannerProps {
     isOpen: boolean;
@@ -23,7 +24,6 @@ export const ModalEditarBanner = ({ isOpen, onClose, section, onSave }: ModalEdi
 
     useEffect(() => {
         if (section) {
-            console.log('ModalEditarBanner received section:', section);
 
             let rawData = section.data || {};
 
@@ -75,9 +75,10 @@ export const ModalEditarBanner = ({ isOpen, onClose, section, onSave }: ModalEdi
 
             onSave();
             onClose();
+            toastSuccess('Sección guardada correctamente');
         } catch (error) {
             console.error('Error al guardar:', error);
-            alert('Error al guardar la sección');
+            toastError('Error al guardar la sección');
         } finally {
             setLoading(false);
         }

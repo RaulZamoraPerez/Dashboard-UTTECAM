@@ -1,6 +1,7 @@
 import { X, LayoutTemplate, Palette } from 'lucide-react';
 import { useState } from 'react';
 import becasService from '../../../services/becasService';
+import { toastError, toastSuccess } from '../../../utils/alert';
 import { BaseSection } from '../../becas/BecasDashboard';
 
 interface ModalEditarHeaderProps {
@@ -16,14 +17,12 @@ export const ModalEditarHeader = ({ isOpen, onClose, section, onSave }: ModalEdi
     const [variant, setVariant] = useState<'default' | 'green'>(section.variant || 'default');
 
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     if (!isOpen) return null;
 
     const handleSave = async () => {
         try {
             setLoading(true);
-            setError(null);
 
             const dataPayload = {
                 description,
@@ -44,9 +43,10 @@ export const ModalEditarHeader = ({ isOpen, onClose, section, onSave }: ModalEdi
             }
 
             onSave();
+            toastSuccess('Sección guardada correctamente');
         } catch (err) {
             console.error('Error al guardar:', err);
-            setError('Error al guardar los cambios');
+            toastError('Error al guardar los cambios');
         } finally {
             setLoading(false);
         }
@@ -72,11 +72,6 @@ export const ModalEditarHeader = ({ isOpen, onClose, section, onSave }: ModalEdi
 
                 {/* Content */}
                 <div className="p-6 space-y-6">
-                    {error && (
-                        <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm border border-red-100 dark:border-red-900/30">
-                            {error}
-                        </div>
-                    )}
 
                     {/* Selector de Estilo */}
                     <div>

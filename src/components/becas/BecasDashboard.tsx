@@ -10,6 +10,7 @@ import {
     ArrowDown
 } from 'lucide-react';
 import becasService from '../../services/becasService';
+import { toastError, toastSuccess, confirmDialog } from '../../utils/alert';
 
 // Componentes de Secciones
 import { HeaderSection } from './sections/HeaderSection';
@@ -125,17 +126,24 @@ export const BecasDashboard = () => {
             setIsEditing(false); // Salir del modo edición al guardar
             // Recargar para asegurar consistencia
             await loadSections();
+            toastSuccess('Estructura guardada correctamente');
         } catch (err) {
             console.error('Error al guardar orden:', err);
-            setError('Error al guardar el orden de las secciones');
+            toastError('Error al guardar el orden de las secciones');
             setLoading(false);
         }
     };
 
     // Cancelar edición (revertir cambios)
-    const cancelEditing = () => {
+    const cancelEditing = async () => {
         if (hasUnsavedChanges) {
-            if (confirm('Tienes cambios sin guardar en el orden. ¿Deseas descartarlos?')) {
+            const confirmed = await confirmDialog({
+                title: '¿Descartar cambios?',
+                text: 'Tienes cambios sin guardar en el orden. ¿Deseas descartarlos?',
+                confirmText: 'Sí, descartar'
+            });
+
+            if (confirmed) {
                 loadSections(); // Recargar para revertir
                 setHasUnsavedChanges(false);
                 setIsEditing(false);
@@ -147,14 +155,21 @@ export const BecasDashboard = () => {
 
     // Eliminar sección
     const deleteSection = async (id: number) => {
-        if (!confirm('¿Estás seguro de eliminar esta sección? Esta acción no se puede deshacer.')) return;
+        const confirmed = await confirmDialog({
+            title: '¿Estás seguro?',
+            text: 'Esta acción no se puede deshacer.',
+            confirmText: 'Sí, eliminar'
+        });
+
+        if (!confirmed) return;
 
         try {
             await becasService.deleteSection(id);
             setSections(prev => prev.filter(s => s.id !== id));
+            toastSuccess('Sección eliminada');
         } catch (err) {
             console.error('Error al eliminar:', err);
-            alert('Error al eliminar la sección');
+            toastError('Error al eliminar la sección');
         }
     };
 
@@ -173,9 +188,10 @@ export const BecasDashboard = () => {
                 await becasService.createSection(sectionData);
                 await loadSections(); // Recargar lista
                 setModalState({ type: null }); // Cerrar modales
+                toastSuccess('Sección creada correctamente');
             } catch (err) {
                 console.error('Error al crear sección:', err);
-                setError('Error al crear la sección');
+                toastError('Error al crear la sección');
             } finally {
                 setLoading(false);
             }

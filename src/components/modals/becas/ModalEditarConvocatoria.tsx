@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
 import becasService, { BecaSection } from '../../../services/becasService';
 import { ConvocatoriaForm, ConvocatoriaData } from './ConvocatoriaForm';
+import { toastError, toastSuccess } from '../../../utils/alert';
 
 interface ModalEditarConvocatoriaProps {
     isOpen: boolean;
@@ -70,9 +71,10 @@ export const ModalEditarConvocatoria = ({ isOpen, onClose, section, onSave }: Mo
 
             onSave();
             onClose();
+            toastSuccess('Sección guardada correctamente');
         } catch (error) {
             console.error('Error al guardar:', error);
-            alert('Error al guardar la sección');
+            toastError('Error al guardar la sección');
         } finally {
             setLoading(false);
         }

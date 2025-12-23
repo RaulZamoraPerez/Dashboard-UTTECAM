@@ -16,6 +16,7 @@ import { BannerForm, BannerData } from './BannerForm';
 import { ConvocatoriaForm, ConvocatoriaData } from './ConvocatoriaForm';
 //import { CreateSectionData } from '../../services/becasService';
 import { crearArea } from '../../../services/documentosService';
+import { toastError, toastSuccess } from '../../../utils/alert';
 
 interface ModalNuevaSeccionProps {
     isOpen: boolean;
@@ -130,12 +131,13 @@ export const ModalNuevaSeccion = ({ isOpen, onClose, onCreate }: ModalNuevaSecci
                             areaName: newArea.Nombre
                         }
                     });
+                    toastSuccess('Repositorio creado correctamente');
                 } else {
-                    alert('Error al crear el área de documentos en el servidor.');
+                    toastError('Error al crear el área de documentos en el servidor.');
                 }
             } catch (error) {
                 console.error('Error creating area:', error);
-                alert('Ocurrió un error al crear el repositorio. Verifique la conexión.');
+                toastError('Ocurrió un error al crear el repositorio. Verifique la conexión.');
             }
         } else {
             onCreate(selectedType as any);

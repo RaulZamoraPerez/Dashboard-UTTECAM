@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Save, Plus, Trash2, Link as LinkIcon } from 'lucide-react';
 import becasService, { BecaSection } from '../../../services/becasService';
+import { toastError, toastSuccess } from '../../../utils/alert';
 
 interface FooterLink {
     id: string;
@@ -89,9 +90,10 @@ export const ModalEditarFooter = ({ isOpen, onClose, section, onSave }: ModalEdi
 
             onSave();
             onClose();
+            toastSuccess('Sección guardada correctamente');
         } catch (error) {
             console.error('Error saving footer:', error);
-            alert('Error al guardar sección');
+            toastError('Error al guardar sección');
         } finally {
             setLoading(false);
         }

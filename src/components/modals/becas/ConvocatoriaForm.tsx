@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Plus, Trash2, Image as ImageIcon, Upload, ArrowUp, ArrowDown } from 'lucide-react';
 import becasService from '../../../services/becasService';
+import { toastError, toastSuccess } from '../../../utils/alert';
 
 export interface ConvocatoriaData {
     badge: string;
@@ -77,9 +78,10 @@ export const ConvocatoriaForm = ({ initialData, onChange }: ConvocatoriaFormProp
             const response = await becasService.uploadBannerFile(file);
             const fullUrl = response.url.startsWith('http') ? response.url : `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${response.url}`;
             updateField('imageUrl', fullUrl);
+            toastSuccess('Imagen subida correctamente');
         } catch (error) {
             console.error('Error al subir imagen:', error);
-            alert('Error al subir la imagen');
+            toastError('Error al subir la imagen');
         } finally {
             setUploading(false);
         }
@@ -103,10 +105,11 @@ export const ConvocatoriaForm = ({ initialData, onChange }: ConvocatoriaFormProp
                 type: 'pdf'
             };
             updateField('documents', updatedDocs);
+            toastSuccess('Documento subido correctamente');
 
         } catch (error) {
             console.error('Error al subir documento:', error);
-            alert('Error al subir documento');
+            toastError('Error al subir documento');
         } finally {
             setUploading(false);
             // Reset input value to allow re-uploading same file if needed

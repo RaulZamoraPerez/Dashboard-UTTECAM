@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Save, Trash2, Upload, AlertTriangle, Layout, CreditCard, ArrowUp, ArrowDown } from 'lucide-react';
 import becasService, { BecaSection } from '../../../services/becasService';
+import { toastError, toastSuccess } from '../../../utils/alert';
 
 interface AvisoCard {
     id: string;
@@ -84,10 +85,11 @@ export const ModalEditarAvisos = ({ isOpen, onClose, section, onSave }: ModalEdi
             } else {
                 updateCard(id, 'url', fullUrl);
             }
+            toastSuccess('Archivo subido correctamente');
 
         } catch (error) {
             console.error('Error uploading:', error);
-            alert('Error al subir archivo');
+            toastError('Error al subir archivo');
         } finally {
             setUploading(false);
         }
@@ -110,9 +112,10 @@ export const ModalEditarAvisos = ({ isOpen, onClose, section, onSave }: ModalEdi
 
             onSave();
             onClose();
+            toastSuccess('Sección guardada correctamente');
         } catch (error) {
             console.error('Error saving avisos:', error);
-            alert('Error al guardar sección');
+            toastError('Error al guardar sección');
         } finally {
             setLoading(false);
         }

@@ -13,11 +13,11 @@ import Button from '../../../components/ui/button/Button';
 import Label from '../../../components/form/Label';
 import Input from '../../../components/form/input/InputField';
 import TextArea from '../../../components/form/input/TextArea';
-import { 
-  getSection, 
+import {
+  getSection,
   updateSection,
-  createItem, 
-  updateItem, 
+  createItem,
+  updateItem,
   deleteItem,
   uploadSectionBanner,
   toggleSectionEnabled,
@@ -41,7 +41,7 @@ const ExtensionSection = () => {
   const [sectionRequirementsEdit, setSectionRequirementsEdit] = useState('');
   const [sectionRegistrationEdit, setSectionRegistrationEdit] = useState('');
   const [sectionBannerFile, setSectionBannerFile] = useState<File | null>(null);
-  
+
   // Form states
   const [itemTitle, setItemTitle] = useState('');
   const [itemDescription, setItemDescription] = useState('');
@@ -160,7 +160,7 @@ const ExtensionSection = () => {
     if (!url) return '';
     // If the url is relative and starts with /uploads or /public, add the API base host
     if (url.startsWith('/uploads') || url.startsWith('/public')) {
-      const apiBase = (import.meta.env.VITE_API_URL || 'http://localhost:3002/api').replace(/\/api\/?$/, '');
+      const apiBase = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api\/?$/, '');
       return encodeURI(`${apiBase}${url}`);
     }
     return url;
@@ -169,8 +169,8 @@ const ExtensionSection = () => {
   const handleSaveSectionEdit = async () => {
     if (!slug) return;
     try {
-      await updateSection(slug, { 
-        title: sectionTitleEdit, 
+      await updateSection(slug, {
+        title: sectionTitleEdit,
         description: sectionDescriptionEdit,
         schedule: sectionScheduleEdit,
         location: sectionLocationEdit,
@@ -239,7 +239,7 @@ const ExtensionSection = () => {
           <ComponentCard title="Sección no encontrada">
             <div className="flex items-center gap-6 p-4">
               <div className="p-3 rounded-full bg-red-50">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.29 3.86L1.82 18a2.3 2.3 0 0 0 2 3.5h16.36a2.3 2.3 0 0 0 2-3.5L13.71 3.86a2 2 0 0 0-3.42 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v4m0 4h.01"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.29 3.86L1.82 18a2.3 2.3 0 0 0 2 3.5h16.36a2.3 2.3 0 0 0 2-3.5L13.71 3.86a2 2 0 0 0-3.42 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v4m0 4h.01" /></svg>
               </div>
               <div>
                 <h3 className="text-xl font-bold text-gray-800">Sección no encontrada</h3>
@@ -270,8 +270,8 @@ const ExtensionSection = () => {
               <div>
                 <Label className="text-base font-semibold">Estado de la Sección</Label>
                 <p className="text-sm text-gray-600 mt-1">
-                  {section.is_enabled 
-                    ? 'La sección está habilitada y muestra contenido real' 
+                  {section.is_enabled
+                    ? 'La sección está habilitada y muestra contenido real'
                     : 'La sección está deshabilitada y muestra un placeholder'}
                 </p>
               </div>
@@ -281,14 +281,12 @@ const ExtensionSection = () => {
                 </span>
                 <button
                   onClick={handleToggleEnabled}
-                  className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                    section.is_enabled ? 'bg-green-600' : 'bg-gray-300'
-                  }`}
+                  className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${section.is_enabled ? 'bg-green-600' : 'bg-gray-300'
+                    }`}
                 >
                   <span
-                    className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                      section.is_enabled ? 'translate-x-7' : 'translate-x-1'
-                    }`}
+                    className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${section.is_enabled ? 'translate-x-7' : 'translate-x-1'
+                      }`}
                   />
                 </button>
               </div>
@@ -296,7 +294,7 @@ const ExtensionSection = () => {
 
             <div>
               <Label>Título</Label>
-                <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <div onClick={() => handleOpenSectionEdit()} role="button" className="w-full cursor-pointer">
                   <Input value={isSectionEditOpen ? sectionTitleEdit : section.title} disabled={!isSectionEditOpen} onChange={(e) => setSectionTitleEdit(e.target.value)} />
                 </div>
@@ -358,12 +356,12 @@ const ExtensionSection = () => {
               <Label>Banner actual</Label>
               {section.banner_url ? (
                 <div className="mt-2 max-w-4xl">
-                  <div className="relative w-full overflow-hidden rounded-lg border-2 border-gray-200 shadow-md hover:shadow-lg transition-shadow cursor-pointer" 
-                       onClick={() => handleOpenSectionEdit(true)}
-                       title="Click para editar banner">
-                    <img 
-                      src={getAssetUrl(section.banner_url)} 
-                      alt="Sección banner" 
+                  <div className="relative w-full overflow-hidden rounded-lg border-2 border-gray-200 shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => handleOpenSectionEdit(true)}
+                    title="Click para editar banner">
+                    <img
+                      src={getAssetUrl(section.banner_url)}
+                      alt="Sección banner"
                       className="w-full h-auto object-contain bg-white"
                       style={{ maxHeight: '400px' }}
                     />
@@ -421,65 +419,65 @@ const ExtensionSection = () => {
                     </TableRow>
                   )}
                   {section.items.map((item) => (
-                      <TableRow key={item.id}>
-                        {editingItemId === item.id ? (
-                          <>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                {editingItem?.image_url && !itemImage ? (
-                                  <img src={getAssetUrl(editingItem.image_url)} alt={item.title} className="w-16 h-16 object-cover rounded" />
-                                ) : null}
-                                <Input id={`item-inline-image-${item.id}`} type="file" accept="image/*" onChange={(e) => setItemImage(e.target.files ? e.target.files[0] : null)} />
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Input value={itemTitle} onChange={(e) => setItemTitle(e.target.value)} />
-                            </TableCell>
-                            <TableCell>
-                              <TextArea value={itemDescription} onChange={(v) => setItemDescription(v)} />
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex space-x-2">
-                                <Button size="sm" variant="primary" onClick={() => handleSaveInline(item.id)} disabled={rowSaving}>Guardar</Button>
-                                <Button size="sm" variant="outline" onClick={cancelInlineEdit}>Cancelar</Button>
-                              </div>
-                            </TableCell>
-                          </>
-                        ) : (
-                          <>
-                            <TableCell>
-                              {item.image_url && (
-                                <img
-                                  src={getAssetUrl(item.image_url)}
-                                  alt={item.title}
-                                  className="w-16 h-16 object-cover rounded cursor-pointer"
-                                  onClick={() => startInlineEdit(item, true)}
-                                  title="Click para editar"
-                                />
-                              )}
-                            </TableCell>
-                            <TableCell onClick={() => startInlineEdit(item)} className="cursor-pointer">{item.title}</TableCell>
-                            <TableCell onClick={() => startInlineEdit(item)} className="cursor-pointer">{item.description}</TableCell>
-                            <TableCell>
-                              <div className="flex space-x-2">
-                                <Button size="sm" variant="outline" onClick={() => startInlineEdit(item)}>
-                                  Editar
-                                </Button>
-                                <Button size="sm" variant="danger" onClick={() => handleDelete(item.id)}>
-                                  Eliminar
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </>
-                        )}
-                      </TableRow>
-                    ))}
+                    <TableRow key={item.id}>
+                      {editingItemId === item.id ? (
+                        <>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {editingItem?.image_url && !itemImage ? (
+                                <img src={getAssetUrl(editingItem.image_url)} alt={item.title} className="w-16 h-16 object-cover rounded" />
+                              ) : null}
+                              <Input id={`item-inline-image-${item.id}`} type="file" accept="image/*" onChange={(e) => setItemImage(e.target.files ? e.target.files[0] : null)} />
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Input value={itemTitle} onChange={(e) => setItemTitle(e.target.value)} />
+                          </TableCell>
+                          <TableCell>
+                            <TextArea value={itemDescription} onChange={(v) => setItemDescription(v)} />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button size="sm" variant="primary" onClick={() => handleSaveInline(item.id)} disabled={rowSaving}>Guardar</Button>
+                              <Button size="sm" variant="outline" onClick={cancelInlineEdit}>Cancelar</Button>
+                            </div>
+                          </TableCell>
+                        </>
+                      ) : (
+                        <>
+                          <TableCell>
+                            {item.image_url && (
+                              <img
+                                src={getAssetUrl(item.image_url)}
+                                alt={item.title}
+                                className="w-16 h-16 object-cover rounded cursor-pointer"
+                                onClick={() => startInlineEdit(item, true)}
+                                title="Click para editar"
+                              />
+                            )}
+                          </TableCell>
+                          <TableCell onClick={() => startInlineEdit(item)} className="cursor-pointer">{item.title}</TableCell>
+                          <TableCell onClick={() => startInlineEdit(item)} className="cursor-pointer">{item.description}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button size="sm" variant="outline" onClick={() => startInlineEdit(item)}>
+                                Editar
+                              </Button>
+                              <Button size="sm" variant="danger" onClick={() => handleDelete(item.id)}>
+                                Eliminar
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </>
+                      )}
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>
           </ComponentCard>
         )}
-        
+
       </div>
     </>
   );

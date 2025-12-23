@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Image as ImageIcon, Upload, Sparkles, FileText, ArrowUp, ArrowDown } from 'lucide-react';
 import becasService from '../../../services/becasService';
+import { toastError, toastSuccess, confirmDialog } from '../../../utils/alert';
 
 export interface BannerData {
     title: string;
@@ -81,14 +82,15 @@ export const BannerForm = ({ initialData, onChange }: BannerFormProps) => {
             // Usamos uploadBannerFile que vale para ambos, o el específico de image si preferimos
             // El backend ahora tiene /upload-file general
             const response = await becasService.uploadBannerFile(file);
-            const fullUrl = response.url.startsWith('http') ? response.url : `${import.meta.env.VITE_API_URL || 'http://localhost:3002'}${response.url}`;
+            const fullUrl = response.url.startsWith('http') ? response.url : `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${response.url}`;
             setImageUrl(fullUrl);
 
             // Actualizar botón "Ver Cartel" con esta imagen
             updateButtonUrlIfExists('Ver Cartel', fullUrl);
+            toastSuccess('Imagen subida correctamente');
         } catch (error) {
             console.error('Error al subir imagen:', error);
-            alert('Error al subir la imagen');
+            toastError('Error al subir la imagen');
         } finally {
             setUploading(false);
         }
@@ -99,20 +101,21 @@ export const BannerForm = ({ initialData, onChange }: BannerFormProps) => {
         if (!file) return;
 
         if (file.type !== 'application/pdf') {
-            alert('Por favor sube un archivo PDF válido');
+            toastError('Por favor sube un archivo PDF válido');
             return;
         }
 
         try {
             setUploadingPdf(true);
             const response = await becasService.uploadBannerFile(file);
-            const fullUrl = response.url.startsWith('http') ? response.url : `${import.meta.env.VITE_API_URL || 'http://localhost:3002'}${response.url}`;
+            const fullUrl = response.url.startsWith('http') ? response.url : `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${response.url}`;
 
             // Actualizar o crear botón "Descargar PDF"
             updateButtonUrlIfExists('Descargar PDF', fullUrl, true);
+            toastSuccess('PDF subido correctamente');
         } catch (error) {
             console.error('Error al subir PDF:', error);
-            alert('Error al subir el PDF');
+            toastError('Error al subir el PDF');
         } finally {
             setUploadingPdf(false);
         }
@@ -134,8 +137,14 @@ export const BannerForm = ({ initialData, onChange }: BannerFormProps) => {
         }
     };
 
-    const handleLoadExample = () => {
-        if (confirm('¿Cargar plantilla de ejemplo? Esto reemplazará los datos actuales.')) {
+    const handleLoadExample = async () => {
+        const confirmed = await confirmDialog({
+            title: '¿Cargar plantilla de ejemplo?',
+            text: 'Esto reemplazará los datos actuales.',
+            confirmText: 'Sí, cargar'
+        });
+
+        if (confirmed) {
             setTitle('Beca de Exención de Pago\nEnero - Abril 2026');
             setSubtitle('CONVOCATORIA ABIERTA');
             setDescription('Convocatoria oficial para el proceso de selección de becas del periodo Enero - Abril 2026.');
@@ -153,20 +162,14 @@ export const BannerForm = ({ initialData, onChange }: BannerFormProps) => {
         if (!file) return;
 
         try {
-            console.log('Botón index:', index, 'Archivo seleccionado:', file.name);
             setUploading(true);
             const response = await becasService.uploadBannerFile(file);
-            console.log('Respuesta del servidor:', response);
+            const fullUrl = response.url.startsWith('http') ? response.url : `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${response.url}`;
 
-            const fullUrl = response.url.startsWith('http') ? response.url : `${import.meta.env.VITE_API_URL || 'http://localhost:3002'}${response.url}`;
-            console.log('URL construida:', fullUrl);
-
-            // ATOMIC UPDATE: Modify copy and set state ONCE to avoid race conditions
             setButtons(prevButtons => {
                 const newButtons = [...prevButtons];
                 const updatedButton = { ...newButtons[index], url: fullUrl };
 
-                // Auto-detectar icono según tipo
                 if (file.type === 'application/pdf') {
                     updatedButton.icon = 'download';
                 } else if (file.type.startsWith('image/')) {
@@ -176,11 +179,10 @@ export const BannerForm = ({ initialData, onChange }: BannerFormProps) => {
                 newButtons[index] = updatedButton;
                 return newButtons;
             });
-            console.log('Estado de botones actualizados atómicamente');
-
+            toastSuccess('Archivo subido correctamente');
         } catch (error) {
             console.error('Error al subir archivo para botón:', error);
-            alert('Error al subir el archivo');
+            toastError('Error al subir el archivo');
         } finally {
             setUploading(false);
         }
