@@ -19,13 +19,13 @@ export default defineConfig({
     proxy: {
       // Proxy para rutas de API - redirige al backend
       '/api': {
-        target: 'http://localhost:3004',
+        target: 'http://localhost:3002',
         changeOrigin: true,
         secure: false,
       },
       // Proxy para imágenes subidas - redirige al backend
       '/uploads': {
-        target: 'http://localhost:3004',
+        target: 'http://localhost:3002',
         changeOrigin: true,
         secure: false,
       }

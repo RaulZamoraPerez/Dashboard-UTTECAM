@@ -1,6 +1,6 @@
 import type { HeroSlide, CreateHeroSlideRequest, UpdateHeroSlideRequest, Evento, CreateEventoRequest, UpdateEventoRequest, Noticia, CreateNoticiaRequest, UpdateNoticiaRequest, Anuncio, CreateAnuncioRequest, UpdateAnuncioRequest } from '../types/home';
 
-const API_URL = import.meta.env.VITE_BACKENDURL || import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 // ==================== HERO SLIDES ====================
 export const getHeroSlides = async (): Promise<HeroSlide[]> => {

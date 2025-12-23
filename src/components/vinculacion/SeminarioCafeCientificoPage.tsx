@@ -25,7 +25,7 @@ type GalleryImage = {
   url: string; // dataURL or remote URL
 };
 
-const BACKEND_URL = import.meta.env.VITE_BACKENDURL || 'http://localhost:3004';
+const BACKEND_URL = import.meta.env.VITE_BACKENDURL || 'http://localhost:3002';
 
 const SeminarioCafeCientificoPage: React.FC = () => {
   // --- PDF State ---

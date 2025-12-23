@@ -6,14 +6,8 @@ export interface MiembroSNII {
   pdf: string;
   orden: number;
   activo: boolean;
-  tipo?: string;
   fecha_creacion?: string;
   fecha_actualizacion?: string;
-}
-
-export interface MiembroSniiTipo {
-  ID: number;
-  Nombre: string;
 }
 
 export const miembrosSniiService = {
@@ -40,33 +34,6 @@ export const miembrosSniiService = {
 
   delete: async (id: number): Promise<void> => {
     return await fetchWithAuth<void>(`/api/miembros-snii/${id}`, {
-      method: 'DELETE',
-    });
-  },
-
-  // Tipos
-  getTipos: async (): Promise<MiembroSniiTipo[]> => {
-    return await fetchWithAuth<MiembroSniiTipo[]>('/api/miembros-snii-tipos');
-  },
-
-  createTipo: async (nombre: string): Promise<MiembroSniiTipo> => {
-    return await fetchWithAuth<MiembroSniiTipo>('/api/miembros-snii-tipos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ Nombre: nombre }),
-    });
-  },
-
-  updateTipo: async (id: number, nombre: string): Promise<MiembroSniiTipo> => {
-    return await fetchWithAuth<MiembroSniiTipo>(`/api/miembros-snii-tipos/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ Nombre: nombre }),
-    });
-  },
-
-  deleteTipo: async (id: number): Promise<void> => {
-    return await fetchWithAuth<void>(`/api/miembros-snii-tipos/${id}`, {
       method: 'DELETE',
     });
   }

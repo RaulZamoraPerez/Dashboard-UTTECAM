@@ -1,310 +1,337 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { FileText, Trash2, Plus, X, Upload, Eye } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import ImageViewModal from "./ImageViewModal";
 import ConfirmModal from "./ConfirmModal";
+import TitleModal from "./TitleModal";
 import PdfViewModal from "./PdfViewModal";
-import { getToken } from "../../services/authService";
+import { Upload, FileText, Image as ImageIcon, FolderPlus, Trash2, Eye, Download, Save, Plus } from "lucide-react";
 
-interface ServicioRealizado {
-  id: number;
-  titulo: string;
-  archivo: string;
-  fecha_realizacion: string;
-  orden: number;
-  activo: boolean;
-}
+/*
+  Estructura de datos:
+  - Folder: agrupa varios MediaItem (por ejemplo: "Servicios tecnologicos realizados en 2025")
+  - MediaItem: imagen + título + descripción + pdf opcional
+*/
 
-const BACKEND_URL = import.meta.env.VITE_BACKENDURL || "http://localhost:3004";
+type PdfFile = { url: string; name?: string };
+
+type MediaItem = {
+  id: string;
+  title: string;
+  description?: string;
+  imageUrl?: string; // dataURL
+  pdf?: PdfFile | null;
+};
+
+type Folder = {
+  id: string;
+  title: string; // Ej: "Servicios tecnológicos realizados en 2025"
+  items: MediaItem[];
+};
+
+const STORAGE_KEY = "serv_tecnologicos_realizados_v1";
+
+// Modal para crear/editar carpeta (title only)
+const FolderModal: React.FC<{
+  open: boolean;
+  defaultTitle?: string;
+  onCancel: () => void;
+  onConfirm: (title: string) => void;
+}> = ({ open, defaultTitle = "", onCancel, onConfirm }) => {
+  const [title, setTitle] = useState(defaultTitle);
+  useEffect(() => setTitle(defaultTitle), [defaultTitle, open]);
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
+      <div className="relative bg-white rounded-lg shadow-lg max-w-md w-full p-6 z-10">
+        <h3 className="text-lg font-semibold mb-3">Nombre de la carpeta</h3>
+        <label className="text-sm text-gray-600">Título (p. ej. "Servicios tecnológicos realizados en 2025")</label>
+        <input value={title} onChange={(e) => setTitle(e.target.value)} className="mt-2 mb-4 w-full border rounded px-3 py-2" />
+        <div className="flex justify-end gap-2">
+          <button onClick={onCancel} className="px-4 py-2 rounded border">Cancelar</button>
+          <button onClick={() => onConfirm(title.trim() || "Sin título")} className="px-4 py-2 rounded bg-blue-600 text-white">Guardar</button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ServiciosTecnologicosRealizadosPage: React.FC = () => {
-  const [servicios, setServicios] = useState<ServicioRealizado[]>([]);
-  const [loading, setLoading] = useState(true);
-  
-  // Modal states
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
-  const [pdfPreview, setPdfPreview] = useState<{ url: string; name: string } | null>(null);
+  const [folders, setFolders] = useState<Folder[]>([]);
 
-  // Form states
-  const [newTitle, setNewTitle] = useState("");
-  const [newDate, setNewDate] = useState("");
-  const [newFile, setNewFile] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // UI
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const fetchServicios = async () => {
-    try {
-      setLoading(true);
-      const token = getToken();
-      const response = await axios.get(`${BACKEND_URL}/api/servicios-tecnologicos-realizados/admin/all`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      setServicios(response.data);
-    } catch (err) {
-      setToast({ type: "error", message: "Error al cargar los servicios." });
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Modals / temporary state
+  const [folderModalOpen, setFolderModalOpen] = useState(false);
+  const [pendingFolderEditId, setPendingFolderEditId] = useState<string | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [pdfPreview, setPdfPreview] = useState<{ url: string | null; name?: string | null } | null>(null);
+  const [confirmDeleteFolderId, setConfirmDeleteFolderId] = useState<string | null>(null);
+  const [confirmDeleteItem, setConfirmDeleteItem] = useState<{ folderId: string; itemId: string } | null>(null);
 
+  // For adding images/pdfs we use refs and pending ids
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const pdfInputRef = useRef<HTMLInputElement | null>(null);
+  const [pendingFolderForImage, setPendingFolderForImage] = useState<string | null>(null);
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  const [pendingImageDataUrl, setPendingImageDataUrl] = useState<string | null>(null);
+
+  const [pendingItemForPdf, setPendingItemForPdf] = useState<{ folderId: string; itemId: string } | null>(null);
+  const [pendingPdfFile, setPendingPdfFile] = useState<File | null>(null);
+  const [pendingPdfDataUrl, setPendingPdfDataUrl] = useState<string | null>(null);
+
+  // We reuse TitleModal to get title/description for a new image item
+  const [titleModalOpen, setTitleModalOpen] = useState(false);
+  const [titleModalDefault, setTitleModalDefault] = useState<{ title?: string; description?: string }>({});
+
+  // Load persisted
   useEffect(() => {
-    fetchServicios();
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) setFolders(JSON.parse(raw));
+    } catch (e) {}
   }, []);
 
-  const handleFilePick = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.type !== "application/pdf") {
-        alert("Solo se permiten archivos PDF.");
-        return;
-      }
-      setNewFile(file);
-      if (!newTitle) {
-        setNewTitle(file.name.split('.')[0]);
-      }
-    }
+  // Persist helper
+  const persist = (next: Folder[]) => {
+    setFolders(next);
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch (e) {}
   };
 
-  const handleCreate = async () => {
-    if (!newTitle || !newFile) {
-        alert("El título y el archivo PDF son obligatorios.");
-        return;
-    }
-
-    setIsSubmitting(true);
-    const formData = new FormData();
-    formData.append("titulo", newTitle);
-    if (newDate) formData.append("fecha_realizacion", newDate);
-    formData.append("archivo", newFile);
-    formData.append("activo", "true");
-
-    try {
-      const token = getToken();
-      await axios.post(`${BACKEND_URL}/api/servicios-tecnologicos-realizados`, formData, {
-        headers: { 
-            "Authorization": `Bearer ${token}`
-        },
-      });
-      setIsAddModalOpen(false);
-      setNewTitle("");
-      setNewDate("");
-      setNewFile(null);
-      setToast({ type: "success", message: "Servicio creado correctamente." });
-      fetchServicios();
-    } catch (err) {
-      console.error("Error creating service:", err);
-      setToast({ type: "error", message: "Error al crear el servicio." });
-    } finally {
-        setIsSubmitting(false);
-        setTimeout(() => setToast(null), 2500);
-    }
+  // Folder actions
+  const handleCreateFolder = (title: string) => {
+    const f: Folder = { id: String(Date.now()) + "-" + Math.random().toString(36).slice(2, 9), title: title || "Sin título", items: [] };
+    persist([f, ...folders]);
+    setFolderModalOpen(false);
+    setToast({ type: "success", message: "Carpeta creada." });
+    setTimeout(() => setToast(null), 1800);
   };
 
-  const handleDelete = async () => {
-    if (!confirmDeleteId) return;
-    try {
-      const token = getToken();
-      await axios.delete(`${BACKEND_URL}/api/servicios-tecnologicos-realizados/${confirmDeleteId}`, {
-        headers: { "Authorization": `Bearer ${token}` }
-      });
-      setConfirmDeleteId(null);
-      setToast({ type: "success", message: "Servicio eliminado." });
-      fetchServicios();
-    } catch (err) {
-      console.error("Error deleting service:", err);
-      setToast({ type: "error", message: "Error al eliminar el servicio." });
-    } finally {
-        setTimeout(() => setToast(null), 2500);
+  const handleEditFolder = (id: string, title: string) => {
+    const next = folders.map(f => f.id === id ? { ...f, title } : f);
+    persist(next);
+    setPendingFolderEditId(null);
+    setFolderModalOpen(false);
+    setToast({ type: "success", message: "Carpeta actualizada." });
+    setTimeout(() => setToast(null), 1500);
+  };
+
+  const handleDeleteFolderConfirmed = () => {
+    if (!confirmDeleteFolderId) return;
+    persist(folders.filter(f => f.id !== confirmDeleteFolderId));
+    setConfirmDeleteFolderId(null);
+    setToast({ type: "success", message: "Carpeta eliminada." });
+    setTimeout(() => setToast(null), 1500);
+  };
+
+  // Image flow: click "Añadir imagen" in a folder -> open file picker -> after read, open TitleModal -> create item
+  const onAddImageClick = (folderId: string) => {
+    setPendingFolderForImage(folderId);
+    imageInputRef.current?.click();
+  };
+
+  const onImagePicked: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    const f = e.target.files?.[0] ?? null;
+    if (!f) return;
+    if (!f.type.startsWith("image/")) { alert("Solo imágenes."); e.target.value = ""; return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      setPendingImageFile(f);
+      setPendingImageDataUrl(dataUrl);
+      setTitleModalDefault({ title: "", description: "" });
+      setTitleModalOpen(true);
+    };
+    reader.readAsDataURL(f);
+    e.target.value = "";
+  };
+
+  const handleTitleModalConfirm = (t: string, d?: string) => {
+    if (!pendingFolderForImage || !pendingImageDataUrl) {
+      setPendingImageFile(null);
+      setPendingImageDataUrl(null);
+      setPendingFolderForImage(null);
+      setTitleModalOpen(false);
+      return;
     }
+    const newItem: MediaItem = { id: String(Date.now()) + "-" + Math.random().toString(36).slice(2, 9), title: t || "Sin título", description: d || "", imageUrl: pendingImageDataUrl, pdf: null };
+    const next = folders.map(f => f.id === pendingFolderForImage ? { ...f, items: [...f.items, newItem] } : f);
+    persist(next);
+    setPendingImageFile(null);
+    setPendingImageDataUrl(null);
+    setPendingFolderForImage(null);
+    setTitleModalOpen(false);
+    setToast({ type: "success", message: "Imagen añadida." });
+    setTimeout(() => setToast(null), 1500);
+  };
+
+  const handleTitleModalCancel = () => {
+    setPendingImageFile(null);
+    setPendingImageDataUrl(null);
+    setPendingFolderForImage(null);
+    setTitleModalOpen(false);
+  };
+
+  // Add/replace PDF for an existing item
+  const onAddPdfToItem = (folderId: string, itemId: string) => {
+    setPendingItemForPdf({ folderId, itemId });
+    pdfInputRef.current?.click();
+  };
+
+  const onPdfPicked: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    const f = e.target.files?.[0] ?? null;
+    if (!f) return;
+    if (f.type !== "application/pdf") { alert("Solo PDF."); e.target.value = ""; return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      setPendingPdfFile(f);
+      setPendingPdfDataUrl(dataUrl);
+
+      // attach directly to item (no extra metadata required here)
+      if (pendingItemForPdf) {
+        const next = folders.map(fold => {
+          if (fold.id !== pendingItemForPdf.folderId) return fold;
+          return { ...fold, items: fold.items.map(it => it.id === pendingItemForPdf.itemId ? { ...it, pdf: { url: dataUrl, name: f.name } } : it) };
+        });
+        persist(next);
+        setPendingItemForPdf(null);
+        setPendingPdfFile(null);
+        setPendingPdfDataUrl(null);
+        setToast({ type: "success", message: "PDF adjuntado al ítem." });
+        setTimeout(() => setToast(null), 1500);
+      }
+    };
+    reader.readAsDataURL(f);
+    e.target.value = "";
+  };
+
+  // Item level actions
+  const handleDeleteItemConfirmed = () => {
+    if (!confirmDeleteItem) return;
+    const next = folders.map(fold => fold.id === confirmDeleteItem.folderId ? { ...fold, items: fold.items.filter(i => i.id !== confirmDeleteItem.itemId) } : fold);
+    persist(next);
+    setConfirmDeleteItem(null);
+    setToast({ type: "success", message: "Ítem eliminado." });
+    setTimeout(() => setToast(null), 1500);
+  };
+
+  const handleDownloadPdf = (pdf?: PdfFile | null) => {
+    if (!pdf?.url) return;
+    const a = document.createElement("a");
+    a.href = pdf.url;
+    a.download = pdf.name ?? "document.pdf";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  const handleSaveAll = async () => {
+    setIsSaving(true);
+    try {
+      persist(folders);
+      await new Promise(r => setTimeout(r, 400));
+      setToast({ type: "success", message: "Cambios guardados." });
+    } catch (e) { setToast({ type: "error", message: "Error al guardar." }); }
+    finally { setIsSaving(false); setTimeout(() => setToast(null), 1800); }
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-10">
-      
-      {/* SECCIÓN SERVICIOS */}
-      <section>
-        <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-          <div>
-            <h2 className="text-2xl font-semibold">Servicios Tecnológicos Realizados</h2>
-            <p className="text-sm text-gray-500 mt-1">Gestiona los documentos PDF de servicios realizados.</p>
-          </div>
-          <button 
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
-          >
-            <Plus size={16} />
-            Nuevo Servicio
-          </button>
-        </header>
-
-        <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
-          {loading ? (
-            <div className="p-8 text-center text-gray-500">Cargando servicios...</div>
-          ) : servicios.length === 0 ? (
-            <div className="p-10 text-center">
-              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <FileText className="text-gray-400" size={32} />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900">No hay servicios</h3>
-              <p className="text-gray-500 mt-1 mb-6">Sube documentos para que aparezcan en la lista.</p>
-              <button 
-                onClick={() => setIsAddModalOpen(true)}
-                className="text-blue-600 hover:underline font-medium"
-              >
-                Subir el primer servicio
-              </button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-6 py-3 font-medium text-gray-700">Documento</th>
-                    <th className="px-6 py-3 font-medium text-gray-700">Título</th>
-                    <th className="px-6 py-3 font-medium text-gray-700">Fecha Realización</th>
-                    <th className="px-6 py-3 font-medium text-gray-700">Archivo</th>
-                    <th className="px-6 py-3 font-medium text-gray-700 text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {servicios.map((servicio) => (
-                    <tr key={servicio.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="w-12 h-12 bg-red-50 rounded flex items-center justify-center text-red-500">
-                            <FileText size={24} />
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 font-medium text-gray-900">{servicio.titulo}</td>
-                      <td className="px-6 py-4 text-gray-500">
-                        {servicio.fecha_realizacion ? new Date(servicio.fecha_realizacion).toLocaleDateString() : '-'}
-                      </td>
-                      <td className="px-6 py-4 text-gray-500 truncate max-w-xs">
-                        {servicio.archivo.split('/').pop()}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button 
-                            onClick={() => setPdfPreview({ 
-                                url: `${BACKEND_URL}/uploads/${servicio.archivo}`, 
-                                name: servicio.archivo 
-                            })}
-                            className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                            title="Ver PDF"
-                          >
-                            <Eye size={16} />
-                          </button>
-                          <button 
-                            onClick={() => setConfirmDeleteId(servicio.id)}
-                            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                            title="Eliminar"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+    <div className="p-6 max-w-7xl mx-auto font-sans text-gray-800">
+      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 border-b pb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Servicios Tecnológicos realizados</h1>
+          <p className="text-sm text-gray-500 mt-2">Agrupa evidencias por carpetas (por ejemplo: por año) y añade imágenes con título, descripción y PDF opcional.</p>
         </div>
-      </section>
 
-      {/* MODAL NUEVO SERVICIO */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="px-5 py-3 border-b flex justify-between items-center bg-gray-50">
-              <h3 className="font-semibold text-gray-800">Subir Servicio</h3>
-              <button onClick={() => setIsAddModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                <X size={18} />
-              </button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Archivo PDF</label>
-                <div className="flex items-center justify-center w-full">
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload className="w-8 h-8 mb-3 text-gray-400" />
-                      <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click para subir</span></p>
-                      <p className="text-xs text-gray-500">PDF (MAX. 10MB)</p>
-                    </div>
-                    <input type="file" className="hidden" accept="application/pdf" onChange={handleFilePick} />
-                  </label>
+        <div className="flex items-center gap-2">
+          <button onClick={() => { setPendingFolderEditId(null); setFolderModalOpen(true); }} className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg text-sm font-medium transition-colors shadow-sm"><FolderPlus size={16} /> Nueva carpeta</button>
+          <button onClick={handleSaveAll} disabled={isSaving} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50"><Save size={16} /> {isSaving ? 'Guardando...' : 'Guardar'}</button>
+        </div>
+      </header>
+
+      <main className="grid grid-cols-1 gap-6">
+        {folders.length === 0 ? (
+          <div className="bg-white border rounded-xl shadow-sm p-6 text-center">
+            <p className="text-gray-600">No hay carpetas aún. Crea una nueva carpeta (por ejemplo "Servicios tecnológicos realizados en 2025") para comenzar.</p>
+            <button onClick={() => setFolderModalOpen(true)} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded"> <Plus size={14} /> Crear carpeta</button>
+          </div>
+        ) : (
+          folders.map(folder => (
+            <div key={folder.id} className="bg-white border rounded-xl shadow-sm p-4">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-lg font-semibold">{folder.title}</h2>
+                  <div className="text-xs text-gray-500">{folder.items.length} ítems</div>
                 </div>
-                {newFile && (
-                  <p className="mt-2 text-sm text-green-600 flex items-center gap-1">
-                    <FileText size={14} /> {newFile.name}
-                  </p>
-                )}
+                <div className="flex items-center gap-2">
+                  <button onClick={() => { setPendingFolderEditId(folder.id); setFolderModalOpen(true); }} className="px-3 py-2 rounded border text-sm">Editar</button>
+                  <button onClick={() => setConfirmDeleteFolderId(folder.id)} className="px-3 py-2 rounded border text-red-600">Eliminar</button>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                <input 
-                  type="text" 
-                  value={newTitle} 
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="Ej. Servicio de Mantenimiento"
-                />
+
+              <div className="mb-4">
+                <button onClick={() => onAddImageClick(folder.id)} className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded"><Upload size={14} /> Añadir imagen</button>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Realización</label>
-                <input 
-                    type="date" 
-                    value={newDate} 
-                    onChange={(e) => setNewDate(e.target.value)} 
-                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
-                />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {folder.items.map(item => (
+                  <div key={item.id} className="border rounded-lg overflow-hidden group bg-gray-50">
+                    <div className="h-40 bg-gray-200 cursor-pointer" onClick={() => setImagePreviewUrl(item.imageUrl ?? null)}>
+                      {item.imageUrl ? <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-400">No hay imagen</div>}
+                    </div>
+                    <div className="p-3">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <div className="text-sm font-semibold truncate">{item.title}</div>
+                        <div className="text-xs text-gray-500">{item.pdf ? 'PDF adjunto' : 'Sin PDF'}</div>
+                      </div>
+                      {item.description && <div className="text-sm text-gray-600 mt-1">{item.description}</div>}
+
+                      <div className="flex items-center gap-2 mt-3">
+                        <button onClick={() => setImagePreviewUrl(item.imageUrl ?? null)} className="p-2 rounded border" title="Ver imagen"><Eye size={16} /></button>
+                        {item.pdf ? (
+                          <>
+                            <button onClick={() => { setPdfPreview({ url: item.pdf?.url ?? null, name: item.pdf?.name }); }} className="p-2 rounded border" title="Ver PDF"><FileText size={16} /></button>
+                            <button onClick={() => handleDownloadPdf(item.pdf)} className="p-2 rounded border" title="Descargar PDF"><Download size={16} /></button>
+                          </>
+                        ) : (
+                          <button onClick={() => onAddPdfToItem(folder.id, item.id)} className="p-2 rounded border text-sm">Adjuntar PDF</button>
+                        )}
+
+                        <button onClick={() => setConfirmDeleteItem({ folderId: folder.id, itemId: item.id })} className="ml-auto p-2 rounded border text-red-600"><Trash2 size={16} /></button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="px-5 py-3 bg-gray-50 flex justify-end gap-2 border-t">
-              <button onClick={() => setIsAddModalOpen(false)} className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-200 rounded-md">Cancelar</button>
-              <button 
-                onClick={handleCreate} 
-                disabled={!newFile || isSubmitting}
-                className="px-3 py-1.5 text-sm bg-blue-600 text-white hover:bg-blue-700 rounded-md disabled:opacity-50"
-              >
-                {isSubmitting ? "Subiendo..." : "Subir Servicio"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          ))
+        )}
+      </main>
 
-      {/* Modales Auxiliares */}
-      <PdfViewModal 
-        open={!!pdfPreview} 
-        pdfUrl={pdfPreview?.url} 
-        fileName={pdfPreview?.name} 
-        onClose={() => setPdfPreview(null)} 
-        onDownload={() => {
-            if (pdfPreview?.url) {
-                const a = document.createElement('a');
-                a.href = pdfPreview.url;
-                a.download = pdfPreview.name || 'document.pdf';
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-            }
-        }}
-      />
-      
-      <ConfirmModal 
-        open={!!confirmDeleteId} 
-        title="Eliminar Servicio" 
-        description="¿Estás seguro de que deseas eliminar este servicio?" 
-        onCancel={() => setConfirmDeleteId(null)} 
-        onConfirm={handleDelete} 
-      />
+      {/* Hidden inputs for file picking */}
+      <input ref={imageInputRef} type="file" accept="image/*" onChange={onImagePicked} className="hidden" />
+      <input ref={pdfInputRef} type="file" accept="application/pdf" onChange={onPdfPicked} className="hidden" />
 
-      {/* Toast */}
+      {/* Modals */}
+      <FolderModal open={folderModalOpen} defaultTitle={pendingFolderEditId ? (folders.find(f => f.id === pendingFolderEditId)?.title ?? "") : ""} onCancel={() => { setFolderModalOpen(false); setPendingFolderEditId(null); }} onConfirm={(t) => { if (pendingFolderEditId) handleEditFolder(pendingFolderEditId, t); else handleCreateFolder(t); }} />
+
+      <TitleModal open={titleModalOpen} defaultTitle={titleModalDefault.title} onCancel={handleTitleModalCancel} onConfirm={(t, d) => handleTitleModalConfirm(t, d)} />
+
+      <ImageViewModal open={!!imagePreviewUrl} imageUrl={imagePreviewUrl ?? undefined} onClose={() => setImagePreviewUrl(null)} />
+
+      <PdfViewModal open={!!pdfPreview} pdfUrl={pdfPreview?.url ?? undefined} fileName={pdfPreview?.name ?? undefined} onClose={() => setPdfPreview(null)} onDownload={() => { if (pdfPreview?.url) { const a = document.createElement('a'); a.href = pdfPreview.url; a.download = pdfPreview.name ?? 'document.pdf'; document.body.appendChild(a); a.click(); a.remove(); } }} />
+
+      <ConfirmModal open={!!confirmDeleteFolderId} title="Eliminar carpeta" description="¿Deseas eliminar esta carpeta y todo su contenido?" onCancel={() => setConfirmDeleteFolderId(null)} onConfirm={handleDeleteFolderConfirmed} />
+
+      <ConfirmModal open={!!confirmDeleteItem} title="Eliminar ítem" description="¿Deseas eliminar este ítem?" onCancel={() => setConfirmDeleteItem(null)} onConfirm={handleDeleteItemConfirmed} />
+
       {toast && (
-        <div className="fixed right-4 bottom-6 z-50">
-          <div className={`px-4 py-2 rounded-md shadow-md ${toast.type === "success" ? "bg-green-600 text-white" : "bg-red-600 text-white"}`}>{toast.message}</div>
+        <div className="fixed right-6 bottom-6 z-50">
+          <div className={`px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 ${toast.type === "success" ? "bg-gray-900 text-white" : "bg-red-600 text-white"}`}>
+            <span className="text-sm font-medium">{toast.message}</span>
+          </div>
         </div>
       )}
     </div>

@@ -1,13 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { miembrosSniiService, MiembroSNII, MiembroSniiTipo } from '../../services/miembrosSniiService';
+import { miembrosSniiService, MiembroSNII } from '../../services/miembrosSniiService';
 
-const API_URL = import.meta.env.VITE_BACKENDURL || 'http://localhost:3004';
+const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3002';
 
 export default function DocenteSNIIPage() {
   const [documentos, setDocumentos] = useState<MiembroSNII[]>([]);
-  const [tipos, setTipos] = useState<MiembroSniiTipo[]>([]);
-  const [tipoSeleccionado, setTipoSeleccionado] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -15,7 +13,6 @@ export default function DocenteSNIIPage() {
   // Modal states
   const [mostrarModalArchivo, setMostrarModalArchivo] = useState(false);
   const [mostrarModalEditar, setMostrarModalEditar] = useState(false);
-  const [mostrarModalCrearTipo, setMostrarModalCrearTipo] = useState(false);
   
   // Form states
   const [archivosASubir, setArchivosASubir] = useState<File[]>([]);
@@ -25,10 +22,6 @@ export default function DocenteSNIIPage() {
   // Edit states
   const [documentoAEditar, setDocumentoAEditar] = useState<MiembroSNII | null>(null);
   const [tituloEdit, setTituloEdit] = useState('');
-  const [tipoEdit, setTipoEdit] = useState('');
-
-  // Tipos management states
-  const [nuevoTipoNombre, setNuevoTipoNombre] = useState('');
 
   // Drag and drop states
   const [isDragging, setIsDragging] = useState(false);
@@ -36,74 +29,22 @@ export default function DocenteSNIIPage() {
 
   const { isAuthenticated } = useAuth();
 
-  const cargarDatos = useCallback(async () => {
+  const cargarDocumentos = useCallback(async () => {
     try {
-      // setLoading(true); // Evitar parpadeo
+      setLoading(true);
       setError('');
-      const [docs, tiposData] = await Promise.all([
-        miembrosSniiService.getAll(),
-        miembrosSniiService.getTipos()
-      ]);
+      const docs = await miembrosSniiService.getAll();
       setDocumentos(docs);
-      
-      // Solo usar tipos registrados, ignorar huérfanos
-      setTipos(tiposData);
-      
-      if (!tipoSeleccionado && tiposData.length > 0) {
-        setTipoSeleccionado(tiposData[0].Nombre);
-      } else if (tiposData.length > 0 && !tiposData.find(t => t.Nombre === tipoSeleccionado)) {
-        setTipoSeleccionado(tiposData[0].Nombre);
-      } else if (tiposData.length === 0) {
-        setTipoSeleccionado('');
-      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar datos');
+      setError(err instanceof Error ? err.message : 'Error al cargar documentos');
     } finally {
       setLoading(false);
     }
-  }, []); // Removed tipoSeleccionado dependency
+  }, []);
 
   useEffect(() => {
-    cargarDatos();
-  }, [cargarDatos]);
-
-  const documentosFiltrados = documentos.filter(doc => (doc.tipo || 'General') === tipoSeleccionado);
-
-  // --- Manejo de Tipos ---
-
-  const handleCrearTipo = async () => {
-    if (!nuevoTipoNombre.trim()) return;
-    try {
-      await miembrosSniiService.createTipo(nuevoTipoNombre);
-      setNuevoTipoNombre('');
-      setMostrarModalCrearTipo(false);
-      cargarDatos();
-    } catch (err) {
-      setError('Error al crear categoría');
-    }
-  };
-
-  const handleEliminarTipo = async (id: number, nombre: string) => {
-    const docsCount = documentos.filter(d => (d.tipo || 'General') === nombre).length;
-    const mensaje = docsCount > 0
-      ? `¿Está seguro de eliminar la categoría "${nombre}"? Se moverán ${docsCount} documento${docsCount !== 1 ? 's' : ''} a "General".`
-      : `¿Está seguro de eliminar la categoría "${nombre}"?`;
-
-    if (!confirm(mensaje)) return;
-    
-    try {
-      const tipoAEliminar = tipos.find(t => t.ID === id);
-      await miembrosSniiService.deleteTipo(id);
-      
-      if (tipoAEliminar && tipoSeleccionado === tipoAEliminar.Nombre) {
-        setTipoSeleccionado(tipos.length > 1 ? tipos.find(t => t.ID !== id)?.Nombre || '' : '');
-      }
-
-      await cargarDatos();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al eliminar categoría');
-    }
-  };
+    cargarDocumentos();
+  }, [cargarDocumentos]);
 
   const handleSubirArchivo = async () => {
     if (!isAuthenticated) {
@@ -134,7 +75,6 @@ export default function DocenteSNIIPage() {
         formData.append('titulo', titulo);
         formData.append('pdf', archivo);
         formData.append('orden', '0');
-        formData.append('tipo', tipoSeleccionado);
 
         await miembrosSniiService.create(formData);
 
@@ -148,7 +88,7 @@ export default function DocenteSNIIPage() {
       setArchivosASubir([]);
       setMostrarModalArchivo(false);
       setProgresoSubida(null);
-      cargarDatos();
+      cargarDocumentos();
       setSuccess('Archivo(s) subido(s) correctamente');
       setTimeout(() => setSuccess(''), 4000);
     } catch (err) {
@@ -169,7 +109,7 @@ export default function DocenteSNIIPage() {
     try {
       setError('');
       await miembrosSniiService.delete(id);
-      cargarDatos();
+      cargarDocumentos();
       setSuccess('Documento eliminado correctamente');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
@@ -188,13 +128,12 @@ export default function DocenteSNIIPage() {
       setError('');
       const formData = new FormData();
       formData.append('titulo', tituloEdit);
-      formData.append('tipo', tipoEdit);
       
       await miembrosSniiService.update(documentoAEditar.id, formData);
       
       setMostrarModalEditar(false);
       setDocumentoAEditar(null);
-      cargarDatos();
+      cargarDocumentos();
       setSuccess('Documento actualizado correctamente');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
@@ -205,7 +144,6 @@ export default function DocenteSNIIPage() {
   const abrirModalEditar = (doc: MiembroSNII) => {
     setDocumentoAEditar(doc);
     setTituloEdit(doc.titulo);
-    setTipoEdit(doc.tipo || (tipos.length > 0 ? tipos[0].Nombre : ''));
     setMostrarModalEditar(true);
   };
 
@@ -291,72 +229,17 @@ export default function DocenteSNIIPage() {
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
           Docente miembros del Sistema Nacional de Investigadoras e Investigadores SNII
         </h2>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setMostrarModalCrearTipo(true)}
-            disabled={!isAuthenticated}
-            className="px-4 py-2.5 sm:py-3 bg-[#0a9782] text-white rounded-lg sm:rounded-xl hover:bg-[#088c75] transition-all font-medium shadow-lg hover:shadow-xl text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            + Nueva Categoría
-          </button>
-          <button
-            onClick={() => setMostrarModalArchivo(true)}
-            disabled={!isAuthenticated}
-            className="px-4 py-2.5 sm:py-3 bg-[#d1672a] text-white rounded-lg sm:rounded-xl hover:bg-[#b85822] transition-all font-medium shadow-lg hover:shadow-xl text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            Subir Documento
-          </button>
-        </div>
+        <button
+          onClick={() => setMostrarModalArchivo(true)}
+          disabled={!isAuthenticated}
+          className="px-4 py-2.5 sm:py-3 bg-[#d1672a] text-white rounded-lg sm:rounded-xl hover:bg-[#b85822] transition-all font-medium shadow-lg hover:shadow-xl text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          Subir Documento
+        </button>
       </div>
-
-      {/* Tabs de Categorías */}
-      {tipos.length > 0 ? (
-        <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-          <nav className="flex -mb-px space-x-8 overflow-x-auto">
-            {tipos.map((tipo) => (
-              <div key={tipo.ID} className="flex items-center group">
-                <button
-                  onClick={() => setTipoSeleccionado(tipo.Nombre)}
-                  className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center transition-colors ${
-                    tipoSeleccionado === tipo.Nombre
-                      ? 'border-[#d1672a] text-[#d1672a]'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                  }`}
-                >
-                  {tipo.Nombre}
-                  <span className={`ml-2 text-xs px-2 py-1 rounded-full ${
-                    documentos.filter(d => (d.tipo || 'General') === tipo.Nombre).length > 0
-                      ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
-                      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
-                  }`}>
-                    {documentos.filter(d => (d.tipo || 'General') === tipo.Nombre).length}
-                  </span>
-                </button>
-                {tipo.ID > 0 && isAuthenticated && (
-                  <button
-                    onClick={() => handleEliminarTipo(tipo.ID, tipo.Nombre)}
-                    className="ml-1 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                    title={`Eliminar categoría "${tipo.Nombre}"`}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            ))}
-          </nav>
-        </div>
-      ) : (
-        <div className="p-8 text-center border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-700 mb-6">
-          <p className="text-gray-500 dark:text-gray-400">
-            No hay categorías. Cree una para empezar a organizar documentos.
-          </p>
-        </div>
-      )}
 
       {error && (
         <div className="p-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-900/20 dark:text-red-400">
@@ -371,9 +254,9 @@ export default function DocenteSNIIPage() {
       )}
 
       {/* Lista de Archivos */}
-      {documentosFiltrados.length > 0 ? (
+      {documentos.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {documentosFiltrados.map((doc) => (
+          {documentos.map((doc) => (
             <div
               key={doc.id}
               className="p-4 bg-white border rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 transition-all hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 border-gray-200"
@@ -453,23 +336,6 @@ export default function DocenteSNIIPage() {
             </div>
             
             <div className="space-y-4">
-              <div>
-                <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Categoría *
-                </label>
-                <select
-                  value={tipoSeleccionado}
-                  onChange={(e) => setTipoSeleccionado(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                >
-                  {tipos.map((tipo) => (
-                    <option key={tipo.ID} value={tipo.Nombre}>
-                      {tipo.Nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div>
                 <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Archivos *
@@ -615,23 +481,6 @@ export default function DocenteSNIIPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Categoría
-                </label>
-                <select
-                  value={tipoEdit}
-                  onChange={(e) => setTipoEdit(e.target.value)}
-                  className="w-full px-3 py-2 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#0a9782] focus:border-[#0a9782] dark:bg-gray-700 dark:text-white outline-none"
-                >
-                  {tipos.map((tipo) => (
-                    <option key={tipo.ID} value={tipo.Nombre}>
-                      {tipo.Nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div className="flex gap-3 pt-4">
                 <button
                   onClick={() => setMostrarModalEditar(false)}
@@ -644,59 +493,6 @@ export default function DocenteSNIIPage() {
                   className="flex-1 px-4 py-2 bg-[#0a9782] text-white rounded-lg hover:bg-[#088c75] transition-all font-medium shadow-lg"
                 >
                   Guardar Cambios
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Crear Categoría */}
-      {mostrarModalCrearTipo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 w-full max-w-md mx-auto animate-fadeIn">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                Nueva Categoría
-              </h3>
-              <button
-                onClick={() => setMostrarModalCrearTipo(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Nombre de la categoría
-                </label>
-                <input
-                  type="text"
-                  value={nuevoTipoNombre}
-                  onChange={(e) => setNuevoTipoNombre(e.target.value)}
-                  placeholder="Ej. Investigadores Nivel 1"
-                  className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-[#0a9782] outline-none"
-                  autoFocus
-                />
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => setMostrarModalCrearTipo(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleCrearTipo}
-                  disabled={!nuevoTipoNombre.trim()}
-                  className="flex-1 px-4 py-2 bg-[#0a9782] text-white rounded-lg hover:bg-[#088c75] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Crear
                 </button>
               </div>
             </div>

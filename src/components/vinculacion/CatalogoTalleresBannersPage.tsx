@@ -147,7 +147,7 @@ const CatalogoTalleresBannersPage: React.FC = () => {
     }
   };
 
-  const API_URL = import.meta.env.VITE_BACKENDURL || 'http://localhost:3004';
+  const API_URL = import.meta.env.VITE_BACKENDURL || 'http://localhost:3002';
 
   const getImageUrl = (path: string) => {
     if (!path) return '';

@@ -18,7 +18,7 @@ import {
   deleteEgresadosResource,
 } from "../../services/encuentrosEgresadosService";
 
-const BACKEND_URL = import.meta.env.VITE_BACKENDURL || "http://localhost:3004";
+const BACKEND_URL = import.meta.env.VITE_BACKENDURL || "http://localhost:3002";
 
 type GalleryImage = {
   id: string;
@@ -321,16 +321,16 @@ const EncuentrosEgresadosPage: React.FC = () => {
             ) : (
               <div className="space-y-3">
                 {pdfs.map((pdf) => (
-                  <div key={pdf.id} className="flex items-center justify-between p-3 border rounded-lg gap-2">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <FileText size={22} className="text-red-500 flex-shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium truncate" title={pdf.title}>{pdf.title}</div>
+                  <div key={pdf.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <FileText size={22} className="text-red-500" />
+                      <div>
+                        <div className="text-sm font-medium truncate max-w-xs" title={pdf.title}>{pdf.title}</div>
                         <div className="text-xs text-gray-400">PDF</div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2">
                       <button onClick={() => handlePdfView(pdf)} className="p-2 rounded hover:bg-gray-50"><Eye size={16} /></button>
                       <button onClick={() => handlePdfDownload(pdf)} className="p-2 rounded hover:bg-gray-50"><Download size={16} /></button>
                       <button onClick={() => setConfirmDeletePdfId(pdf.id)} className="p-2 rounded hover:bg-red-50 text-red-600"><Trash2 size={16} /></button>

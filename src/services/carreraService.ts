@@ -1,6 +1,6 @@
 import type { Carrera, CreateCarreraRequest, UpdateCarreraRequest } from '../types/carrera';
 
-const API_URL = import.meta.env.VITE_BACKENDURL || import.meta.env.VITE_API_URL || '';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 // GET - Obtener todas las carreras (admin - incluye inactivas)
 export const getAllCarreras = async (token: string): Promise<Carrera[]> => {
