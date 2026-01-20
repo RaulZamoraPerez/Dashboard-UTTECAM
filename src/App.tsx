@@ -46,6 +46,7 @@ import HomeContentDashboard from "./pages/HomeContent/HomeContentDashboard";
 import ComiteDocumentsManager from './pages/Comites/ComiteDocumentsManager';
 import ProgramasDesarrollo from "./pages/ProgramasDesarrollo";
 
+
 // Servicios y Gestión Pages
 import {
   Finanzas,
@@ -53,16 +54,35 @@ import {
   GestionAmbiental,
   InformacionEstadia,
   GestionCalidad,
-  CordinacionGenero,
-  Vinculacion,
-  ServicioSocial
+  CordinacionGenero
 } from "./pages/ServiciosGestion";
+
+
+
 import Pit from "./pages/Accesos/Pit";
 import ProcesoAdmisionPage from "./pages/ServiciosEscolares/ProcesoAdmisionPage";
 import ConvocatoriaTituloPage from "./pages/ServiciosEscolares/ConvocatoriaTituloPage";
 import TramitesPage from "./pages/ServiciosEscolares/TramitesPage";
 import TramiteFormularioPage from "./pages/ServiciosEscolares/TramiteFormularioPage";
 import ReinscripcionPage from "./pages/ServiciosEscolares/ReinscripcionPage";
+
+
+
+// VINCULACION
+import VinculacionBanner from "./pages/Vinculacion/VinculacionBanner";
+import PracticasEstadiaBanner from "./pages/Vinculacion/PracticasEstadiaBanner";
+import CatalogoServicios from "./pages/Vinculacion/CatalogoServicios";
+import CatalogoTalleres from "./pages/Vinculacion/CatalogoTalleres";
+import DocenteSNII from "./pages/Vinculacion/DocenteSNII";
+import RepositorioInvestigacion from "./pages/Vinculacion/RepositorioInvestigacion";
+import SeminarioCafe from "./pages/Vinculacion/SeminarioCafe";
+import ServicioSocial from "./pages/Vinculacion/ServicioSocial";
+import BolsaTrabajo from "./pages/Vinculacion/BolsaTrabajo";
+import ServiciosTecnologicosRealizados from "./pages/Vinculacion/ServiciosTecnologicosRealizados";
+import MovilidadInternacional from "./pages/Vinculacion/ModalidadInternacional"
+import EntidadCertificacionEvaluacion from "./pages/Vinculacion/EntidadCertificacionEvaluacion";
+import EncuentrosEgresados from "./pages/Vinculacion/EncuentrosEgresados";
+
 
 
 export default function App() {
@@ -145,8 +165,21 @@ export default function App() {
 
 
 
-            <Route path="/ServiciosGestion/Vinculacion" element={<Vinculacion />} />
-            <Route path="/ServiciosGestion/ServicioSocial" element={<ServicioSocial />} />
+            {/*Vinculacion*/}
+            <Route path="/vinculacion-banner" element={<VinculacionBanner />} />
+            <Route path="/practicas-estadia-banner" element={<PracticasEstadiaBanner />} />
+            <Route path="/documentos-estadia" element={<InformacionEstadia />} />
+            <Route path="/catalodo-servicios" element={<CatalogoServicios />} />
+            <Route path="/catalogo-talleres" element={<CatalogoTalleres />} />
+            <Route path="/servicio-social" element={<ServicioSocial />} />
+            <Route path="/encuentro-egresados" element={<EncuentrosEgresados />} />
+            <Route path="/bolsa-trabajo" element={<BolsaTrabajo />} />
+            <Route path="/servicios-realizados" element={<ServiciosTecnologicosRealizados />} />
+            <Route path="/entidad-certificacion-evaluacion" element={<EntidadCertificacionEvaluacion />} />
+            <Route path="/movilidad-internacional" element={<MovilidadInternacional />} />
+            <Route path="/docente-snii" element={<DocenteSNII />} />
+            <Route path="/repositorio-investigacion" element={<RepositorioInvestigacion />} />
+            <Route path="/seminario-cafe-cientifico" element={<SeminarioCafe />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />

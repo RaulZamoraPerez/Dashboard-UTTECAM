@@ -9,7 +9,7 @@ export const getAllCarreras = async (token: string): Promise<Carrera[]> => {
       'Authorization': `Bearer ${token}`,
     },
   });
-  
+
   if (!response.ok) throw new Error('Error al obtener carreras');
   return response.json();
 };
@@ -53,7 +53,7 @@ export const createCarrera = async (data: CreateCarreraRequest, token: string): 
     formData.append('mapa_curricular', typeof data.mapa_curricular === 'string' ? data.mapa_curricular : JSON.stringify(data.mapa_curricular));
   }
   formData.append('activo', String(data.activo));
-  
+
   formData.append('imagen', data.imagen);
   if (data.imagen_portada) formData.append('imagen_portada', data.imagen_portada);
   if (data.video) formData.append('video', data.video);
