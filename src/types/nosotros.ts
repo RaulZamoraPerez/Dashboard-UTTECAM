@@ -25,6 +25,7 @@ export interface ObjetivoIntegral {
 
 export interface NoDiscriminacion {
   items: string[];
+  text?: string;
 }
 
 export interface Organigrama {

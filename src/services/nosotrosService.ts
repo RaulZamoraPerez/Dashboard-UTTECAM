@@ -70,8 +70,21 @@ export const getNosotrosContent = async (): Promise<NosotrosContent> => {
   if (data.objetivoIntegral) {
     if (typeof data.objetivoIntegral === 'string') {
       objetivoIntegralObj = { text: data.objetivoIntegral };
-    } else if (typeof data.objetivoIntegral === 'object' && 'text' in data.objetivoIntegral) {
-      objetivoIntegralObj = data.objetivoIntegral;
+    } else if (typeof data.objetivoIntegral === 'object') {
+      objetivoIntegralObj = { text: data.objetivoIntegral.text || data.objetivoIntegral.description || '' };
+    }
+  }
+
+  // noDiscriminacion viene como string[][] o {text, items} del backend
+  let noDiscriminacionObj = { items: [], text: '' };
+  if (data.noDiscriminacion) {
+    if (Array.isArray(data.noDiscriminacion)) {
+      noDiscriminacionObj = { items: data.noDiscriminacion.flat(), text: '' };
+    } else if (typeof data.noDiscriminacion === 'object') {
+      noDiscriminacionObj = {
+        items: Array.isArray(data.noDiscriminacion.items) ? data.noDiscriminacion.items : (Array.isArray(data.noDiscriminacion.description) ? data.noDiscriminacion.description : []),
+        text: data.noDiscriminacion.text || (typeof data.noDiscriminacion.description === 'string' ? data.noDiscriminacion.description : '')
+      };
     }
   }
 
@@ -81,7 +94,7 @@ export const getNosotrosContent = async (): Promise<NosotrosContent> => {
     valores: data.valores || { title: 'Valores', description: [], imageSrc: null },
     politicaIntegral: data.politicaIntegral || { text: '', imageSrc: null },
     objetivoIntegral: objetivoIntegralObj,
-    noDiscriminacion: data.noDiscriminacion || { items: [] },
+    noDiscriminacion: noDiscriminacionObj,
     organigrama: data.organigrama || { imageSrc: null }
   };
 };

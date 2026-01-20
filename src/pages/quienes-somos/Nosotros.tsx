@@ -53,15 +53,17 @@ export default function NosotrosPage() {
     else if (section === 'valores') initialValue = Array.isArray(content.valores?.description) ? content.valores.description.join('\n') : '';
     else if (section === 'noDiscriminacion') {
       initialValue = content.noDiscriminacion?.items ? content.noDiscriminacion.items.join('\n') : '';
-      setEditText((content.noDiscriminacion as any)?.text || '');
+      setEditText((content.noDiscriminacion as any)?.text || (content.noDiscriminacion as any)?.description || '');
     }
     else if (section === 'politicaIntegral') {
-      initialValue = content.politicaIntegral?.text || '';
+      initialValue = content.politicaIntegral?.text || (content.politicaIntegral as any)?.description || '';
       if (content.politicaIntegral?.imageSrc) {
         setPreviewUrl(getImageUrl(content.politicaIntegral.imageSrc));
       }
     }
-    else if (section === 'objetivoIntegral') initialValue = content.objetivoIntegral?.text || '';
+    else if (section === 'objetivoIntegral') {
+      initialValue = content.objetivoIntegral?.text || (content.objetivoIntegral as any)?.description || '';
+    }
 
     setEditValue(initialValue);
   };
@@ -274,7 +276,7 @@ export default function NosotrosPage() {
           {/* Objetivo Integral */}
           <SectionCard 
             sectionKey="objetivoIntegral"
-            content={content?.objetivoIntegral?.text}
+            content={content?.objetivoIntegral?.text || (content?.objetivoIntegral as any)?.description}
             onEdit={() => handleEdit('objetivoIntegral')}
           />
 
@@ -310,7 +312,7 @@ export default function NosotrosPage() {
               <div className="p-6 flex flex-col md:flex-row gap-6">
                 <div className="flex-1">
                   <p className="text-slate-600 whitespace-pre-line leading-relaxed">
-                    {content?.politicaIntegral?.text || <span className="text-slate-400 italic">Sin contenido definido.</span>}
+                    {content?.politicaIntegral?.text || (content.politicaIntegral as any)?.description || <span className="text-slate-400 italic">Sin contenido definido.</span>}
                   </p>
                 </div>
                 {content?.politicaIntegral?.imageSrc && (
