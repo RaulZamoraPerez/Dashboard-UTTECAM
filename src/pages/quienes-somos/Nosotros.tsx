@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useNosotros } from '../../hooks/useNosotros';
 import { getImageUrl } from '../../services/nosotrosService';
-import { 
-  Eye, 
-  Target, 
-  Heart, 
-  FileText, 
-  Flag, 
-  Edit2, 
-  Save, 
-  X, 
+import {
+  Eye,
+  Target,
+  Heart,
+  FileText,
+  Flag,
+  Edit2,
+  Save,
+  X,
   Users,
   Image as ImageIcon,
   Loader2,
@@ -30,7 +30,7 @@ const SECTIONS_CONFIG: Record<string, { title: string, icon: React.ElementType, 
 
 export default function NosotrosPage() {
   const { content, loading, error, updateSection, updateAllContent, uploadImage, refetch } = useNosotros();
-  
+
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
   const [editText, setEditText] = useState<string>(''); // For secondary text fields
@@ -52,11 +52,11 @@ export default function NosotrosPage() {
     else if (section === 'mision') initialValue = content.mision?.description || '';
     else if (section === 'valores') initialValue = Array.isArray(content.valores?.description) ? content.valores.description.join('\n') : '';
     else if (section === 'noDiscriminacion') {
-      initialValue = content.noDiscriminacion?.items ? content.noDiscriminacion.items.join('\n') : '';
-      setEditText((content.noDiscriminacion as any)?.text || '');
+      initialValue = Array.isArray(content.noDiscriminacion) ? content.noDiscriminacion.flat().join('\n') : '';
+      setEditText(''); // noDiscriminacion.text removed in new schema
     }
     else if (section === 'politicaIntegral') {
-      initialValue = content.politicaIntegral?.text || '';
+      initialValue = content.politicaIntegral?.description || '';
       if (content.politicaIntegral?.imageSrc) {
         setPreviewUrl(getImageUrl(content.politicaIntegral.imageSrc));
       }
@@ -87,17 +87,23 @@ export default function NosotrosPage() {
     setBusy(true);
     try {
       let updateData: any = {};
-      
+
       if (editingSection === 'vision' || editingSection === 'mision') {
         updateData = { description: editValue };
       } else if (editingSection === 'valores') {
         updateData = { description: editValue.split('\n').map(s => s.trim()).filter(Boolean) };
       } else if (editingSection === 'noDiscriminacion') {
-        updateData = { 
-          items: editValue.split('\n').map(s => s.trim()).filter(Boolean),
-          text: editText
-        };
-      } else if (editingSection === 'politicaIntegral' || editingSection === 'objetivoIntegral') {
+        const items = editValue.split('\n').map(s => s.trim()).filter(Boolean);
+        // Split into 3 columns for the other component's benefit
+        const perChunk = Math.ceil(items.length / 3);
+        updateData = [
+          items.slice(0, perChunk),
+          items.slice(perChunk, perChunk * 2),
+          items.slice(perChunk * 2)
+        ];
+      } else if (editingSection === 'politicaIntegral') {
+        updateData = { description: editValue };
+      } else if (editingSection === 'objetivoIntegral') {
         updateData = { text: editValue };
       }
 
@@ -106,11 +112,11 @@ export default function NosotrosPage() {
       if (editingSection === 'politicaIntegral' && editFile) {
         ok = await uploadImage(editingSection as any, editFile, updateData);
       } else if (editingSection === 'politicaIntegral' && !editFile && previewUrl === null && content?.politicaIntegral?.imageSrc) {
-         // If previewUrl is null but we had an image, it means user removed it (logic to be implemented if UI supports removal)
-         // For now, our UI just replaces. If they didn't select a file, we just update text.
-         // If we want to support removal, we'd need a "Remove Image" button that sets a flag.
-         // Assuming simple update for now:
-         ok = await updateSection(editingSection as any, updateData);
+        // If previewUrl is null but we had an image, it means user removed it (logic to be implemented if UI supports removal)
+        // For now, our UI just replaces. If they didn't select a file, we just update text.
+        // If we want to support removal, we'd need a "Remove Image" button that sets a flag.
+        // Assuming simple update for now:
+        ok = await updateSection(editingSection as any, updateData);
       } else {
         // Standard text update
         ok = await updateSection(editingSection as any, updateData);
@@ -201,7 +207,7 @@ export default function NosotrosPage() {
           </div>
           <h3 className="text-lg font-semibold text-slate-900 mb-2">Error al cargar</h3>
           <p className="text-slate-500 mb-6">{error}</p>
-          <button 
+          <button
             onClick={() => refetch()}
             className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
           >
@@ -250,21 +256,21 @@ export default function NosotrosPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Vision */}
-          <SectionCard 
+          <SectionCard
             sectionKey="vision"
             content={content?.vision?.description}
             onEdit={() => handleEdit('vision')}
           />
-          
+
           {/* Mision */}
-          <SectionCard 
+          <SectionCard
             sectionKey="mision"
             content={content?.mision?.description}
             onEdit={() => handleEdit('mision')}
           />
 
           {/* Valores */}
-          <SectionCard 
+          <SectionCard
             sectionKey="valores"
             content={content?.valores?.description}
             onEdit={() => handleEdit('valores')}
@@ -272,16 +278,16 @@ export default function NosotrosPage() {
           />
 
           {/* Objetivo Integral */}
-          <SectionCard 
+          <SectionCard
             sectionKey="objetivoIntegral"
             content={content?.objetivoIntegral?.text}
             onEdit={() => handleEdit('objetivoIntegral')}
           />
 
           {/* Política de Igualdad */}
-          <SectionCard 
+          <SectionCard
             sectionKey="noDiscriminacion"
-            content={content?.noDiscriminacion?.items}
+            content={Array.isArray(content?.noDiscriminacion) ? content.noDiscriminacion.flat() : []}
             onEdit={() => handleEdit('noDiscriminacion')}
             isList
           />
@@ -299,7 +305,7 @@ export default function NosotrosPage() {
                     <p className="text-xs text-slate-500">Compromisos y directrices generales.</p>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => handleEdit('politicaIntegral')}
                   className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                   title="Editar"
@@ -309,15 +315,15 @@ export default function NosotrosPage() {
               </div>
               <div className="p-6 flex flex-col md:flex-row gap-6">
                 <div className="flex-1">
-                  <p className="text-slate-600 whitespace-pre-line leading-relaxed">
-                    {content?.politicaIntegral?.text || <span className="text-slate-400 italic">Sin contenido definido.</span>}
+                  <p className="text-slate-600 dark:text-slate-300 whitespace-pre-line leading-relaxed">
+                    {content?.politicaIntegral?.description || <span className="text-slate-400 dark:text-slate-500 italic">Sin contenido definido.</span>}
                   </p>
                 </div>
                 {content?.politicaIntegral?.imageSrc && (
                   <div className="w-full md:w-1/3 flex-shrink-0">
-                    <img 
-                      src={getImageUrl(content.politicaIntegral.imageSrc)} 
-                      alt="Política Integral" 
+                    <img
+                      src={getImageUrl(content.politicaIntegral.imageSrc)}
+                      alt="Política Integral"
                       className="w-full h-auto rounded-xl shadow-sm border border-slate-100"
                     />
                   </div>
@@ -337,9 +343,9 @@ export default function NosotrosPage() {
                 <Edit2 className="w-4 h-4 text-blue-600" />
                 Editar {SECTIONS_CONFIG[editingSection]?.title || 'Sección'}
               </h3>
-              <button 
-                  onClick={handleCloseModal} 
-                  className="absolute right-4 text-slate-400 hover:text-slate-600 transition-colors"
+              <button
+                onClick={handleCloseModal}
+                className="absolute right-4 text-slate-400 hover:text-slate-600 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -347,36 +353,36 @@ export default function NosotrosPage() {
 
             <div className="p-6 overflow-y-auto custom-scrollbar">
               <div className="space-y-4">
-                
+
                 {editingSection === 'noDiscriminacion' ? (
                   <>
-                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700">Descripción General</label>
-                        <textarea 
-                          value={editText}
-                          onChange={e => setEditText(e.target.value)}
-                          rows={4}
-                          className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
-                          placeholder="Texto descriptivo de la política..."
-                        />
-                     </div>
-                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700">Elementos (uno por línea)</label>
-                        <textarea 
-                          value={editValue}
-                          onChange={e => setEditValue(e.target.value)}
-                          rows={6}
-                          className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
-                          placeholder="Elemento 1&#10;Elemento 2&#10;Elemento 3..."
-                        />
-                     </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700">Descripción General</label>
+                      <textarea
+                        value={editText}
+                        onChange={e => setEditText(e.target.value)}
+                        rows={4}
+                        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
+                        placeholder="Texto descriptivo de la política..."
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700">Elementos (uno por línea)</label>
+                      <textarea
+                        value={editValue}
+                        onChange={e => setEditValue(e.target.value)}
+                        rows={6}
+                        className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
+                        placeholder="Elemento 1&#10;Elemento 2&#10;Elemento 3..."
+                      />
+                    </div>
                   </>
                 ) : (
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700">
                       {(editingSection === 'valores') ? 'Contenido (un elemento por línea)' : 'Contenido'}
                     </label>
-                    <textarea 
+                    <textarea
                       value={editValue}
                       onChange={e => setEditValue(e.target.value)}
                       rows={editingSection === 'valores' ? 8 : 6}
@@ -400,8 +406,8 @@ export default function NosotrosPage() {
                         )}
                       </div>
                       <div className="flex-1">
-                        <input 
-                          type="file" 
+                        <input
+                          type="file"
                           accept="image/*"
                           onChange={handleFileChange}
                           className="block w-full text-sm text-slate-500
@@ -423,14 +429,14 @@ export default function NosotrosPage() {
             </div>
 
             <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3">
-              <button 
+              <button
                 onClick={handleCloseModal}
                 disabled={busy}
                 className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
               >
                 Cancelar
               </button>
-              <button 
+              <button
                 onClick={handleSave}
                 disabled={busy}
                 className="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-all flex items-center gap-2"
@@ -466,7 +472,7 @@ function SectionCard({ sectionKey, content, onEdit, isList = false }: { sectionK
             <p className="text-xs text-slate-500 dark:text-slate-400">{config.description}</p>
           </div>
         </div>
-        <button 
+        <button
           onClick={onEdit}
           className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
           title="Editar"

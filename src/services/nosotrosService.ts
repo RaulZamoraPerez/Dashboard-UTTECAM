@@ -65,23 +65,65 @@ export const getNosotrosContent = async (): Promise<NosotrosContent> => {
   // La nueva API ya devuelve los datos en el formato correcto
   const data = rawData || {}; // Handle null response for empty DB
 
-  // objetivoIntegral viene como string de la BD, convertirlo a objeto para el frontend
+  // Transform labels/fields if they differ from DB
+  const transformImageText = (item: any) => ({
+    title: item?.title || '',
+    description: item?.description || item?.text || '',
+    imageSrc: item?.imageSrc || null
+  });
+
+  // objetivoIntegral viene como string o objeto de la BD
   let objetivoIntegralObj = { text: '' };
   if (data.objetivoIntegral) {
     if (typeof data.objetivoIntegral === 'string') {
       objetivoIntegralObj = { text: data.objetivoIntegral };
-    } else if (typeof data.objetivoIntegral === 'object' && 'text' in data.objetivoIntegral) {
-      objetivoIntegralObj = data.objetivoIntegral;
+    } else if (typeof data.objetivoIntegral === 'object') {
+      objetivoIntegralObj = { text: data.objetivoIntegral.text || data.objetivoIntegral.description || '' };
+    }
+  }
+
+  // noDiscriminacion: convertir de object/array plano a string[][] para 3 columnas
+  let noDiscData: string[][] = [[], [], []];
+  if (data.noDiscriminacion) {
+    if (Array.isArray(data.noDiscriminacion)) {
+      // Si ya es un array de arrays, usarlo (o validarlo)
+      if (Array.isArray(data.noDiscriminacion[0])) {
+        noDiscData = data.noDiscriminacion;
+      } else {
+        // Si es un array plano, dividir en 3 columnas
+        const items = data.noDiscriminacion;
+        const perChunk = Math.ceil(items.length / 3);
+        noDiscData = [
+          items.slice(0, perChunk),
+          items.slice(perChunk, perChunk * 2),
+          items.slice(perChunk * 2)
+        ];
+      }
+    } else if (data.noDiscriminacion.items && Array.isArray(data.noDiscriminacion.items)) {
+      const items = data.noDiscriminacion.items;
+      const perChunk = Math.ceil(items.length / 3);
+      noDiscData = [
+        items.slice(0, perChunk),
+        items.slice(perChunk, perChunk * 2),
+        items.slice(perChunk * 2)
+      ];
     }
   }
 
   return {
-    vision: data.vision || { title: 'Visión', description: '', imageSrc: null },
-    mision: data.mision || { title: 'Misión', description: '', imageSrc: null },
-    valores: data.valores || { title: 'Valores', description: [], imageSrc: null },
-    politicaIntegral: data.politicaIntegral || { text: '', imageSrc: null },
+    vision: transformImageText(data.vision),
+    mision: transformImageText(data.mision),
+    valores: {
+      title: data.valores?.title || 'Valores',
+      description: data.valores?.description || data.valores?.items || [],
+      imageSrc: data.valores?.imageSrc || null
+    },
+    politicaIntegral: {
+      description: data.politicaIntegral?.description || data.politicaIntegral?.text || '',
+      imageSrc: data.politicaIntegral?.imageSrc || null
+    },
     objetivoIntegral: objetivoIntegralObj,
-    noDiscriminacion: data.noDiscriminacion || { items: [] },
+    noDiscriminacion: noDiscData,
     organigrama: data.organigrama || { imageSrc: null }
   };
 };

@@ -1,31 +1,32 @@
 // types/nosotros.ts
 export interface Vision {
-  title: string;
+  title?: string;
   description: string;
+  imageSrc: string | null;
 }
 
 export interface Mision {
-  title: string;
+  title?: string;
   description: string;
+  imageSrc: string | null;
 }
 
 export interface Valores {
-  title: string;
+  imageSrc: string | null;
+  title?: string;
   description: string[];
 }
 
 export interface PoliticaIntegral {
   imageSrc: string | null;
-  text: string;
+  description: string;
 }
 
 export interface ObjetivoIntegral {
   text: string;
 }
 
-export interface NoDiscriminacion {
-  items: string[];
-}
+export type NoDiscriminacion = string[][];
 
 export interface Organigrama {
   imageSrc: string | null;
@@ -43,7 +44,7 @@ export interface NosotrosContent {
 
 export type SectionKey = keyof NosotrosContent;
 
-export type ImageSectionKey = 'politicaIntegral' | 'organigrama';
+export type ImageSectionKey = 'politicaIntegral' | 'vision' | 'mision' | 'valores' | 'organigrama';
 
 export interface ApiResponse<T = unknown> {
   message: string;

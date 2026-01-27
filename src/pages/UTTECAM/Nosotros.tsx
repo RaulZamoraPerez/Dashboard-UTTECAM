@@ -67,7 +67,7 @@ export default function Nosotros() {
         {/* Objetivo Integral */}
         <SimpleTextSection
           title="Objetivo Integral"
-          description={content.objetivoIntegral || ''}
+          description={content.objetivoIntegral.text || ''}
           isEditing={editingSection === 'objetivoIntegral'}
           onEdit={() => setEditingSection('objetivoIntegral')}
           onCancel={() => setEditingSection(null)}
@@ -115,7 +115,10 @@ export default function Nosotros() {
         {/* Valores */}
         <ValuesSection
           title="Valores"
-          data={content.valores || { imageSrc: '', description: [] }}
+          data={{
+            imageSrc: content.valores?.imageSrc || '',
+            description: content.valores?.description || []
+          }}
           isEditing={editingSection === 'valores'}
           onEdit={() => setEditingSection('valores')}
           onCancel={() => setEditingSection(null)}

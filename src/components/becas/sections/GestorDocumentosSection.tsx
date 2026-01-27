@@ -8,7 +8,7 @@ interface GestorDocumentosSectionProps {
     data: any;
 }
 
-export const GestorDocumentosSection = ({ id, title, data }: GestorDocumentosSectionProps) => {
+export const GestorDocumentosSection = ({ title, data }: GestorDocumentosSectionProps) => {
     // El areaId debe venir en los datos de la seccion
     const areaId = data?.areaId;
 

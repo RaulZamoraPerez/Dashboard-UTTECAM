@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { confirmDialog, toastError, toastSuccess } from '../../../utils/alert';
-import { HorizontaLDots } from '../../../icons';
 import { useNoticias } from '../../../hooks/useNoticias';
 import { getNoticiaFileUrl } from '../../../services/homeService';
 
@@ -13,7 +12,7 @@ const NoticiasAdmin = () => {
 
   // keep orderedNoticias in sync with noticias
   useEffect(() => {
-    setOrderedNoticias(noticias.slice().sort((a,b) => (a.orden ?? 0) - (b.orden ?? 0)));
+    setOrderedNoticias(noticias.slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)));
   }, [noticias]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -26,14 +25,14 @@ const NoticiasAdmin = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedFile && !editingId) {
       toastError('Debe seleccionar una imagen');
       return;
     }
 
     let success = false;
-    
+
     if (editingId) {
       const updateData: any = {
         titulo: formData.titulo,
@@ -146,7 +145,7 @@ const NoticiasAdmin = () => {
                 toastSuccess('Orden guardado');
               } catch (err) {
                 toastError('Error al guardar el orden');
-                setOrderedNoticias(noticias.slice().sort((a,b) => (a.orden ?? 0) - (b.orden ?? 0)));
+                setOrderedNoticias(noticias.slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)));
               }
               setDragIndex(null);
             }}>
