@@ -42,6 +42,7 @@ import NoticiasAdmin from "./pages/HomeContent/Noticias";
 import AnunciosAdmin from "./pages/HomeContent/Anuncios";
 import VideoInstitucionalAdmin from "./pages/HomeContent/VideoInstitucional";
 import RelojDigitalAdmin from "./pages/HomeContent/RelojDigital";
+import ModeloEducativo from "./pages/HomeContent/ModeloEducativo";
 import HomeContentDashboard from "./pages/HomeContent/HomeContentDashboard";
 import ComiteDocumentsManager from './pages/Comites/ComiteDocumentsManager';
 import ProgramasDesarrollo from "./pages/ProgramasDesarrollo";
@@ -118,6 +119,7 @@ export default function App() {
             <Route path="/home-content" element={<HomeContentDashboard />} />
             <Route path="/home-content/video-institucional" element={<VideoInstitucionalAdmin />} />
             <Route path="/home-content/reloj-digital" element={<RelojDigitalAdmin />} />
+            <Route path="/home/modelos" element={<ModeloEducativo />} />
             <Route path="/programas-desarrollo" element={<ProgramasDesarrollo />} />
 
             {/* Comites Routes */}

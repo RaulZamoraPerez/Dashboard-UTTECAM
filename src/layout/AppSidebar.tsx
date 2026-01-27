@@ -33,10 +33,12 @@ const navItems: NavItem[] = [
     icon: <GridIcon />,
     name: "Contenido del Sitio",
     subItems: [
-      { name: "Hero Slides", path: "/home/hero-slides", pro: false },
+      { name: "Panel Principal", path: "/", pro: false },
+      { name: "Video Institucional", path: "/home-content/video-institucional", pro: false },
       { name: "Eventos", path: "/home/eventos", pro: false },
+      { name: "Hero Slides", path: "/home/hero-slides", pro: false },
       { name: "Noticias", path: "/home/noticias", pro: false },
-      { name: "Modelos Educativos", path: "/home-content/modelos-educativos", pro: false },
+      { name: "Anuncios", path: "/home/anuncios", pro: false },
     ],
   },
   {
@@ -77,7 +79,7 @@ const navItems: NavItem[] = [
     icon: <ListIcon />,
     name: "Academia",
     subItems: [
-      { name: "Gestión de Carreras", path: "/uttecam/carreras", pro: false },
+      { name: "Gestión de Carreras", path: "/carreras", pro: false },
     ],
   },
   {
@@ -96,7 +98,7 @@ const uttecamItems: NavItem[] = [
       </svg>
     ),
     name: "Organigrama",
-    path: "/uttecam/organigrama",
+    path: "/organigrama",
   },
   {
     icon: (
@@ -105,7 +107,7 @@ const uttecamItems: NavItem[] = [
       </svg>
     ),
     name: "Directorio",
-    path: "/uttecam/directorio",
+    path: "/directorio",
   },
   {
     icon: (
