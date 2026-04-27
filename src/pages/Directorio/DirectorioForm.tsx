@@ -153,14 +153,25 @@ export default function DirectorioForm({ directorio, onClose }: Props) {
     errors.telefono = validateField('telefono', formData.telefono || '');
     errors.extension = validateField('extension', formData.extension || '');
 
+    // Validar imagen si hay una nueva
+    if (formData.imagen) {
+       if (formData.imagen.size > 10 * 1024 * 1024) {
+          errors.imagen = 'La imagen es demasiado pesada (máximo 10MB)';
+       }
+       const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+       if (!allowedTypes.includes(formData.imagen.type)) {
+          errors.imagen = 'Formato no permitido (usa JPG, PNG o WebP)';
+       }
+    }
+
     // Marcar todos como tocados
-    setTouched({ titulo: true, nombre: true, correo: true, telefono: true, extension: true });
+    setTouched({ titulo: true, nombre: true, correo: true, telefono: true, extension: true, imagen: true });
     setFieldErrors(errors);
 
-    // Verificar si hay errores
+    // Verificar si hay errores locales
     const hasErrors = Object.values(errors).some(e => e !== undefined);
     if (hasErrors) {
-      setError('Por favor corrige los errores antes de guardar');
+      setError('Por favor revisa los campos marcados en rojo');
       return;
     }
 
@@ -176,10 +187,16 @@ export default function DirectorioForm({ directorio, onClose }: Props) {
       if (success) {
         onClose();
       } else {
-        setError('Error al guardar el contacto');
+        // useDirectorio maneja el mensaje en su estado 'error', podemos intentar leerlo aquí
+        setError('El servidor rechazó la solicitud. Verifica que todos los datos sean correctos.');
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+    } catch (err: any) {
+      console.error('Submit error:', err);
+      setError(
+        err.response?.data?.message || 
+        err.response?.data?.error || 
+        'Error de conexión: No se pudo contactar con el servidor'
+      );
     } finally {
       setSaving(false);
     }
