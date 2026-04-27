@@ -1,5 +1,19 @@
 import React, { useState } from 'react';
-import { confirmDialog, toastSuccess } from '../../utils/alert';
+import { 
+  Plus, 
+  Trash2, 
+  Eye, 
+  Calendar as CalendarIcon, 
+  FileText, 
+  Download, 
+  AlertCircle,
+  FileUp,
+  Image as ImageIcon,
+  X,
+  Search,
+  Filter
+} from 'lucide-react';
+import { confirmDialog, toastSuccess, toastError } from '../../utils/alert';
 import { useDropzone } from 'react-dropzone';
 import { useCalendario } from '../../hooks/useCalendario';
 import { getFileUrl } from '../../services/calendarioService';
@@ -15,12 +29,30 @@ const CalendarioAcademico: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCalendario, setEditingCalendario] = useState<Calendario | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState<FormData>({
     titulo: '',
     archivo: null,
   });
 
-  const onDrop = (acceptedFiles: File[]) => {
+  // Filtrado de calendarios
+  const filteredCalendarios = calendarios.filter(cal => 
+    cal.titulo.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const onDrop = (acceptedFiles: File[], rejectedFiles: any[]) => {
+    if (rejectedFiles.length > 0) {
+      const error = rejectedFiles[0].errors[0];
+      if (error.code === 'file-too-large') {
+        toastError('El archivo es demasiado pesado (máx. 10MB)');
+      } else if (error.code === 'file-invalid-type') {
+        toastError('Tipo de archivo no permitido. Solo PDF e imágenes.');
+      } else {
+        toastError('Error al cargar el archivo');
+      }
+      return;
+    }
+
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
       // Generar título automáticamente basado en el nombre del archivo (sin extensión)
@@ -29,7 +61,7 @@ const CalendarioAcademico: React.FC = () => {
       setFormData(prev => ({
         ...prev,
         archivo: file,
-        titulo: tituloGenerado,
+        titulo: prev.titulo || tituloGenerado, // Solo autogenerar si está vacío
       }));
     }
   };
@@ -48,8 +80,14 @@ const CalendarioAcademico: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingCalendario && !formData.archivo) return;
-    if (!formData.titulo.trim()) return;
+    if (!editingCalendario && !formData.archivo) {
+      toastError('Debes seleccionar un archivo');
+      return;
+    }
+    if (!formData.titulo.trim()) {
+      toastError('El título es requerido');
+      return;
+    }
 
     setUploading(true);
     try {
@@ -57,7 +95,6 @@ const CalendarioAcademico: React.FC = () => {
         titulo: formData.titulo.trim(),
       };
 
-      // Solo incluir archivo si hay uno nuevo (para creación o edición con nuevo archivo)
       if (formData.archivo) {
         data.archivo = formData.archivo;
       }
@@ -65,13 +102,17 @@ const CalendarioAcademico: React.FC = () => {
       let success = false;
       if (editingCalendario) {
         success = await updateItem(editingCalendario.id, data);
+        if (success) toastSuccess('Calendario actualizado satisfactoriamente');
       } else {
         success = await createItem(data as CreateCalendarioRequest);
+        if (success) toastSuccess('Nuevo calendario agregado correctamente');
       }
 
       if (success) {
         handleCloseModal();
       }
+    } catch (err: any) {
+      toastError(err.message || 'Error al procesar el calendario');
     } finally {
       setUploading(false);
     }
@@ -81,14 +122,20 @@ const CalendarioAcademico: React.FC = () => {
     setEditingCalendario(calendario);
     setFormData({
       titulo: calendario.titulo,
-      archivo: null, // No pre-cargar archivo existente
+      archivo: null,
     });
     setIsModalOpen(true);
   };
 
   const handleDelete = async (id: number) => {
-    const confirmed = await confirmDialog({ title: 'Eliminar calendario', text: '¿Estás seguro de que deseas eliminar este calendario?' });
+    const confirmed = await confirmDialog({ 
+      title: '¿Eliminar calendario?', 
+      text: 'Esta acción no se puede deshacer y borrará el archivo físico del servidor.',
+      confirmText: 'Sí, eliminar'
+    });
+    
     if (!confirmed) return;
+    
     const ok = await deleteItem(id);
     if (ok) toastSuccess('Calendario eliminado correctamente');
   };
@@ -104,237 +151,282 @@ const CalendarioAcademico: React.FC = () => {
     setFormData({ titulo: '', archivo: null });
   };
 
-  const renderFilePreview = (calendario: Calendario) => {
-    const fileUrl = getFileUrl(calendario.archivo);
-    const isPDF = calendario.archivo.toLowerCase().endsWith('.pdf');
-    const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(calendario.archivo);
-
-    if (isImage) {
-      return (
-        <img
-          src={fileUrl}
-          alt={calendario.titulo}
-          className="w-16 h-16 object-cover rounded border"
-        />
-      );
-    } else if (isPDF) {
-      return (
-        <div className="w-16 h-16 bg-red-100 rounded border flex items-center justify-center">
-          <svg className="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-          </svg>
-        </div>
-      );
-    }
+  if (loading && calendarios.length === 0) {
     return (
-      <div className="w-16 h-16 bg-gray-100 rounded border flex items-center justify-center">
-        <svg className="w-8 h-8 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-        </svg>
-      </div>
-    );
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex flex-col justify-center items-center h-[400px] gap-4">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-md p-4">
-        <div className="flex">
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error</h3>
-            <div className="mt-2 text-sm text-red-700">{error}</div>
-          </div>
-        </div>
+        <p className="text-slate-500 animate-pulse">Cargando calendarios institucionales...</p>
       </div>
     );
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      <div className="sm:flex sm:items-center">
-        <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Calendario Académico</h1>
-          <p className="mt-2 text-sm text-gray-700">
-            Gestiona los calendarios académicos de la institución.
+    <div className="p-1 sm:p-4 lg:p-6 bg-slate-50/30 min-h-screen">
+      {/* Header Section */}
+      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <CalendarIcon className="w-7 h-7 text-blue-600" />
+            Calendario Académico
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Administra los calendarios de ciclos escolares y periodos vacacionales.
           </p>
         </div>
-        <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-          <button
-            type="button"
-            onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Agregar Calendario
-          </button>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all shadow-sm shadow-blue-200 active:scale-95"
+        >
+          <Plus className="w-5 h-5" />
+          Nuevo Calendario
+        </button>
+      </div>
+
+      {/* Filters & Search */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center">
+        <div className="relative w-full sm:max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input 
+            type="text" 
+            placeholder="Buscar calendario por título..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+          />
+        </div>
+        <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
+          <Filter className="w-3.5 h-3.5" />
+          <span>Mostrando {filteredCalendarios.length} resultados</span>
         </div>
       </div>
 
-      <div className="mt-8 flex flex-col">
-        <div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
-                      Archivo
-                    </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Título
-                    </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Fecha de Subida
-                    </th>
-                    <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                      <span className="sr-only">Acciones</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
-                  {calendarios.map((calendario) => (
-                    <tr key={calendario.id}>
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                        {renderFilePreview(calendario)}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
-                        {calendario.titulo}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {new Date(calendario.fechaSubida).toLocaleDateString('es-ES')}
-                      </td>
-                      <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                        <button
-                          onClick={() => handlePreview(calendario)}
-                          className="text-green-600 hover:text-green-900 mr-4"
-                        >
-                          Ver
-                        </button>
-                        <button
-                          onClick={() => handleEdit(calendario)}
-                          className="text-blue-600 hover:text-blue-900 mr-4"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => handleDelete(calendario.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Eliminar
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {calendarios.length === 0 && (
-                <div className="text-center py-12">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No hay calendarios</h3>
-                  <p className="mt-1 text-sm text-gray-500">Comienza agregando un nuevo calendario académico.</p>
+      {/* Horizontal List/Grid Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {filteredCalendarios.map((cal) => {
+          const isPDF = cal.archivo.toLowerCase().endsWith('.pdf');
+          const fileUrl = getFileUrl(cal.archivo);
+          
+          return (
+            <div key={cal.id} className="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col sm:flex-row h-full min-h-[160px]">
+              {/* Preview Area (Left side) */}
+              <div className="w-full sm:w-48 lg:w-56 bg-slate-50 relative overflow-hidden flex items-center justify-center border-b sm:border-b-0 sm:border-r border-slate-100 shrink-0">
+                {isPDF ? (
+                   <div className="flex flex-col items-center gap-2 p-4">
+                     <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-red-500 transform group-hover:scale-110 transition-transform">
+                       <FileText className="w-7 h-7" />
+                     </div>
+                     <span className="text-[10px] font-bold text-red-400 uppercase tracking-widest">PDF</span>
+                   </div>
+                ) : (
+                  <img 
+                    src={fileUrl} 
+                    alt={cal.titulo} 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                  />
+                )}
+                
+                {/* ID Badge */}
+                <div className="absolute top-2 left-2 bg-white/90 backdrop-blur rounded-lg px-2 py-1 text-[9px] font-black text-slate-500 shadow-sm border border-slate-100">
+                  #{cal.id}
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[99999] overflow-y-auto">
-          <div className="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:flex sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={handleCloseModal}></div>
-            <div className="inline-block transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 sm:align-middle relative z-10">
-              <div>
-                <div className="mt-3 text-center sm:mt-0 sm:text-left">
-                  <h3 className="text-lg font-medium leading-6 text-gray-900">
-                    {editingCalendario ? 'Editar Calendario' : 'Subir Nuevo Calendario'}
+                {/* Quick Actions Hover Overlay */}
+                <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-[1px]">
+                   <button 
+                    onClick={() => handlePreview(cal)}
+                    className="w-8 h-8 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all transform scale-90 group-hover:scale-100 duration-200"
+                    title="Previsualizar"
+                   >
+                     <Eye className="w-4 h-4" />
+                   </button>
+                   <a 
+                    href={fileUrl} 
+                    download 
+                    className="w-8 h-8 rounded-full bg-white text-slate-800 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all transform scale-90 group-hover:scale-100 duration-200 delay-[30ms]"
+                    title="Descargar"
+                    onClick={(e) => e.stopPropagation()}
+                   >
+                     <Download className="w-4 h-4" />
+                   </a>
+                </div>
+              </div>
+
+              {/* Info Area (Right side) */}
+              <div className="p-5 flex-1 flex flex-col justify-between">
+                <div className="space-y-1">
+                  <h3 className="font-bold text-slate-800 text-base leading-tight group-hover:text-blue-600 transition-colors line-clamp-2">
+                    {cal.titulo}
                   </h3>
-                  <div className="mt-4">
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                          Archivo *
-                        </label>
-                        <div
-                          {...getRootProps()}
-                          className={`mt-1 flex justify-center rounded-md border-2 border-dashed px-6 pt-5 pb-6 transition-colors ${
-                            uploading 
-                              ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-50' 
-                              : isDragActive 
-                                ? 'border-blue-400 bg-blue-50 cursor-pointer' 
-                                : 'border-gray-300 hover:border-gray-400 cursor-pointer'
-                          }`}
-                        >
-                          <div className="space-y-1 text-center">
-                            <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                              <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                            <div className="text-sm text-gray-600">
-                              <p className="font-medium">
-                                {uploading 
-                                  ? 'Subiendo archivo...' 
-                                  : isDragActive 
-                                    ? 'Suelta el archivo aquí' 
-                                    : 'Arrastra y suelta un archivo aquí, o haz clic para seleccionar'
-                                }
-                              </p>
-                            </div>
-                            <p className="text-xs text-gray-500">PDF, PNG, JPG, WEBP hasta 10MB</p>
-                            <input {...getInputProps()} />
-                          </div>
-                        </div>
-                        {formData.archivo && (
-                          <div className="mt-2 p-3 bg-gray-50 rounded-md">
-                            <p className="text-sm text-gray-700">
-                              <strong>Archivo seleccionado:</strong> {formData.archivo.name}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              <strong>Título generado:</strong> {formData.titulo}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex justify-end space-x-3">
-                        <button
-                          type="button"
-                          onClick={handleCloseModal}
-                          disabled={uploading}
-                          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Cancelar
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={uploading || (!formData.archivo && !editingCalendario)}
-                          className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {uploading ? (
-                            <>
-                              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                              Subiendo...
-                            </>
-                          ) : (
-                            editingCalendario ? 'Actualizar' : 'Subir Calendario'
-                          )}
-                        </button>
-                      </div>
-                    </form>
+                  <div className="flex items-center gap-2 text-[11px] text-slate-400 font-medium">
+                    <CalendarIcon className="w-3 h-3" />
+                    <span>Publicado: {new Date(cal.fechaSubida).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                   </div>
+                </div>
+
+                {/* Actions Footer */}
+                <div className="mt-4 flex items-center gap-2">
+                   <button 
+                    onClick={() => handleEdit(cal)}
+                    className="flex-1 text-[11px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50/50 hover:bg-blue-100 py-2 rounded-xl transition-all border border-blue-100/20"
+                   >
+                     Editar Registro
+                   </button>
+                   <button 
+                    onClick={() => handleDelete(cal.id)}
+                    className="w-9 h-9 flex items-center justify-center text-red-400 bg-red-50/50 rounded-xl hover:bg-red-100 hover:text-red-600 transition-all border border-red-100/20"
+                    title="Eliminar"
+                   >
+                     <Trash2 className="w-4 h-4" />
+                   </button>
                 </div>
               </div>
             </div>
+          );
+        })}
+
+        {filteredCalendarios.length === 0 && (
+          <div className="col-span-full py-20 flex flex-col items-center justify-center bg-white rounded-3xl border border-dashed border-slate-200">
+            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-4">
+              <Search className="w-10 h-10" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-800">No se encontraron calendarios</h3>
+            <p className="text-slate-400 text-sm">Prueba con otro término de búsqueda o agrega uno nuevo.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Modal - Modern Design */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={handleCloseModal}></div>
+          <div className="relative bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                {editingCalendario ? (
+                  <><FileText className="w-5 h-5 text-blue-600" /> Editar Calendario</>
+                ) : (
+                  <><Plus className="w-5 h-5 text-blue-600" /> Nuevo Calendario</>
+                )}
+              </h3>
+              <button 
+                onClick={handleCloseModal}
+                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              {/* Title Field */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">Título del Calendario</label>
+                <input 
+                  type="text" 
+                  value={formData.titulo}
+                  onChange={(e) => setFormData(prev => ({ ...prev, titulo: e.target.value }))}
+                  placeholder="Ej: Calendario Escolar 2024-2025"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                />
+              </div>
+
+              {/* Dropzone Field */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700">
+                  Archivo {editingCalendario ? '(Opcional)' : '*'}
+                </label>
+                <div
+                  {...getRootProps()}
+                  className={`relative group border-2 border-dashed rounded-2xl p-6 transition-all flex flex-col items-center justify-center gap-3 ${
+                    uploading
+                      ? 'border-slate-100 bg-slate-50 cursor-not-allowed'
+                      : isDragActive
+                        ? 'border-blue-400 bg-blue-50'
+                        : 'border-slate-200 hover:border-blue-400 hover:bg-blue-50/30 cursor-pointer'
+                  }`}
+                >
+                  <input {...getInputProps()} />
+                  
+                  {formData.archivo ? (
+                    <div className="flex flex-col items-center animate-in fade-in zoom-in-95">
+                      <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 mb-2">
+                        {formData.archivo.type === 'application/pdf' ? <FileText className="w-8 h-8" /> : <ImageIcon className="w-8 h-8" />}
+                      </div>
+                      <p className="text-sm font-semibold text-slate-700 line-clamp-1 px-10 text-center">
+                        {formData.archivo.name}
+                      </p>
+                      <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-1">
+                        {(formData.archivo.size / 1024 / 1024).toFixed(2)} MB • {formData.archivo.type.split('/')[1]}
+                      </p>
+                    </div>
+                  ) : editingCalendario ? (
+                    <div className="text-center">
+                      <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mx-auto mb-3">
+                         <FileUp className="w-6 h-6" />
+                      </div>
+                      <p className="text-xs font-medium text-slate-500">Haz clic para reemplazar el archivo actual</p>
+                      <p className="text-[10px] text-slate-300 mt-1">Si no seleccionas nada, se mantendrá el archivo anterior</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="w-14 h-14 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <FileUp className="w-7 h-7" />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-bold text-slate-700">Subir archivo</p>
+                        <p className="text-xs text-slate-400 mt-1">Suelte el archivo aquí o haga click</p>
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <span className="px-2 py-0.5 bg-slate-100 rounded-md text-[10px] font-bold text-slate-500 uppercase">PDF</span>
+                        <span className="px-2 py-0.5 bg-slate-100 rounded-md text-[10px] font-bold text-slate-500 uppercase">PNG</span>
+                        <span className="px-2 py-0.5 bg-slate-100 rounded-md text-[10px] font-bold text-slate-500 uppercase">JPG</span>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Weight Warning */}
+                  {!formData.archivo && <p className="text-[10px] text-slate-300 absolute bottom-2">Tamaño máximo: 10MB</p>}
+                </div>
+              </div>
+
+              {/* Warning box if needed */}
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-red-600 font-medium leading-relaxed">{error}</p>
+                </div>
+              )}
+
+              {/* Modal Footer */}
+              <div className="flex items-center gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  disabled={uploading}
+                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={uploading || (!formData.archivo && !editingCalendario)}
+                  className="flex-[2] py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-sm shadow-blue-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {uploading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      {editingCalendario ? 'Actualizando...' : 'Subiendo...'}
+                    </>
+                  ) : (
+                    <>
+                      {editingCalendario ? 'Guardar Cambios' : 'Publicar Calendario'}
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

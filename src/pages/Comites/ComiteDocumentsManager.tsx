@@ -1,295 +1,538 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import api from '../../services/comiteApiService';
+import { 
+  FileText, 
+  Plus, 
+  Trash2, 
+  Edit2, 
+  Upload, 
+  X,
+  Check,
+  Library,
+  Info,
+  
+} from 'lucide-react';
+import { useDropzone } from 'react-dropzone';
 import Swal from 'sweetalert2';
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
-import Badge from "../../components/ui/badge/Badge";
 
-const API_URL = import.meta.env.VITE_BACKENDURL || '';
-
-interface Documento {
-    id: number;
-    titulo: string;
-    archivo: string;
-    activo: boolean;
-}
-
-interface Comite {
-    id: number;
-    slug: string;
-    titulo: string;
-    descripcion: string;
-    activo: boolean;
-    documentos?: Documento[];
-}
+const BACKEND = (import.meta.env.VITE_BACKENDURL || '').replace(/\/$/, '');
 
 interface Props {
-    slug: string;
-    pageTitle: string;
+  slug: string;
+  pageTitle: string;
 }
 
-const ComiteDocumentsManager = ({ slug, pageTitle }: Props) => {
-    const [comite, setComite] = useState<Comite | null>(null);
-    const [documents, setDocuments] = useState<Documento[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    
-    // Form Data
-    const [docForm, setDocForm] = useState({ titulo: '', archivo: null as File | null, activo: true });
+interface ComiteDocument {
+  id: string;
+  titulo: string;
+  archivo: string;
+  activo: boolean;
+}
 
-    useEffect(() => {
-        fetchComiteAndDocuments();
-    }, [slug]);
+interface ComiteCategory {
+  id: string;
+  titulo: string;
+  documentos: ComiteDocument[];
+}
 
-    const fetchComiteAndDocuments = async () => {
-        setLoading(true);
-        try {
-            // Fetch comite by slug. Backend endpoint: GET /api/comites/:slug?admin=true
-            const response = await fetch(`${API_URL}/api/comites/${slug}?admin=true`);
-            
-            if (response.status === 404) {
-                // Comite no existe - permitir inicializarlo
-                setComite(null);
-                setDocuments([]);
-            } else if (!response.ok) {
-                // Otros errores - también permitir inicializar
-                console.warn('Error al obtener comité:', response.status);
-                setComite(null);
-                setDocuments([]);
-            } else {
-                const data = await response.json();
-                setComite(data);
-                setDocuments(data.documentos || []);
-            }
-        } catch (error) {
-            // Error de red - permitir inicializar en lugar de mostrar error
-            console.warn('Error de red al cargar comité:', error);
-            setComite(null);
-            setDocuments([]);
-        } finally {
-            setLoading(false);
-        }
-    };
+export default function ComiteDocumentsManager({ slug, pageTitle }: Props) {
+  const [comite, setComite] = useState<any>(null);
+  const [categorias, setCategorias] = useState<ComiteCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  
+  // Modal states
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isEditDocModalOpen, setIsEditDocModalOpen] = useState(false);
+  const [isEditCatModalOpen, setIsEditCatModalOpen] = useState(false);
 
-    const handleInitializeComite = async () => {
-        try {
-            const response = await fetch(`${API_URL}/api/comites`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    titulo: pageTitle,
-                    slug: slug,
-                    descripcion: `Documentos del ${pageTitle}`,
-                    activo: true
-                })
-            });
-            
-            if (!response.ok) throw new Error('Failed to create');
-            
-            const newComite = await response.json();
-            setComite(newComite);
-            Swal.fire('Éxito', 'Comité inicializado correctamente', 'success');
-        } catch (error) {
-            Swal.fire('Error', 'No se pudo inicializar el comité', 'error');
-        }
-    };
+  // Form states
+  const [categoryTitle, setCategoryTitle] = useState('');
+  const [editingCategory, setEditingCategory] = useState<{id: string, titulo: string} | null>(null);
+  const [editingDoc, setEditingDoc] = useState<{id: string, titulo: string, activo: boolean, categoriaId?: string} | null>(null);
+  const [newDocFiles, setNewDocFiles] = useState<File[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{current: number, total: number} | null>(null);
 
-    const handleDeleteDoc = async (id: number) => {
-        const result = await Swal.fire({
-            title: '¿Eliminar documento?',
-            text: "Esta acción no se puede deshacer",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
+  // Selection states
+  const [selectedDocs, setSelectedDocs] = useState<Set<string>>(new Set());
+  const [multiSelectMode, setMultiSelectMode] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      let res = await api.getBySlug(slug, true);
+      
+      // Si el comité no existe en la DB, lo inicializamos automáticamente
+      if (!res) {
+        res = await api.initialize({ 
+          titulo: pageTitle, 
+          slug, 
+          descripcion: `Repositorio de ${pageTitle}` 
         });
+      }
 
-        if (result.isConfirmed) {
-            try {
-                const response = await fetch(`${API_URL}/api/comites/documentos/${id}`, { method: 'DELETE' });
-                if (!response.ok) throw new Error('Failed to delete');
-                
-                Swal.fire('Eliminado', 'El documento ha sido eliminado.', 'success');
-                fetchComiteAndDocuments();
-            } catch (error) {
-                Swal.fire('Error', 'No se pudo eliminar el documento', 'error');
-            }
-        }
-    };
-
-    const submitDoc = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!comite) return;
+      if (res) {
+        setComite(res);
+        const mappedCats = (res.categorias || []).map((c: any): ComiteCategory => ({
+          id: String(c.id),
+          titulo: c.titulo,
+          documentos: (c.documentos || []).map((d: any): ComiteDocument => ({
+             id: String(d.id),
+             titulo: d.titulo,
+             archivo: d.archivo,
+             activo: !!d.activo
+          }))
+        }));
+        setCategorias(mappedCats);
         
-        const formData = new FormData();
-        formData.append('comiteId', String(comite.id));
-        formData.append('titulo', docForm.titulo);
-        formData.append('activo', String(docForm.activo));
-        if (docForm.archivo) {
-            formData.append('archivo', docForm.archivo);
+        // Auto-seleccionar primera categoría si no hay una válida para este comité
+        if (mappedCats.length > 0) {
+          const stillValid = mappedCats.some((c: ComiteCategory) => c.id === selectedCategory);
+          if (!stillValid) setSelectedCategory(mappedCats[0].id);
         } else {
-            Swal.fire('Atención', 'Debes seleccionar un archivo', 'warning');
-            return;
+          setSelectedCategory(null);
         }
-
-        try {
-            const response = await fetch(`${API_URL}/api/comites/documentos`, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) throw new Error('Upload failed');
-
-            Swal.fire('Éxito', 'Documento agregado correctamente', 'success');
-            setIsModalOpen(false);
-            setDocForm({ titulo: '', archivo: null, activo: true });
-            fetchComiteAndDocuments();
-        } catch (error) {
-            Swal.fire('Error', 'Error al subir documento', 'error');
-        }
-    };
-
-    if (loading) return (
-         <div className="flex justify-center p-10">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
-         </div>
-    );
-
-    if (!comite) {
-        return (
-            <div className="flex flex-col items-center justify-center p-10 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">{pageTitle}</h2>
-                <p className="text-gray-500 dark:text-gray-400 mb-6">Este comité aún no ha sido inicializado en el sistema.</p>
-                <button 
-                    onClick={handleInitializeComite}
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm"
-                >
-                    Inicializar Comité
-                </button>
-            </div>
-        );
+      }
+    } catch (err) {
+      console.error('Error cargando comité', err);
+      // Intentar inicializar si falló el fetch (por si el 404 lanzó error)
+      try {
+        const res = await api.initialize({ 
+          titulo: pageTitle, 
+          slug, 
+          descripcion: `Repositorio de ${pageTitle}` 
+        });
+        setComite(res);
+      } catch (initErr) {
+        console.error('Error auto-inicializando comité', initErr);
+        setComite(null);
+      }
+    } finally {
+      setLoading(false);
     }
+  };
 
+  useEffect(() => {
+    setComite(null);
+    setCategorias([]);
+    setSelectedCategory(null);
+    setSelectedDocs(new Set());
+    setMultiSelectMode(false);
+    fetchData();
+  }, [slug]);
+
+  // --- Dropzone ---
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    setNewDocFiles(prev => [...prev, ...acceptedFiles]);
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { 'application/pdf': ['.pdf'] }
+  });
+
+  // --- Actions ---
+
+  const handleCreateCategory = async () => {
+    if (!categoryTitle.trim() || !comite) return;
+    try {
+      setBusy(true);
+      const res = await api.createCategory(comite.id, categoryTitle.trim());
+      setCategoryTitle('');
+      setIsCategoryModalOpen(false);
+      await fetchData();
+      if (res && res.id) setSelectedCategory(res.id);
+      Swal.fire({ icon: 'success', title: 'Categoría creada', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo crear la categoría.' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleUpdateCategory = async () => {
+    if (!editingCategory || !categoryTitle.trim()) return;
+    try {
+      setBusy(true);
+      await api.updateCategory(+editingCategory.id, categoryTitle.trim());
+      await fetchData();
+      setIsEditCatModalOpen(false);
+      setEditingCategory(null);
+      Swal.fire({ icon: 'success', title: 'Actualizada', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar.' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDeleteCategory = async (id: string, name: string) => {
+    const result = await Swal.fire({
+      title: '¿Eliminar categoría?',
+      text: `Se borrarán todos los documentos de "${name}".`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar'
+    });
+    if (!result.isConfirmed) return;
+    try {
+      await api.deleteCategory(+id);
+      if (selectedCategory === id) setSelectedCategory(null);
+      await fetchData();
+      Swal.fire({ icon: 'success', title: 'Eliminado', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo eliminar.' });
+    }
+  };
+
+  const handleBatchUpload = async () => {
+    if (!selectedCategory || !comite || newDocFiles.length === 0) return;
+    setBusy(true);
+    setUploadProgress({ current: 0, total: newDocFiles.length });
+    let success = 0;
+    for (let i = 0; i < newDocFiles.length; i++) {
+      try {
+        const file = newDocFiles[i];
+        const title = file.name.replace(/\.pdf$/i, '').replace(/[_-]/g, ' ');
+        await api.uploadDocument(comite.id, +selectedCategory, file, title);
+        success++;
+      } catch (err) {
+        console.error(err);
+      }
+      setUploadProgress(prev => prev ? { ...prev, current: i + 1 } : null);
+    }
+    setBusy(false);
+    setUploadProgress(null);
+    setNewDocFiles([]);
+    setIsUploadModalOpen(false);
+    await fetchData();
+    Swal.fire({ icon: success === newDocFiles.length ? 'success' : 'warning', title: 'Carga completada', text: `Se subieron ${success} documentos.`, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+  };
+
+  const handleDeleteDoc = async (id: string) => {
+    const result = await Swal.fire({ title: '¿Eliminar documento?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
+    if (!result.isConfirmed) return;
+    try {
+      await api.deleteDocument(+id);
+      await fetchData();
+      Swal.fire({ icon: 'success', title: 'Eliminado', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo eliminar.' });
+    }
+  };
+
+  const handleUpdateDoc = async () => {
+    if (!editingDoc) return;
+    try {
+      setBusy(true);
+      await api.updateDocument(+editingDoc.id, { 
+        titulo: editingDoc.titulo, 
+        activo: editingDoc.activo,
+        categoriaId: Number(editingDoc.categoriaId)
+      });
+      setIsEditDocModalOpen(false);
+      setEditingDoc(null);
+      await fetchData();
+      Swal.fire({ icon: 'success', title: 'Actualizado', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+    } catch (err) {
+       Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar.' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedDocs.size === 0) return;
+    const result = await Swal.fire({ title: `¿Eliminar ${selectedDocs.size} documentos?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
+    if (!result.isConfirmed) return;
+    setBusy(true);
+    for (const id of selectedDocs) {
+      try { await api.deleteDocument(+id); } catch(e) {}
+    }
+    setSelectedDocs(new Set());
+    setMultiSelectMode(false);
+    setBusy(false);
+    await fetchData();
+    Swal.fire({ icon: 'success', title: 'Eliminados', toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+  };
+
+  const toggleSelectAll = () => {
+    const currentDocs = categorias.find(c => c.id === selectedCategory)?.documentos || [];
+    if (selectedDocs.size === currentDocs.length) {
+      setSelectedDocs(new Set());
+    } else {
+      setSelectedDocs(new Set(currentDocs.map((d: ComiteDocument) => d.id)));
+    }
+  };
+
+  function buildFileUrl(archivo?: string | null) {
+    if (!archivo) return '';
+    if (archivo.startsWith('http')) return archivo;
+    return `${BACKEND}${archivo}`;
+  }
+
+  const currentCategoryData = categorias.find(c => c.id === selectedCategory);
+  const docs = currentCategoryData?.documentos || [];
+
+  if (loading && !comite) {
     return (
+      <>
+        <PageMeta title={`Cargando - ${pageTitle}`} description="Por favor espere..." />
+        <PageBreadcrumb pageTitle={pageTitle} />
+        <div className="flex flex-col items-center justify-center p-20 min-h-[400px] bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800">
+          <div className="w-16 h-16 border-4 border-gray-100 border-t-[#0a9782] rounded-full animate-spin mb-4"></div>
+          <p className="text-gray-400 font-medium animate-pulse">Sincronizando repositorio...</p>
+        </div>
+      </>
+    );
+  }
+
+  if (!comite) {
+     return (
         <>
-            <PageMeta title={`Gestión - ${pageTitle}`} description={`Administrar documentos para ${pageTitle}`} />
-            <PageBreadcrumb pageTitle={pageTitle} />
+          <PageMeta title={`Error - ${pageTitle}`} description="Error al cargar el repositorio" />
+          <PageBreadcrumb pageTitle={pageTitle} />
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 p-12 text-center">
+            <Info className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold mb-2">No se pudo activar el repositorio</h2>
+            <p className="text-gray-500">Hubo un problema al conectar con el servidor.</p>
+            <button onClick={fetchData} className="mt-6 px-6 py-2 bg-[#0a9782] text-white rounded-xl font-bold">Reintentar</button>
+          </div>
+        </>
+     );
+  }
 
-            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm mb-6">
-                <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/30 dark:bg-gray-700/30">
-                     <div>
-                        <h2 className="text-lg font-bold text-gray-800 dark:text-white">Documentos</h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Gestión de archivos para {pageTitle}</p>
-                     </div>
-                     <button 
-                        onClick={() => { setDocForm({ titulo: '', archivo: null, activo: true }); setIsModalOpen(true); }}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm"
-                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-                        Agregar Documento
-                     </button>
-                </div>
-                
-                <div className="p-6">
-                    {documents.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                            {documents.map(doc => (
-                                <div key={doc.id} className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-md transition-all duration-200 relative">
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div className={`p-3 rounded-lg ${doc.activo ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500'}`}>
-                                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                        </div>
-                                        <Badge color={doc.activo ? 'success' : 'error'} size="sm">
-                                            {doc.activo ? 'Activo' : 'Oculto'}
-                                        </Badge>
-                                    </div>
-                                    
-                                    <h3 className="font-semibold text-gray-800 dark:text-white mb-1 line-clamp-2" title={doc.titulo}>{doc.titulo}</h3>
-                                    <a 
-                                        href={`${API_URL}${doc.archivo}`} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className="text-sm text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline mb-4 inline-block"
-                                    >
-                                        Ver archivo PDF
-                                    </a>
+  return (
+    <>
+      <PageMeta title={`Gestión - ${pageTitle}`} description={`Admin documentos ${pageTitle}`} />
+      <PageBreadcrumb pageTitle={pageTitle} />
 
-                                    <div className="border-t border-gray-100 dark:border-gray-700 pt-3 flex justify-end">
-                                        <button 
-                                            onClick={() => handleDeleteDoc(doc.id)}
-                                            className="text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1"
-                                            title="Eliminar documento"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-10 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
-                                <p className="text-gray-500 dark:text-gray-400">No hay documentos cargados en este comité.</p>
-                            </div>
-                    )}
+      <div className="space-y-6 p-6 bg-white dark:bg-gray-900 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
+        
+        {/* Header - Programas Style */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white uppercase tracking-tight">{pageTitle}</h2>
+            <div className="flex items-center gap-2 mt-1">
+               <span className="flex h-2 w-2 rounded-full bg-green-500"></span>
+               <p className="text-xs font-medium text-gray-500 uppercase tracking-widest">Repositorio Activo</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => { setCategoryTitle(''); setIsCategoryModalOpen(true); }}
+              className="px-4 py-2.5 bg-[#0a9782] text-white rounded-xl hover:bg-[#088c75] transition-all font-medium shadow-lg hover:shadow-xl text-sm flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" /> Nueva Categoría
+            </button>
+            <button
+              onClick={() => setIsUploadModalOpen(true)}
+              disabled={categorias.length === 0}
+              className="px-4 py-2.5 bg-[#d1672a] text-white rounded-xl hover:bg-[#b85822] transition-all font-medium shadow-lg hover:shadow-xl text-sm flex items-center gap-2 disabled:opacity-50"
+            >
+              <Upload className="w-4 h-4" /> Subir Archivos
+            </button>
+          </div>
+        </div>
+
+        {/* Categories Tabs - Normatividad Style */}
+        {categorias.length > 0 ? (
+          <div className="border-b border-gray-200 dark:border-gray-700">
+            <nav className="flex -mb-px space-x-8 overflow-x-auto no-scrollbar">
+              {categorias.map((cat) => (
+                <div key={cat.id} className="flex items-center group">
+                  <button
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center transition-all ${
+                      selectedCategory === cat.id
+                        ? 'border-[#0a9782] text-[#0a9782]'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400'
+                    }`}
+                  >
+                    {cat.titulo}
+                    <span className={`ml-2 text-[10px] px-2 py-0.5 rounded-full ${
+                      selectedCategory === cat.id ? 'bg-[#0a9782]/10 text-[#0a9782]' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+                    }`}>
+                      {cat.documentos?.length || 0}
+                    </span>
+                  </button>
+                  
+                  <div className="flex items-center ml-1 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                     <button onClick={() => { setEditingCategory({id: cat.id, titulo: cat.titulo}); setCategoryTitle(cat.titulo); setIsEditCatModalOpen(true); }} className="p-1 text-gray-400 hover:text-blue-500 transition-colors"><Edit2 className="w-3.5 h-3.5" /></button>
+                     <button onClick={() => handleDeleteCategory(cat.id, cat.titulo)} className="p-1 text-gray-300 hover:text-red-500 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                  </div>
                 </div>
+              ))}
+            </nav>
+          </div>
+        ) : (
+          <div className="p-12 text-center border-2 border-dashed rounded-3xl border-gray-100 dark:border-gray-800 bg-gray-50/50">
+             <Library className="w-10 h-10 mx-auto text-gray-300 mb-4" />
+             <p className="text-gray-500 text-sm">Crea la primera categoría para organizar los documentos.</p>
+          </div>
+        )}
+
+        {/* Files Area */}
+        {selectedCategory && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <button onClick={() => { setMultiSelectMode(!multiSelectMode); setSelectedDocs(new Set()); }} className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${multiSelectMode ? 'bg-[#d1672a] text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'}`}>
+                    {multiSelectMode ? 'CANCELAR SELECCIÓN' : 'SELECCIÓN MÚLTIPLE'}
+                  </button>
+                  {multiSelectMode && docs.length > 0 && (
+                    <button onClick={toggleSelectAll} className="text-xs font-bold text-gray-400 hover:text-gray-600">Seleccionar todos</button>
+                  )}
+                </div>
+                {multiSelectMode && selectedDocs.size > 0 && (
+                   <button onClick={handleDeleteSelected} disabled={busy} className="px-4 py-2 bg-red-500 text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-lg shadow-red-500/20">
+                     <Trash2 className="w-4 h-4" /> ELIMINAR {selectedDocs.size}
+                   </button>
+                )}
             </div>
 
-            {/* MODAL */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in duration-200">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-bold text-gray-800">Agregar Documento</h3>
-                             <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            </button>
+            {/* Grid of Cards - EXACT Programas Style */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+               {docs.map((doc: any) => (
+                  <div 
+                    key={doc.id} 
+                    onClick={() => { if(multiSelectMode){ const n = new Set(selectedDocs); if(n.has(doc.id)) n.delete(doc.id); else n.add(doc.id); setSelectedDocs(n); }}} 
+                    className={`group relative p-5 bg-white dark:bg-gray-800 border-2 rounded-2xl transition-all cursor-pointer ${
+                      selectedDocs.has(doc.id) ? 'border-[#d1672a] ring-2 ring-[#d1672a]/10 bg-orange-50/10' : 'border-gray-50 dark:border-gray-700 hover:shadow-md'
+                    }`}
+                  >
+                     {multiSelectMode && (
+                        <div className={`absolute top-4 right-4 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
+                          selectedDocs.has(doc.id) ? 'bg-[#d1672a] border-[#d1672a]' : 'border-gray-100'
+                        }`}>
+                          {selectedDocs.has(doc.id) && <Check className="w-3 h-3 text-white" />}
                         </div>
-                        <form onSubmit={submitDoc}>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Título del Documento</label>
-                                    <input 
-                                        autoFocus 
-                                        type="text" 
-                                        className="w-full rounded-lg border-gray-300 border p-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition" 
-                                        placeholder="Ej. Reglamento interno 2024"
-                                        required 
-                                        value={docForm.titulo} 
-                                        onChange={e => setDocForm({...docForm, titulo: e.target.value})} 
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Archivo PDF</label>
-                                    <input 
-                                        type="file" 
-                                        accept=".pdf"
-                                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" 
-                                        required 
-                                        onChange={e => setDocForm({...docForm, archivo: e.target.files ? e.target.files[0] : null})} 
-                                    />
-                                </div>
-                                <div className="flex items-center pt-2">
-                                     <label className="flex items-center cursor-pointer select-none">
-                                        <div className="relative">
-                                            <input type="checkbox" className="sr-only" checked={docForm.activo} onChange={e => setDocForm({...docForm, activo: e.target.checked})} />
-                                            <div className={`block w-10 h-6 rounded-full transition-colors ${docForm.activo ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
-                                            <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${docForm.activo ? 'transform translate-x-4' : ''}`}></div>
-                                        </div>
-                                        <span className="ml-3 text-sm text-gray-700 font-medium">Visible al público</span>
-                                     </label>
-                                </div>
-                            </div>
-                            <div className="mt-8 flex justify-end gap-3">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition">Cancelar</button>
-                                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium shadow-sm transition">Subir Documento</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-        </>
-    );
-};
+                     )}
 
-export default ComiteDocumentsManager;
+                     <div className="flex flex-col items-center text-center space-y-4">
+                        <div className="w-16 h-16 bg-red-50 dark:bg-red-900/10 rounded-2xl flex items-center justify-center text-red-500 shrink-0">
+                           <FileText className="w-10 h-10" />
+                        </div>
+                        <div className="w-full text-center">
+                           <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-2 min-h-[40px] px-2">{doc.titulo}</h3>
+                           <p className="text-[10px] text-gray-400 mt-1 uppercase font-black tracking-widest truncate">Documento PDF</p>
+                        </div>
+
+                        {!multiSelectMode && (
+                          <div className="flex gap-1.5 w-full pt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                             <button onClick={(e) => { e.stopPropagation(); window.open(buildFileUrl(doc.archivo), '_blank'); }} className="flex-1 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-lg text-[10px] font-bold hover:bg-blue-600 hover:text-white transition-all">VER</button>
+                             <button onClick={(e) => { e.stopPropagation(); setEditingDoc(doc); setIsEditDocModalOpen(true); }} className="px-2 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-lg hover:bg-amber-500 hover:text-white transition-all shadow-sm"><Edit2 className="w-3.5 h-3.5" /></button>
+                             <button onClick={(e) => { e.stopPropagation(); handleDeleteDoc(doc.id); }} className="px-2 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm"><Trash2 className="w-3.5 h-3.5" /></button>
+                          </div>
+                        )}
+                     </div>
+                  </div>
+               ))}
+               
+               {docs.length === 0 && (
+                  <div className="col-span-full py-20 text-center bg-gray-50 dark:bg-gray-800/50 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-3xl">
+                     <FileText className="w-12 h-12 mx-auto text-gray-200 mb-4" />
+                     <p className="text-gray-400 text-sm">Sin documentos en esta categoría aún.</p>
+                  </div>
+               )}
+            </div>
+          </div>
+        )}
+
+        {/* --- Modals --- */}
+        {(isCategoryModalOpen || isEditCatModalOpen) && (
+           <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 w-full max-w-sm shadow-2xl border border-gray-100 dark:border-gray-700 animate-in zoom-in-95 duration-200">
+                 <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">{isEditCatModalOpen ? 'Editar Categoría' : 'Nueva Categoría'}</h3>
+                 <div className="space-y-4">
+                    <div>
+                       <label className="text-[10px] font-black uppercase text-gray-400 mb-2 block px-1">Nombre</label>
+                       <input value={categoryTitle} onChange={e => setCategoryTitle(e.target.value)} className="w-full px-4 py-3 border border-gray-100 dark:border-gray-700 dark:bg-gray-700 rounded-xl focus:border-[#0a9782] outline-none transition-all text-sm" placeholder="Ej: Minutas 2024" autoFocus />
+                    </div>
+                    <div className="flex gap-3 pt-6">
+                       <button onClick={()=>{ setIsCategoryModalOpen(false); setIsEditCatModalOpen(false); }} className="flex-1 font-bold text-gray-500 hover:bg-gray-50 py-3 rounded-xl">Cancelar</button>
+                       <button onClick={isEditCatModalOpen?handleUpdateCategory:handleCreateCategory} disabled={busy || !categoryTitle.trim()} className="flex-1 py-3 bg-[#0a9782] text-white font-bold rounded-xl shadow-lg active:scale-95 transition-all">{busy ? 'Cargando...' : 'Guardar'}</button>
+                    </div>
+                 </div>
+              </div>
+           </div>
+        )}
+
+        {/* Upload Modal */}
+        {isUploadModalOpen && (
+           <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+                 <div className="flex justify-between mb-8 items-center">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">Subida Masiva</h3>
+                    <button onClick={()=>setIsUploadModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors"><X /></button>
+                 </div>
+                 <div {...getRootProps()} className={`border-4 border-dashed rounded-3xl p-12 text-center transition-all cursor-pointer ${isDragActive ? 'border-[#d1672a] bg-orange-50/30' : 'border-gray-50 dark:border-gray-700 hover:border-[#d1672a]'}`}>
+                    <input {...getInputProps()} />
+                    <Upload className="w-14 h-14 mx-auto text-[#d1672a] mb-4" />
+                    <p className="font-bold text-gray-700 dark:text-gray-300">Arrastra archivos PDF aquí</p>
+                    <p className="text-xs text-gray-400 mt-2 font-medium">O haz clic para seleccionar (Máx 100MB)</p>
+                 </div>
+                 {newDocFiles.length > 0 && (
+                    <div className="mt-6 space-y-2 max-h-40 overflow-auto pr-2 custom-scrollbar">
+                       {newDocFiles.map((f,i)=>(
+                         <div key={i} className="text-xs bg-slate-50 dark:bg-gray-700 p-3 rounded-xl flex justify-between items-center group font-medium border border-gray-100 dark:border-gray-600">
+                           <div className="flex items-center gap-3">
+                             <FileText className="w-4 h-4 text-red-500" />
+                             <span className="truncate max-w-[220px] dark:text-gray-200">{f.name}</span>
+                           </div>
+                           <button onClick={()=>setNewDocFiles(p=>p.filter((_,idx)=>idx!==i))} className="text-gray-400 hover:text-red-500"><X className="w-4 h-4"/></button>
+                         </div>
+                       ))}
+                    </div>
+                 )}
+                 {uploadProgress && (
+                    <div className="mt-8">
+                       <div className="flex justify-between text-[10px] font-black text-gray-400 uppercase mb-2">
+                          <span>Subiendo {uploadProgress.current} de {uploadProgress.total}</span>
+                          <span>{Math.round((uploadProgress.current/uploadProgress.total)*100)}%</span>
+                       </div>
+                       <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div className="h-full bg-[#d1672a] transition-all duration-300" style={{width: `${(uploadProgress.current/uploadProgress.total)*100}%`}}></div>
+                       </div>
+                    </div>
+                 )}
+                 <div className="flex gap-4 mt-10 pt-6 border-t border-gray-50 dark:border-gray-700">
+                    <button onClick={()=>setIsUploadModalOpen(false)} disabled={busy} className="flex-1 font-bold text-gray-500 py-4">Cerrar</button>
+                    <button onClick={handleBatchUpload} disabled={busy || newDocFiles.length===0} className="flex-1 py-4 bg-[#d1672a] text-white font-bold rounded-2xl shadow-xl shadow-[#d1672a]/20 active:scale-95 transition-all">Iniciar Carga</button>
+                 </div>
+              </div>
+           </div>
+        )}
+
+        {/* Edit Doc Modal */}
+        {isEditDocModalOpen && editingDoc && (
+           <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 w-full max-w-sm shadow-2xl border border-gray-100 dark:border-gray-700 animate-in zoom-in-95 duration-200">
+                 <h3 className="text-xl font-bold mb-8 text-gray-900 dark:text-white">Editar Documento</h3>
+                 <div className="space-y-6">
+                    <div>
+                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 px-1">Título</label>
+                       <input value={editingDoc.titulo} onChange={e=>setEditingDoc({...editingDoc, titulo: e.target.value})} className="w-full px-4 py-3 border border-gray-100 dark:border-gray-700 dark:bg-gray-700 rounded-xl focus:border-blue-500 outline-none font-medium text-sm transition-all dark:text-white" />
+                    </div>
+                    <label className="flex items-center gap-3 p-4 bg-gray-50/50 dark:bg-gray-700/50 rounded-2xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-all border border-gray-50 dark:border-gray-700">
+                       <input type="checkbox" checked={editingDoc.activo} onChange={e=>setEditingDoc({...editingDoc, activo: e.target.checked})} className="w-5 h-5 rounded-lg text-[#0a9782] focus:ring-[#0a9782] transition-all" />
+                       <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Visible al público</span>
+                    </label>
+                 </div>
+                 <div className="flex gap-4 mt-10 pt-6 border-t border-gray-50 dark:border-gray-700">
+                    <button onClick={()=>setIsEditDocModalOpen(false)} className="flex-1 font-bold text-gray-400 py-4">Cerrar</button>
+                    <button onClick={handleUpdateDoc} disabled={busy} className="flex-1 py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-xl shadow-blue-500/20 active:scale-95 transition-all">Guardar</button>
+                 </div>
+              </div>
+           </div>
+        )}
+
+      </div>
+    </>
+  );
+}

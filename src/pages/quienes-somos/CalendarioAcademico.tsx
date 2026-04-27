@@ -85,7 +85,34 @@ const CalendarioAcademico: React.FC = () => {
     return () => { mounted = false; };
   }, []);
 
-  const onDrop = (acceptedFiles: File[]) => {
+  const onDrop = (acceptedFiles: File[], fileRejections: any[]) => {
+    if (fileRejections.length > 0) {
+      const error = fileRejections[0].errors[0];
+      if (error.code === 'file-too-large') {
+        Swal.fire({
+          icon: 'error',
+          title: 'Archivo demasiado grande',
+          text: 'El tamaño máximo permitido es de 5MB.',
+          confirmButtonColor: '#3b82f6'
+        });
+      } else if (error.code === 'file-invalid-type') {
+        Swal.fire({
+          icon: 'error',
+          title: 'Tipo de archivo no válido',
+          text: 'Solo se permiten archivos PDF e imágenes (JPG, PNG, WEBP).',
+          confirmButtonColor: '#3b82f6'
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al cargar archivo',
+          text: error.message,
+          confirmButtonColor: '#3b82f6'
+        });
+      }
+      return;
+    }
+
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
       const tituloGenerado = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
@@ -94,38 +121,22 @@ const CalendarioAcademico: React.FC = () => {
       setFormData(prev => ({
         ...prev,
         archivo: file,
-        titulo: prev.titulo || tituloGenerado, // Only set title if empty, or just overwrite? User might want to keep title. Let's keep existing if valid?
-        // Actually, if editing, we might want to keep existing title.
-        // If creating new, prev.titulo is likely empty.
+        titulo: prev.titulo || tituloGenerado,
       }));
       
       // Feedback visual
-      if (editingCalendario) {
-          Swal.fire({
-              icon: 'success',
-              title: 'Archivo seleccionado para reemplazo',
-              text: `Nuevo archivo: ${file.name}`,
-              toast: true,
-              position: 'top-end',
-              showConfirmButton: false,
-              timer: 3000
-          });
-      } else {
-           // Feedback visual para creación
-           Swal.fire({
-              icon: 'success',
-              title: 'Archivo cargado',
-              text: `Listo para subir: ${file.name}`,
-              toast: true,
-              position: 'top-end',
-              showConfirmButton: false,
-              timer: 3000
-           });
+      Swal.fire({
+        icon: 'success',
+        title: editingCalendario ? 'Archivo actualizado para reemplazo' : 'Archivo cargado',
+        text: `Seleccionado: ${file.name}`,
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000
+      });
 
-           // Auto-fill title
-           if (!formData.titulo) {
-               setFormData(prev => ({ ...prev, titulo: tituloGenerado }));
-           }
+      if (!editingCalendario && !formData.titulo) {
+        setFormData(prev => ({ ...prev, titulo: tituloGenerado }));
       }
     }
   };
@@ -139,7 +150,7 @@ const CalendarioAcademico: React.FC = () => {
       "image/webp": [".webp"],
     },
     multiple: false,
-    maxSize: 10 * 1024 * 1024, // 10MB
+    maxSize: 5 * 1024 * 1024, // 5MB
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -253,12 +264,8 @@ const CalendarioAcademico: React.FC = () => {
       titulo: calendario.titulo,
       archivo: null,
     });
-    const existingUrl = (calendario as any).url || (calendario as any).archivo_url;
-    if (existingUrl) {
-      setTempFileUrl(existingUrl);
-    } else {
-      setTempFileUrl(null);
-    }
+    const url = getFileUrl(calendario.archivo);
+    setTempFileUrl(url);
     setIsModalOpen(true);
   };
 
@@ -339,23 +346,37 @@ const CalendarioAcademico: React.FC = () => {
     const isPDF = archivoName.toLowerCase().endsWith('.pdf');
     const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(archivoName);
 
-    if (temp && isImage) {
-      return <img src={temp} alt={calendario.titulo} className="w-full h-full object-cover" />;
-    }
-    if (!temp && isImage && calendario.archivo) {
-      return <img src={getFileUrl(calendario.archivo)} alt={calendario.titulo} className="w-full h-full object-cover" />;
-    }
-    if (isPDF) {
+    if ((temp || calendario.archivo) && isImage) {
+      const src = temp || getFileUrl(calendario.archivo);
       return (
-        <div className="flex flex-col items-center justify-center h-full bg-red-50 text-red-500">
-          <FileText className="w-8 h-8" />
-          <span className="text-[10px] font-bold mt-1">PDF</span>
+        <div className="w-full h-full relative group">
+          <img src={src} alt={calendario.titulo} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       );
     }
+    
+    if (isPDF) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-red-50 to-white dark:from-red-950/20 dark:to-gray-800 p-6">
+          <div className="relative w-16 h-20 bg-white dark:bg-gray-700 shadow-lg rounded-sm border-t-[3px] border-red-500 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+             <FileText className="w-8 h-8 text-red-500" />
+             {/* Decorative lines to simulate document */}
+             <div className="absolute bottom-3 left-2 right-2 space-y-1">
+                <div className="h-[2px] w-full bg-slate-100 dark:bg-gray-600"></div>
+                <div className="h-[2px] w-2/3 bg-slate-100 dark:bg-gray-600"></div>
+             </div>
+          </div>
+          <span className="text-[9px] font-black mt-3 text-red-400 bg-red-100 dark:bg-red-900/30 px-2 py-0.5 rounded uppercase tracking-widest">Documento PDF</span>
+        </div>
+      );
+    }
+
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-slate-50 text-slate-400">
-        <Calendar className="w-8 h-8" />
+      <div className="flex flex-col items-center justify-center h-full w-full bg-slate-50 dark:bg-gray-800">
+        <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-gray-700 flex items-center justify-center text-slate-400">
+          <Calendar className="w-6 h-6" />
+        </div>
       </div>
     );
   };
@@ -405,59 +426,96 @@ const CalendarioAcademico: React.FC = () => {
         </div>
       </div>
 
+      {/* Adaptive List Content */}
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredCalendars.map((calendario) => (
-            <div 
-              key={calendario.id} 
-              className="group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm border border-slate-100 dark:border-gray-700 hover:shadow-md transition-all flex flex-col"
-            >
-              <div className="aspect-[4/3] bg-slate-100 dark:bg-gray-700 relative overflow-hidden group-hover:opacity-90 transition-opacity cursor-pointer" onClick={() => handlePreview(calendario)}>
-                {renderFilePreview(calendario)}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <Eye className="w-8 h-8 text-white drop-shadow-md" />
+        <>
+          <div className={`grid gap-6 ${filteredCalendars.length === 1 ? 'grid-cols-1 max-w-3xl' : 'grid-cols-1 xl:grid-cols-2'}`}>
+            {filteredCalendars.map((calendario) => {
+            const archivoName = calendario.archivo || '';
+            const isPDF = archivoName.toLowerCase().endsWith('.pdf');
+
+            return ( 
+              <div 
+                key={calendario.id} 
+                className="group bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-sm border border-slate-100 dark:border-gray-700 hover:shadow-xl hover:shadow-blue-500/5 transition-all flex flex-col sm:flex-row h-full min-h-[180px]"
+              >
+                {/* Preview Area (Left side) */}
+                <div 
+                  className="w-full sm:w-56 lg:w-64 bg-slate-50 dark:bg-gray-700 relative overflow-hidden flex items-center justify-center border-b sm:border-b-0 sm:border-r border-slate-100 dark:border-gray-700 shrink-0 cursor-pointer"
+                  onClick={() => handlePreview(calendario)}
+                >
+                  {renderFilePreview(calendario)}
+                  
+                  {/* ID Badge */}
+                  <div className="absolute top-3 left-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur rounded-full px-3 py-1 text-[10px] font-bold text-slate-500 dark:text-slate-300 shadow-sm border border-slate-100 dark:border-gray-700">
+                    ID #{calendario.id}
+                  </div>
+
+                  {/* Hover Overlay */}
+                  <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-[2px]">
+                    <div className="w-10 h-10 rounded-full bg-white text-slate-800 flex items-center justify-center transform scale-90 group-hover:scale-100 transition-transform">
+                      <Eye className="w-5 h-5" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Info Area (Right side) */}
+                <div className="p-5 flex-1 flex flex-col justify-between bg-white dark:bg-gray-800">
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between">
+                       <h3 className="font-bold text-slate-800 dark:text-white text-base leading-snug group-hover:text-blue-600 transition-colors line-clamp-2">
+                        {calendario.titulo}
+                      </h3>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-3">
+                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400 dark:text-slate-500 font-medium bg-slate-50 dark:bg-gray-700/50 px-2 py-1 rounded-md">
+                        <Calendar className="w-3 h-3" />
+                        <span>Publicado: {new Date(calendario.fechaSubida).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px] text-blue-500 font-bold bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-md border border-blue-100/30">
+                        <FileText className="w-3 h-3" />
+                        <span>{isPDF ? 'PDF' : 'Imagen'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons - More compact and modern */}
+                  <div className="mt-4 pt-4 border-t border-slate-50 dark:border-gray-700/50 flex items-center gap-2">
+                    <button
+                      onClick={() => handleEdit(calendario)}
+                      className="flex-1 inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold uppercase tracking-wider py-2 rounded-xl transition-all shadow-sm shadow-blue-100 dark:shadow-none active:scale-95"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                      Editar
+                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handlePreview(calendario)}
+                        className="w-9 h-9 inline-flex items-center justify-center bg-slate-50 dark:bg-gray-700/50 text-slate-500 dark:text-slate-400 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-all border border-slate-100 dark:border-gray-600"
+                        title="Ver Pantalla Completa"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(calendario.id)}
+                        className="w-9 h-9 inline-flex items-center justify-center bg-red-50 dark:bg-red-900/10 text-red-500 dark:text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all border border-red-100 dark:border-red-900/30"
+                        title="Eliminar"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-              
-              <div className="p-4 flex-1 flex flex-col">
-                <h3 className="font-semibold text-slate-900 dark:text-white truncate mb-1" title={calendario.titulo}>
-                  {calendario.titulo}
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-                  Subido el {new Date(calendario.fechaSubida).toLocaleDateString('es-ES')}
-                </p>
-                
-                <div className="mt-auto flex items-center justify-end gap-2">
-                  <button
-                    onClick={() => handlePreview(calendario)}
-                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-                    title="Ver"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleEdit(calendario)}
-                    className="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors"
-                    title="Editar"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(calendario.id)}
-                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                    title="Eliminar"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+        </>
       )}
 
       {filteredCalendars.length === 0 && !loading && (
@@ -525,7 +583,7 @@ const CalendarioAcademico: React.FC = () => {
                             }
                           </p>
                         </div>
-                        <p className="text-xs text-slate-400">PDF, PNG, JPG hasta 10MB</p>
+                        <p className="text-xs text-slate-400">PDF, PNG, JPG hasta 5MB</p>
                       </>
                     )}
                     <input {...getInputProps()} />
@@ -538,7 +596,8 @@ const CalendarioAcademico: React.FC = () => {
                 <input 
                   value={formData.titulo}
                   onChange={e => setFormData({...formData, titulo: e.target.value})}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  maxLength={255}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
                   placeholder="Ej. Calendario Escolar 2024-2025"
                 />
               </div>
