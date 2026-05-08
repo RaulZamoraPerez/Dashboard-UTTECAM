@@ -103,9 +103,9 @@ export const ModalEditarAvisos = ({ isOpen, onClose, section, onSave }: ModalEdi
             const sectionData = {
                 title: section.title || 'Avisos',
                 type: 'avisos' as const,
-                data: { 
+                data: {
                     mainTitle,
-                    cards 
+                    cards
                 }
             };
 

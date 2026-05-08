@@ -1,4 +1,4 @@
-import { Edit, AlertTriangle, Info, CheckCircle, Calendar, ExternalLink, ArrowRight, Maximize2 } from 'lucide-react';
+import { Edit, AlertTriangle, Info, CheckCircle, Calendar, ExternalLink, ArrowRight, Maximize2, ZoomIn, Image as ImageIcon } from 'lucide-react';
 import { useState } from 'react';
 
 interface AvisoCard {
@@ -16,6 +16,7 @@ interface AvisoCard {
 
 interface AvisosSectionProps {
     id: number;
+    title?: string;
     cards?: AvisoCard[];
     onEdit: () => void;
 }
@@ -99,11 +100,156 @@ const getIcon = (iconName?: string) => {
     }
 };
 
-export const AvisosSection = ({ id, cards = [], onEdit }: AvisosSectionProps) => {
+export const AvisosSection = ({ id, title, cards = [], onEdit }: AvisosSectionProps) => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+    const getFullUrl = (url: string) => {
+        if (!url) return '';
+        if (url.startsWith('http')) return url;
+        return `${baseUrl}${url}`;
+    };
+
+    const sortedCards = [...cards].sort((a, b) => {
+        if (a.type === 'alert' && b.type !== 'alert') return -1;
+        if (a.type !== 'alert' && b.type === 'alert') return 1;
+        if (a.type === 'alert' && b.type === 'alert') {
+            const aText = (a.title + (a.badge || '')).toLowerCase();
+            const bText = (b.title + (b.badge || '')).toLowerCase();
+            if (aText.includes('prioritario')) return -1;
+            if (bText.includes('prioritario')) return 1;
+            if (aText.includes('resultado')) return 1;
+            if (bText.includes('resultado')) return -1;
+        }
+        return 0;
+    });
+
+    const featuredCards = sortedCards.filter(c => c.type === 'alert' || c.type === 'poster');
+    const standardCards = sortedCards.filter(c => c.type === 'card');
+
+    const renderCard = (card: any) => {
+        const styles = getVariantStyles(card.variant);
+        const isLink = !!card.url;
+        const Wrapper = isLink ? 'a' : 'div';
+        const wrapperProps = isLink ? { href: card.url, target: "_blank", rel: "noopener noreferrer" } : {};
+
+        if (card.type === 'alert') {
+            return (
+                <Wrapper
+                    key={card.id}
+                    {...wrapperProps}
+                    className={`col-span-1 h-full relative overflow-hidden rounded-[2rem] border transition-all duration-300 bg-white ${styles.border} ${styles.hover} group`}
+                >
+                    <div className="flex flex-col h-full">
+                        <div className={`px-6 py-4 border-b flex items-center gap-3 ${styles.bg} ${styles.border}`}>
+                            <div className={`p-2 rounded-full ${styles.iconBg} ${styles.icon} shadow-sm`}>
+                                {getIcon(card.icon)}
+                            </div>
+                            <h3 className={`text-lg font-black ${styles.text}`}>
+                                {card.title}
+                            </h3>
+                            {card.badge && (
+                                <span className={`ml-auto inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${styles.badge}`}>
+                                    {card.badge}
+                                </span>
+                            )}
+                        </div>
+                        <div className="p-6 flex flex-col flex-grow">
+                            <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-4">
+                                {card.description}
+                            </p>
+                        </div>
+                    </div>
+                </Wrapper>
+            );
+        }
+
+        if (card.type === 'poster') {
+            return (
+                <Wrapper
+                    key={card.id}
+                    {...wrapperProps}
+                    className={`col-span-1 h-full flex flex-col rounded-[2rem] border transition-all duration-300 bg-white ${styles.border} ${styles.hover} overflow-hidden group`}
+                >
+                    <div className={`px-6 py-4 border-b flex items-center gap-3 ${styles.bg} ${styles.border}`}>
+                        <div className={`p-2 rounded-full ${styles.iconBg} ${styles.icon} shadow-sm`}>
+                            {getIcon(card.icon || 'calendar')}
+                        </div>
+                        <h3 className={`text-lg font-black ${styles.text}`}>
+                            {card.title}
+                        </h3>
+                        {card.badge && (
+                            <span className={`ml-auto inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${styles.badge}`}>
+                                {card.badge}
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900/50 relative group/img overflow-hidden">
+                        {card.imageUrl ? (
+                            <>
+                                <img
+                                    src={getFullUrl(card.imageUrl)}
+                                    alt={card.title}
+                                    className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-700"
+                                />
+                                <div
+                                    className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setSelectedImage(getFullUrl(card.imageUrl!));
+                                    }}
+                                >
+                                    <ZoomIn className="text-white" size={32} />
+                                </div>
+                            </>
+                        ) : (
+                            <div className="py-20 flex flex-col items-center opacity-20">
+                                <ImageIcon size={48} />
+                                <span className="text-[10px] font-black uppercase mt-2">Sin Imagen</span>
+                            </div>
+                        )}
+                    </div>
+                </Wrapper>
+            );
+        }
+
+        return (
+            <Wrapper
+                key={card.id}
+                {...wrapperProps}
+                className={`col-span-1 h-full flex flex-col rounded-[2rem] border bg-white shadow-sm border-gray-100 ${isLink ? `transition-all duration-500 hover:shadow-md group` : ''}`}
+            >
+                <div className={`px-6 py-4 border-b flex items-center gap-3 ${styles.bg} ${styles.border}`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${styles.iconBg} ${styles.icon} shadow-sm`}>
+                        {getIcon(card.icon)}
+                    </div>
+                    <h3 className={`text-lg font-black ${styles.text}`}>
+                        {card.title}
+                    </h3>
+                    {card.badge && (
+                        <span className={`ml-auto inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${styles.badge}`}>
+                            {card.badge}
+                        </span>
+                    )}
+                </div>
+                <div className="p-6 flex-1 flex flex-col">
+                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-4 line-clamp-3">
+                        {card.description}
+                    </p>
+                    {card.actionText && (
+                        <div className="text-[#0a9782] text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all mt-auto">
+                            {card.actionText}
+                            <ArrowRight size={14} />
+                        </div>
+                    )}
+                </div>
+            </Wrapper>
+        );
+    };
+
     return (
-        <div className="relative group/section">
+        <div className="relative group/section py-12 px-4 max-w-6xl mx-auto">
             {/* Edit Button */}
             <button
                 onClick={onEdit}
@@ -113,126 +259,19 @@ export const AvisosSection = ({ id, cards = [], onEdit }: AvisosSectionProps) =>
                 <Edit size={16} />
             </button>
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                {cards.map((card) => {
-                    const styles = getVariantStyles(card.variant);
-                    const href = getFullUrl(card.url);
-                    const isLink = !!href;
-                    const Wrapper = isLink ? 'a' : 'div';
-                    const wrapperProps = isLink ? { href, target: '_blank', rel: 'noopener noreferrer' } : {};
+            {/* Grid Principal (Alertas y Posters) - 2 Columnas */}
+            {featuredCards.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {featuredCards.map(renderCard)}
+                </div>
+            )}
 
-                    // Render differently based on type
-                    if (card.type === 'alert') {
-                        return (
-                            <Wrapper
-                                key={card.id}
-                                {...wrapperProps}
-                                className={`col-span-1 md:col-span-12 relative overflow-hidden flex flex-col md:flex-row items-start gap-6 p-6 rounded-[2rem] border ${styles.bg} ${styles.border} ${isLink ? `transition-all duration-500 hover:shadow-lg hover:-translate-y-0.5 ${styles.hover}` : ''}`}
-                            >
-                                {/* Decorative Background Circle */}
-                                <div className={`absolute -top-12 -right-12 w-48 h-48 rounded-full opacity-50 blur-3xl ${styles.iconBg}`} />
-
-                                {/* Icon */}
-                                <div className={`relative z-10 flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center shadow-sm ${styles.iconBg} ${styles.icon}`}>
-                                    {getIcon(card.icon)}
-                                </div>
-
-                                {/* Content */}
-                                <div className="flex-1 relative z-10">
-                                    {card.badge && (
-                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider mb-3 ${styles.badge}`}>
-                                            {card.badge}
-                                        </span>
-                                    )}
-                                    <h3 className={`text-2xl font-bold mb-2 ${styles.text}`}>
-                                        {card.title}
-                                    </h3>
-                                    <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed mb-4 max-w-3xl">
-                                        {card.description}
-                                    </p>
-
-                                    {card.actionText && (
-                                        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border transition-all shadow-sm ${styles.button}`}>
-                                            {card.actionText}
-                                            <ExternalLink size={14} />
-                                        </div>
-                                    )}
-                                </div>
-                            </Wrapper>
-                        );
-                    }
-
-                    if (card.type === 'poster') {
-                        return (
-                            <Wrapper
-                                key={card.id}
-                                {...wrapperProps}
-                                className={`col-span-1 md:col-span-6 flex flex-col rounded-[2rem] overflow-hidden border bg-white shadow-sm border-gray-100 ${isLink ? `transition-all duration-500 hover:shadow-lg hover:-translate-y-1 ${styles.hover}` : ''}`}
-                            >
-                                {/* Header: Icon + Title */}
-                                <div className={`px-4 py-3 border-b flex items-center gap-3 ${styles.bg} ${styles.border}`}>
-                                    <div className={`${styles.icon}`}>
-                                        {getIcon(card.icon)}
-                                    </div>
-                                    <h3 className={`font-bold text-base ${styles.text}`}>
-                                        {card.title}
-                                    </h3>
-                                </div>
-
-                                {/* Image Body */}
-                                {card.imageUrl && (
-                                    <div className="w-full bg-gray-50 dark:bg-gray-900 flex justify-center relative group/image cursor-pointer" onClick={() => setSelectedImage(getFullUrl(card.imageUrl || '') || null)}>
-                                        <img
-                                            src={getFullUrl(card.imageUrl || '')}
-                                            alt={card.title}
-                                            className="w-full h-auto max-h-[600px] object-contain transition-transform duration-500 group-hover/image:scale-105"
-                                        />
-                                        <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover/image:opacity-100">
-                                            <span className="bg-white/90 text-gray-900 px-4 py-2 rounded-full font-medium flex items-center gap-2 shadow-lg transform translate-y-4 group-hover/image:translate-y-0 transition-all">
-                                                <Maximize2 size={16} /> Ampliar
-                                            </span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Footer: Action (Optional) */}
-                                {card.actionText && (
-                                    <div className="p-3 bg-white border-t border-gray-100 flex justify-end">
-                                        <span className="text-sm font-semibold text-[#0a9782] flex items-center gap-1 hover:gap-2 transition-all">
-                                            {card.actionText} <ArrowRight size={14} />
-                                        </span>
-                                    </div>
-                                )}
-                            </Wrapper>
-                        );
-                    }
-
-                    // Default 'card'
-                    return (
-                        <Wrapper
-                            key={card.id}
-                            {...wrapperProps}
-                            className={`col-span-1 md:col-span-4 p-6 rounded-[2rem] border bg-white shadow-sm ${styles.border} ${isLink ? `transition-all duration-500 hover:shadow-md ${styles.hover}` : ''}`}
-                        >
-                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${styles.bg} ${styles.icon}`}>
-                                {getIcon(card.icon)}
-                            </div>
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                                {card.title}
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-3">
-                                {card.description}
-                            </p>
-                            {card.actionText && (
-                                <div className="text-blue-600 dark:text-blue-400 text-sm font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
-                                    {card.actionText}
-                                    <ArrowRight size={16} />
-                                </div>
-                            )}
-                        </Wrapper>
-                    );
-                })}
-            </div>
+            {/* Grid Secundario (Tarjetas de Enlace) - 3 Columnas */}
+            {standardCards.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+                    {standardCards.map(renderCard)}
+                </div>
+            )}
 
             {/* Modal Lightbox */}
             {selectedImage && (

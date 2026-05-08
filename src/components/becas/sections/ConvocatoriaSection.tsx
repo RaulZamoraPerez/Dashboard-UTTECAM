@@ -117,10 +117,8 @@ export const ConvocatoriaSection = ({
     const [isImageExpanded, setIsImageExpanded] = useState(false);
 
     return (
-        <div className="relative">
-            {/* Main Title (Optional) - shown inside the card as amber label */}
-
-            <div className="bg-white rounded-[2rem] p-8 lg:p-12 shadow-sm border border-gray-100 relative">
+        <section className="py-12 px-4 max-w-6xl mx-auto relative group/section">
+            <div className="bg-white dark:bg-gray-800 rounded-[2rem] p-8 lg:p-12 shadow-sm border border-gray-100 relative">
                 {/* Edit Button */}
                 <button
                     onClick={onEdit}
@@ -245,7 +243,7 @@ export const ConvocatoriaSection = ({
                     />
                 </div>
             )}
-        </div>
+        </section>
     );
 };
 

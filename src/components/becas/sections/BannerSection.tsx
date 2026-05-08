@@ -29,8 +29,8 @@ export const BannerSection = ({
     const [isImageExpanded, setIsImageExpanded] = useState(false);
 
     return (
-        <>
-            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden relative">
+        <section className="py-12 px-4 max-w-6xl mx-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden relative">
                 {/* Botón de editar */}
                 <button
                     onClick={onEdit}
@@ -180,7 +180,7 @@ export const BannerSection = ({
                     />
                 </div>
             )}
-        </>
+        </section>
     );
 };
 

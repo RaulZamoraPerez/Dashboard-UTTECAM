@@ -22,7 +22,7 @@ export const InfographicsSection = ({ title, items, onEdit }: InfographicsSectio
     };
 
     return (
-        <div className="relative group/section py-16 px-4 max-w-7xl mx-auto font-sans">
+        <section className="py-12 px-6 max-w-6xl mx-auto relative group/section font-sans">
             {/* Edit Overlay */}
             {onEdit && (
                 <div className="absolute top-4 right-4 z-20 opacity-0 group-hover/section:opacity-100 transition-opacity">
@@ -37,13 +37,11 @@ export const InfographicsSection = ({ title, items, onEdit }: InfographicsSectio
             )}
 
             {title && (
-                <div className="flex items-center gap-4 mb-12 border-l-4 border-blue-600 pl-6">
-                    <div className="p-2 bg-blue-50 rounded-full text-blue-600 shadow-sm border border-blue-100">
-                        <ImageIcon size={22} strokeWidth={2.5} />
-                    </div>
-                    <h2 className="text-3xl font-black text-blue-950 uppercase tracking-tight">
+                <div className="flex flex-col items-center mb-12 text-center">
+                    <h2 className="text-3xl md:text-4xl font-black text-[#008f39] dark:text-[#4ade80] tracking-tight uppercase leading-tight mb-4">
                         {title}
                     </h2>
+                    <div className="w-24 h-1.5 bg-[#0a9782] rounded-full"></div>
                 </div>
             )}
 
@@ -56,7 +54,7 @@ export const InfographicsSection = ({ title, items, onEdit }: InfographicsSectio
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.1 }}
-                            className="group bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-3 hover:shadow-2xl transition-all duration-500 cursor-pointer"
+                            className="group h-full flex flex-col bg-white rounded-[2.5rem] border border-gray-100 shadow-sm p-3 hover:shadow-2xl transition-all duration-500 cursor-pointer"
                             onClick={() => item.imageUrl && setSelectedImage(getFullUrl(item.imageUrl))}
                         >
                             {/* Image Container */}
@@ -68,7 +66,7 @@ export const InfographicsSection = ({ title, items, onEdit }: InfographicsSectio
                                             alt={item.title}
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                         />
-                                        
+
                                         {/* Overlay */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-blue-950/80 via-blue-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-8">
                                             <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
@@ -87,7 +85,7 @@ export const InfographicsSection = ({ title, items, onEdit }: InfographicsSectio
                             </div>
 
                             {/* Content */}
-                            <div className="px-5 pb-5">
+                            <div className="px-5 pb-5 mt-auto">
                                 <h3 className="text-xl font-black text-blue-950 mb-1 group-hover:text-blue-700 transition-colors">
                                     {item.title}
                                 </h3>
@@ -143,6 +141,6 @@ export const InfographicsSection = ({ title, items, onEdit }: InfographicsSectio
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </section>
     );
 };

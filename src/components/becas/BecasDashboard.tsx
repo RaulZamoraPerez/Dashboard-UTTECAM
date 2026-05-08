@@ -336,6 +336,7 @@ export const BecasDashboard = ({ module = 'becas' }: { module?: 'becas' | 'estad
                 return (
                     <AvisosSection
                         id={section.id}
+                        title={section.title}
                         cards={section.data?.cards || []}
                         onEdit={() => setModalState({ type: 'avisos', section })}
                     />
@@ -526,7 +527,7 @@ export const BecasDashboard = ({ module = 'becas' }: { module?: 'becas' | 'estad
                             )}
 
                             {/* Contenido de la Sección */}
-                            <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border ${isEditing ? 'border-[#0a9782]/30 border-dashed' : 'border-gray-100 dark:border-gray-700'}`}>
+                            <div className={`${['banner', 'avisos', 'results', 'infographics', 'convocatoria'].includes(section.type) ? '' : 'bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700'} transition-shadow duration-300 overflow-hidden ${isEditing ? 'border-[#0a9782]/30 border-dashed border-2' : ''}`}>
                                 {renderSection(section)}
                             </div>
                         </div>
