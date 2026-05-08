@@ -19,6 +19,8 @@ import { ConvocatoriaSection } from './sections/ConvocatoriaSection';
 import { AvisosSection } from './sections/AvisosSection'; // Reverted from NoticesSection
 import { GestorDocumentosSection } from './sections/GestorDocumentosSection';
 import { FooterSection } from './sections/FooterSection';
+import { ResultsSection } from './sections/ResultsSection';
+import { InfographicsSection } from './sections/InfographicsSection';
 //import { NoticesSection } from './sections/NoticesSection';
 
 
@@ -28,10 +30,12 @@ import { ModalEditarBanner } from '../modals/becas/ModalEditarBanner';
 import { ModalEditarConvocatoria } from '../modals/becas/ModalEditarConvocatoria';
 import { ModalEditarAvisos } from '../modals/becas/ModalEditarAvisos'; // Reverted from ModalEditarNotices
 import { ModalEditarFooter } from '../modals/becas/ModalEditarFooter';
+import { ModalEditarResults } from '../modals/becas/ModalEditarResults';
+import { ModalEditarInfographics } from '../modals/becas/ModalEditarInfographics';
 import ModalNuevaSeccion from '../modals/becas/ModalNuevaSeccion';
 
 // Tipos unificados
-export type SectionType = 'header' | 'banner' | 'convocatoria' | 'avisos' | 'footer' | 'repository';
+export type SectionType = 'header' | 'banner' | 'convocatoria' | 'results' | 'avisos' | 'footer' | 'repository' | 'infographics';
 
 export interface BaseSection {
     id: number;
@@ -43,7 +47,7 @@ export interface BaseSection {
 // ============================================
 // 📊 COMPONENTE PRINCIPAL
 // ============================================
-export const BecasDashboard = () => {
+export const BecasDashboard = ({ module = 'becas' }: { module?: 'becas' | 'estadia' }) => {
     const [sections, setSections] = useState<BaseSection[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -56,31 +60,44 @@ export const BecasDashboard = () => {
         section?: BaseSection;
     }>({ type: null });
 
-    // Cargar secciones al iniciar
+    // Cargar secciones al iniciar o cuando cambie el módulo
     useEffect(() => {
         loadSections();
-    }, []);
+    }, [module]);
 
     const loadSections = async () => {
         try {
             setLoading(true);
             setError(null);
-            const data = await becasService.getAllSections();
+            const data = await becasService.getAllSections(module);
 
             // Convertir formato del backend (data JSON) al formato plano que usan los componentes
-            const supportedTypes = ['header', 'banner', 'convocatoria', 'avisos', 'footer', 'repository'];
+            const supportedTypes = ['header', 'banner', 'convocatoria', 'results', 'avisos', 'footer', 'repository', 'infographics'];
 
             const formattedSections = data
                 .filter(s => supportedTypes.includes(s.type))
-                .map(s => ({
-                    id: s.id,
-                    type: s.type as SectionType,
-                    title: s.title,
-                    data: s.data,
-                    ...s.data, // Esparcir el contenido de 'data' en el nivel superior
-                    // Preservar documentos para convocatoria
-                    documents: (s.data?.documents || [])
-                }));
+                .map(s => {
+                    // Asegurar que s.data sea un objeto
+                    let parsedData = s.data || {};
+                    if (typeof parsedData === 'string') {
+                        try {
+                            parsedData = JSON.parse(parsedData);
+                        } catch (e) {
+                            console.error('Error parsing section data:', e);
+                            parsedData = {};
+                        }
+                    }
+
+                    return {
+                        id: s.id,
+                        type: s.type as SectionType,
+                        title: s.title,
+                        data: parsedData,
+                        ...parsedData, // Esparcir el contenido de 'data' en el nivel superior
+                        // Preservar documentos para convocatoria
+                        documents: (parsedData.documents || [])
+                    };
+                });
 
             setSections(formattedSections);
         } catch (err) {
@@ -180,6 +197,7 @@ export const BecasDashboard = () => {
             try {
                 setLoading(true);
                 const sectionData = {
+                    module: module,
                     title: data.title,
                     type: type,
                     data: data.data // La estructura ya viene correcta del modal
@@ -238,6 +256,26 @@ export const BecasDashboard = () => {
                     email: 'serviciosestudiantiles@uttecam.edu.mx',
                     phone: '249 422 3300 Ext. 161',
                     links: []
+                };
+                break;
+            case 'results':
+                defaultTitle = 'Resultados de la Beca';
+                defaultData = {
+                    badge: 'RESULTADOS',
+                    description: 'Consulta aquí si fuiste beneficiado.',
+                    beneficiadosText: 'Se informa a la comunidad estudiantil que los resultados ya están disponibles.',
+                    beneficiadosCard: { title: 'Beneficiados', content: 'Estudiantes aceptados para el periodo 2026', note: 'Beca completa' },
+                    documents: [],
+                    indicacionesBeneficiados: [],
+                    indicacionesNoBeneficiados: [],
+                    infobox: '',
+                    importantNote: ''
+                };
+                break;
+            case 'infographics':
+                defaultTitle = 'Avisos e Información Relevante';
+                defaultData = {
+                    items: []
                 };
                 break;
         }
@@ -300,6 +338,24 @@ export const BecasDashboard = () => {
                         id={section.id}
                         cards={section.data?.cards || []}
                         onEdit={() => setModalState({ type: 'avisos', section })}
+                    />
+                );
+            case 'results':
+                return (
+                    <ResultsSection
+                        id={section.id}
+                        {...(section.data || {})}
+                        title={section.data?.title || section.title}
+                        onEdit={() => setModalState({ type: 'results', section })}
+                    />
+                );
+            case 'infographics':
+                return (
+                    <InfographicsSection
+                        id={section.id}
+                        title={section.title}
+                        items={section.data?.items || []}
+                        onEdit={() => setModalState({ type: 'infographics', section })}
                     />
                 );
             case 'footer':
@@ -429,9 +485,9 @@ export const BecasDashboard = () => {
                     )}
 
                     {sections.map((section, idx) => (
-                        <div key={section.id} className={`relative group transition-all duration-300 ${isEditing ? 'scale-[0.99] opacity-90 hover:opacity-100 hover:scale-100' : ''}`}>
+                        <div key={section.id} className="relative group">
 
-                            {/* Controles de Orden (Solo visibles en modo edición) */}
+                            {/* Controles de ordenamiento (Solo en modo edición) */}
                             {isEditing && (
                                 <div className="absolute -left-16 top-1/2 transform -translate-y-1/2 flex flex-col gap-2 z-10">
                                     <button
@@ -528,6 +584,24 @@ export const BecasDashboard = () => {
 
             {modalState.type === 'footer' && modalState.section && (
                 <ModalEditarFooter
+                    isOpen={true}
+                    onClose={() => setModalState({ type: null })}
+                    section={modalState.section as any}
+                    onSave={handleUpdateSection}
+                />
+            )}
+
+            {modalState.type === 'results' && modalState.section && (
+                <ModalEditarResults
+                    isOpen={true}
+                    onClose={() => setModalState({ type: null })}
+                    section={modalState.section as any}
+                    onSave={handleUpdateSection}
+                />
+            )}
+
+            {modalState.type === 'infographics' && modalState.section && (
+                <ModalEditarInfographics
                     isOpen={true}
                     onClose={() => setModalState({ type: null })}
                     section={modalState.section as any}

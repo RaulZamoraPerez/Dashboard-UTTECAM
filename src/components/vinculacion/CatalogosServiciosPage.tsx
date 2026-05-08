@@ -20,7 +20,7 @@ import {
   ServicioTecnologico 
 } from "../../services/serviciosTecnologicosService";
 
-const API_URL = import.meta.env.VITE_BACKENDURL || 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_BACKENDURL || 'http://localhost:3002';
 
 const CatalogosServiciosPage: React.FC = () => {
   // --- PDF State ---

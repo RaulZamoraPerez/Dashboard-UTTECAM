@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { BannerForm, BannerData } from './BannerForm';
 import { ConvocatoriaForm, ConvocatoriaData } from './ConvocatoriaForm';
+import { ResultsForm, ResultsData } from './ResultsForm';
+import { InfographicsForm, InfographicsData } from './InfographicsForm';
 //import { CreateSectionData } from '../../services/becasService';
 import { crearArea } from '../../../services/documentosService';
 import { toastError, toastSuccess } from '../../../utils/alert';
@@ -21,7 +23,7 @@ import { toastError, toastSuccess } from '../../../utils/alert';
 interface ModalNuevaSeccionProps {
     isOpen: boolean;
     onClose: () => void;
-    onCreate: (type: 'header' | 'banner' | 'convocatoria' | 'avisos' | 'footer' | 'repository', data?: any) => void;
+    onCreate: (type: 'header' | 'banner' | 'convocatoria' | 'results' | 'avisos' | 'footer' | 'repository' | 'infographics', data?: any) => void;
 }
 
 const SECTION_TYPES = [
@@ -38,6 +40,13 @@ const SECTION_TYPES = [
         title: 'Banner Destacado',
         description: 'Imagen grande con botones',
         color: 'bg-pink-50 hover:bg-pink-100 border-pink-200 text-pink-600'
+    },
+    {
+        type: 'results' as const,
+        icon: <Check size={48} />,
+        title: 'Resultados',
+        description: 'Sección de beneficiados y listados',
+        color: 'bg-green-50 hover:bg-green-100 border-green-200 text-green-600'
     },
     {
         type: 'convocatoria' as const,
@@ -66,6 +75,13 @@ const SECTION_TYPES = [
         title: 'Repositorio de Documentos',
         description: 'Gestor avanzado de carpetas y archivos',
         color: 'bg-indigo-50 hover:bg-indigo-100 border-indigo-200 text-indigo-600'
+    },
+    {
+        type: 'infographics' as const,
+        icon: <Layout size={48} />,
+        title: 'Galería de Infografías',
+        description: 'Cuadrícula de imágenes con zoom (Calendarios/Avisos)',
+        color: 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-600'
     }
 ];
 
@@ -86,10 +102,30 @@ export const ModalNuevaSeccion = ({ isOpen, onClose, onCreate }: ModalNuevaSecci
     const [convocatoriaData, setConvocatoriaData] = useState<ConvocatoriaData>({
         badge: 'PERIODO ANTERIOR',
         title: 'Convocatoria Anterior',
+        subtitle: '',
+        mainTitle: '',
         description: 'Consulta los documentos del periodo pasado.',
         imageUrl: '',
         imageCaption: '',
         documents: []
+    });
+
+    const [resultsData, setResultsData] = useState<ResultsData>({
+        badge: 'RESULTADOS',
+        title: 'Resultados de la Beca',
+        description: 'Consulta aquí si fuiste beneficiado.',
+        beneficiadosText: 'Se informa a la comunidad estudiantil que los resultados ya están disponibles.',
+        beneficiadosCard: { title: 'Beneficiados', content: 'Estudiantes aceptados para el periodo 2026', note: 'Beca completa' },
+        documents: [],
+        indicacionesBeneficiados: [],
+        indicacionesNoBeneficiados: [],
+        infobox: '',
+        importantNote: ''
+    });
+
+    const [infographicsData, setInfographicsData] = useState<InfographicsData>({
+        title: 'AVISOS E INFORMACIÓN RELEVANTE',
+        items: []
     });
 
     const handleCreate = async () => {
@@ -109,10 +145,19 @@ export const ModalNuevaSeccion = ({ isOpen, onClose, onCreate }: ModalNuevaSecci
                 title: convocatoriaData.title,
                 data: {
                     badge: convocatoriaData.badge,
+                    subtitle: convocatoriaData.subtitle,
+                    mainTitle: convocatoriaData.mainTitle,
                     description: convocatoriaData.description,
                     imageUrl: convocatoriaData.imageUrl,
                     imageCaption: convocatoriaData.imageCaption,
                     documents: convocatoriaData.documents
+                }
+            });
+        } else if (selectedType === 'infographics') {
+            onCreate('infographics', {
+                title: infographicsData.title,
+                data: {
+                    ...infographicsData
                 }
             });
         } else if (selectedType === 'repository') {
@@ -194,6 +239,54 @@ export const ModalNuevaSeccion = ({ isOpen, onClose, onCreate }: ModalNuevaSecci
         );
     }
 
+    // Wizard para Resultados
+    if (selectedType === 'results') {
+        return (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+                    <div className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                            <button onClick={() => setSelectedType(null)} className="bg-white/20 hover:bg-white/30 p-2 rounded-lg transition"><ArrowLeft size={20} /></button>
+                            <div><h2 className="text-xl font-bold">Configurar Resultados</h2><p className="text-sm opacity-90">Prepara la información de beneficiados</p></div>
+                        </div>
+                        <button onClick={onClose} className="text-white hover:bg-white/20 rounded-lg p-2 transition"><X size={24} /></button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-8">
+                        <ResultsForm initialData={resultsData} onChange={setResultsData} />
+                    </div>
+                    <div className="p-6 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-end gap-3">
+                        <button onClick={() => setSelectedType(null)} className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition">Atrás</button>
+                        <button onClick={handleCreate} className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2"><Check size={18} /> Crear Resultados</button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Wizard para Infografías
+    if (selectedType === 'infographics') {
+        return (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="bg-white dark:bg-gray-800 rounded-[2rem] shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+                    <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-8 py-6 flex justify-between items-center">
+                        <div className="flex items-center gap-4">
+                            <button onClick={() => setSelectedType(null)} className="bg-white/20 hover:bg-white/30 p-2 rounded-xl transition"><ArrowLeft size={20} /></button>
+                            <div><h2 className="text-2xl font-bold">Galería de Infografías</h2><p className="text-sm opacity-90 text-emerald-50 font-medium">Gestiona las imágenes informativas de la sección</p></div>
+                        </div>
+                        <button onClick={onClose} className="bg-white/10 hover:bg-white/20 rounded-xl p-2 transition"><X size={24} /></button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-8 lg:p-12 bg-gray-50/30 dark:bg-gray-900/10">
+                        <InfographicsForm initialData={infographicsData} onChange={setInfographicsData} />
+                    </div>
+                    <div className="p-8 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 flex justify-between items-center">
+                        <button onClick={() => setSelectedType(null)} className="px-6 py-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-bold transition">Atrás</button>
+                        <button onClick={handleCreate} className="px-10 py-3 bg-emerald-600 text-white rounded-2xl hover:bg-emerald-700 transition flex items-center gap-2 font-bold shadow-lg shadow-emerald-600/20 active:scale-95"><Check size={20} /> Finalizar y Crear</button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     // Wizard para Repositorio - CONFIRMATION SCREEN
     if (selectedType === 'repository') {
         return (
@@ -269,7 +362,7 @@ export const ModalNuevaSeccion = ({ isOpen, onClose, onCreate }: ModalNuevaSecci
                             <button
                                 key={section.type}
                                 onClick={() => {
-                                    if (section.type === 'banner' || section.type === 'convocatoria' || section.type === 'repository') {
+                                    if (['banner', 'convocatoria', 'repository', 'results', 'infographics'].includes(section.type)) {
                                         setSelectedType(section.type);
                                     } else {
                                         onCreate(section.type);

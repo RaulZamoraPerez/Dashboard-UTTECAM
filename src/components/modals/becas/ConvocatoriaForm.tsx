@@ -6,7 +6,9 @@ import { toastError, toastSuccess } from '../../../utils/alert';
 export interface ConvocatoriaData {
     badge: string;
     title: string;
+    subtitle?: string;
     description: string;
+    mainTitle?: string;
     imageUrl: string;
     imageCaption: string;
     documents: {
@@ -120,6 +122,19 @@ export const ConvocatoriaForm = ({ initialData, onChange }: ConvocatoriaFormProp
     return (
         <div className="space-y-6">
             {/* Header Info */}
+            <div className="grid grid-cols-1 gap-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Título de Periodo (Superior)</label>
+                    <input
+                        type="text"
+                        value={initialData.mainTitle || ''}
+                        onChange={(e) => updateField('mainTitle', e.target.value)}
+                        className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        placeholder="Ej: ESTADÍA PROFESIONAL: MAYO - AGOSTO 2026"
+                    />
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Badge (Etiqueta)</label>
@@ -128,19 +143,31 @@ export const ConvocatoriaForm = ({ initialData, onChange }: ConvocatoriaFormProp
                         value={initialData.badge || ''}
                         onChange={(e) => updateField('badge', e.target.value)}
                         className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        placeholder="Ej: PERIODO ANTERIOR"
+                        placeholder="Ej: CONVOCATORIA BECA"
                     />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Título</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Título de la Beca</label>
                     <input
                         type="text"
                         value={initialData.title || ''}
                         onChange={(e) => updateField('title', e.target.value)}
                         className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        placeholder="Ej: Convocatoria Sep-Dic 2025"
+                        placeholder="Ej: Convocatoria Beca de Estadía Profesional"
                     />
                 </div>
+            </div>
+
+            {/* Extra paragraph */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Párrafo adicional <span className="text-gray-400 font-normal">(aparece debajo de la descripción)</span></label>
+                <textarea
+                    value={initialData.subtitle || ''}
+                    onChange={(e) => updateField('subtitle', e.target.value)}
+                    rows={2}
+                    className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    placeholder="Ej: Para más informes comunicate al correo..."
+                />
             </div>
 
             {/* Description */}

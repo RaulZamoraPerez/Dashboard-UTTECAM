@@ -24,6 +24,7 @@ interface ModalEditarAvisosProps {
 }
 
 export const ModalEditarAvisos = ({ isOpen, onClose, section, onSave }: ModalEditarAvisosProps) => {
+    const [mainTitle, setMainTitle] = useState('');
     const [cards, setCards] = useState<AvisoCard[]>([]);
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -35,6 +36,7 @@ export const ModalEditarAvisos = ({ isOpen, onClose, section, onSave }: ModalEdi
             if (typeof rawData === 'string') {
                 try { rawData = JSON.parse(rawData); } catch (e) { rawData = {}; }
             }
+            setMainTitle(rawData.mainTitle || '');
             setCards(rawData.cards || []);
         }
     }, [section]);
@@ -101,7 +103,10 @@ export const ModalEditarAvisos = ({ isOpen, onClose, section, onSave }: ModalEdi
             const sectionData = {
                 title: section.title || 'Avisos',
                 type: 'avisos' as const,
-                data: { cards }
+                data: { 
+                    mainTitle,
+                    cards 
+                }
             };
 
             if (section.id === 0) {
@@ -137,7 +142,18 @@ export const ModalEditarAvisos = ({ isOpen, onClose, section, onSave }: ModalEdi
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900/50">
+                <div className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900/50 space-y-6">
+                    {/* Period Title */}
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                        <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Título de Periodo (Superior)</label>
+                        <input
+                            type="text"
+                            value={mainTitle}
+                            onChange={(e) => setMainTitle(e.target.value)}
+                            placeholder="Ej: MAYO - AGOSTO 2026"
+                            className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:ring-2 focus:ring-[#0a9782]"
+                        />
+                    </div>
 
                     {/* Toolbar */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

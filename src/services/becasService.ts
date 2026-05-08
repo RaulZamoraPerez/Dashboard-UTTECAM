@@ -2,7 +2,8 @@ import { fetchWithAuth } from './apiService';
 
 export interface BecaSection {
     id: number;
-    type: 'header' | 'requirements' | 'documents' | 'links' | 'platform' | 'results' | 'banner' | 'avisos' | 'convocatoria' | 'footer' | 'repository';
+    module: 'becas' | 'estadia';
+    type: 'header' | 'requirements' | 'documents' | 'links' | 'platform' | 'results' | 'banner' | 'avisos' | 'convocatoria' | 'footer' | 'repository' | 'infographics';
     title: string;
     data: any;
     order: number;
@@ -10,8 +11,9 @@ export interface BecaSection {
 }
 
 export interface CreateSectionData {
+    module?: 'becas' | 'estadia';
     title: string;
-    type: 'header' | 'requirements' | 'documents' | 'links' | 'platform' | 'results' | 'banner' | 'avisos' | 'convocatoria' | 'footer' | 'repository';
+    type: 'header' | 'requirements' | 'documents' | 'links' | 'platform' | 'results' | 'banner' | 'avisos' | 'convocatoria' | 'footer' | 'repository' | 'infographics';
     data: any;
 }
 
@@ -34,8 +36,8 @@ const becasService = {
     /**
      * Obtener todas las secciones activas
      */
-    async getAllSections(): Promise<BecaSection[]> {
-        return fetchWithAuth<BecaSection[]>('/api/becas/sections', {
+    async getAllSections(module: 'becas' | 'estadia' = 'becas'): Promise<BecaSection[]> {
+        return fetchWithAuth<BecaSection[]>(`/api/becas/sections?module=${module}`, {
             method: 'GET',
         });
     },

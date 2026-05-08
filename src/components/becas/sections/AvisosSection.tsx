@@ -24,7 +24,7 @@ const getFullUrl = (url?: string) => {
     if (!url) return undefined;
     if (url.startsWith('http') || url.startsWith('https')) return url;
     if (url.startsWith('/uploads/')) {
-        return `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}${url}`;
+        return `${import.meta.env.VITE_API_URL || 'http://localhost:3002'}${url}`;
     }
     return url;
 };
@@ -127,7 +127,7 @@ export const AvisosSection = ({ id, cards = [], onEdit }: AvisosSectionProps) =>
                             <Wrapper
                                 key={card.id}
                                 {...wrapperProps}
-                                className={`col-span-1 md:col-span-12 relative overflow-hidden flex flex-col md:flex-row items-start gap-6 p-6 rounded-3xl border ${styles.bg} ${styles.border} ${isLink ? `transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${styles.hover}` : ''}`}
+                                className={`col-span-1 md:col-span-12 relative overflow-hidden flex flex-col md:flex-row items-start gap-6 p-6 rounded-[2rem] border ${styles.bg} ${styles.border} ${isLink ? `transition-all duration-500 hover:shadow-lg hover:-translate-y-0.5 ${styles.hover}` : ''}`}
                             >
                                 {/* Decorative Background Circle */}
                                 <div className={`absolute -top-12 -right-12 w-48 h-48 rounded-full opacity-50 blur-3xl ${styles.iconBg}`} />
@@ -167,7 +167,7 @@ export const AvisosSection = ({ id, cards = [], onEdit }: AvisosSectionProps) =>
                             <Wrapper
                                 key={card.id}
                                 {...wrapperProps}
-                                className={`col-span-1 md:col-span-6 flex flex-col rounded-2xl overflow-hidden border bg-white dark:bg-gray-800 shadow-sm ${styles.border} ${isLink ? `transition-all duration-200 hover:shadow-lg hover:-translate-y-1 ${styles.hover}` : ''}`}
+                                className={`col-span-1 md:col-span-6 flex flex-col rounded-[2rem] overflow-hidden border bg-white shadow-sm border-gray-100 ${isLink ? `transition-all duration-500 hover:shadow-lg hover:-translate-y-1 ${styles.hover}` : ''}`}
                             >
                                 {/* Header: Icon + Title */}
                                 <div className={`px-4 py-3 border-b flex items-center gap-3 ${styles.bg} ${styles.border}`}>
@@ -185,7 +185,7 @@ export const AvisosSection = ({ id, cards = [], onEdit }: AvisosSectionProps) =>
                                         <img
                                             src={getFullUrl(card.imageUrl || '')}
                                             alt={card.title}
-                                            className="w-full h-auto max-h-[600px] object-contain transition-transform duration-500 group-hover/image:scale-[1.02]"
+                                            className="w-full h-auto max-h-[600px] object-contain transition-transform duration-500 group-hover/image:scale-105"
                                         />
                                         <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover/image:opacity-100">
                                             <span className="bg-white/90 text-gray-900 px-4 py-2 rounded-full font-medium flex items-center gap-2 shadow-lg transform translate-y-4 group-hover/image:translate-y-0 transition-all">
@@ -197,8 +197,8 @@ export const AvisosSection = ({ id, cards = [], onEdit }: AvisosSectionProps) =>
 
                                 {/* Footer: Action (Optional) */}
                                 {card.actionText && (
-                                    <div className="p-3 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex justify-end">
-                                        <span className="text-sm font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1 hover:gap-2 transition-all">
+                                    <div className="p-3 bg-white border-t border-gray-100 flex justify-end">
+                                        <span className="text-sm font-semibold text-[#0a9782] flex items-center gap-1 hover:gap-2 transition-all">
                                             {card.actionText} <ArrowRight size={14} />
                                         </span>
                                     </div>
@@ -212,7 +212,7 @@ export const AvisosSection = ({ id, cards = [], onEdit }: AvisosSectionProps) =>
                         <Wrapper
                             key={card.id}
                             {...wrapperProps}
-                            className={`col-span-1 md:col-span-4 p-6 rounded-2xl border bg-white dark:bg-gray-800 shadow-sm ${styles.border} ${isLink ? `transition-all duration-200 hover:shadow-md hover:border-blue-300 ${styles.hover}` : ''}`}
+                            className={`col-span-1 md:col-span-4 p-6 rounded-[2rem] border bg-white shadow-sm ${styles.border} ${isLink ? `transition-all duration-500 hover:shadow-md ${styles.hover}` : ''}`}
                         >
                             <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${styles.bg} ${styles.icon}`}>
                                 {getIcon(card.icon)}

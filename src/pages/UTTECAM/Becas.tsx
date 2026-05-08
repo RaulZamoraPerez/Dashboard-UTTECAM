@@ -1,7 +1,7 @@
 import BecasDashboard from '../../components/becas/BecasDashboard';
 
 export const Becas = () => {
-    return <BecasDashboard />;
+    return <BecasDashboard module="becas" />;
 };
 
 export default Becas;

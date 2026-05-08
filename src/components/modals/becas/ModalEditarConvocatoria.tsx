@@ -15,6 +15,8 @@ export const ModalEditarConvocatoria = ({ isOpen, onClose, section, onSave }: Mo
     const [formData, setFormData] = useState<ConvocatoriaData>({
         badge: '',
         title: '',
+        subtitle: '',
+        mainTitle: '',
         description: '',
         imageUrl: '',
         imageCaption: '',
@@ -40,6 +42,8 @@ export const ModalEditarConvocatoria = ({ isOpen, onClose, section, onSave }: Mo
             setFormData({
                 badge: mergedData.badge || '',
                 title: section.title || '',
+                subtitle: mergedData.subtitle || '',
+                mainTitle: mergedData.mainTitle || '',
                 description: mergedData.description || '',
                 imageUrl: mergedData.imageUrl || '',
                 imageCaption: mergedData.imageCaption || '',
@@ -56,6 +60,8 @@ export const ModalEditarConvocatoria = ({ isOpen, onClose, section, onSave }: Mo
                 type: 'convocatoria' as const,
                 data: {
                     badge: formData.badge,
+                    subtitle: formData.subtitle,
+                    mainTitle: formData.mainTitle,
                     description: formData.description,
                     imageUrl: formData.imageUrl,
                     imageCaption: formData.imageCaption,
