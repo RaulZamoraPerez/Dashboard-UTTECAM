@@ -111,16 +111,21 @@ export const AvisosSection = ({ id, title, cards = [], onEdit }: AvisosSectionPr
     };
 
     const sortedCards = [...cards].sort((a, b) => {
+        const aText = (a.title + (a.badge || '')).toLowerCase();
+        const bText = (b.title + (b.badge || '')).toLowerCase();
+
+        // 1. Prioritario siempre va primero (izquierda)
+        if (aText.includes('prioritario')) return -1;
+        if (bText.includes('prioritario')) return 1;
+
+        // 2. Resultados siempre va segundo (derecha)
+        if (aText.includes('resultado')) return -1;
+        if (bText.includes('resultado')) return 1;
+
+        // 3. Alertas (texto) antes que posters (imágenes)
         if (a.type === 'alert' && b.type !== 'alert') return -1;
         if (a.type !== 'alert' && b.type === 'alert') return 1;
-        if (a.type === 'alert' && b.type === 'alert') {
-            const aText = (a.title + (a.badge || '')).toLowerCase();
-            const bText = (b.title + (b.badge || '')).toLowerCase();
-            if (aText.includes('prioritario')) return -1;
-            if (bText.includes('prioritario')) return 1;
-            if (aText.includes('resultado')) return 1;
-            if (bText.includes('resultado')) return -1;
-        }
+
         return 0;
     });
 

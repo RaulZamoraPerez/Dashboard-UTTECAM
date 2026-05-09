@@ -344,9 +344,7 @@ export const BecasDashboard = ({ module = 'becas' }: { module?: 'becas' | 'estad
             case 'results':
                 return (
                     <ResultsSection
-                        id={section.id}
-                        {...(section.data || {})}
-                        title={section.data?.title || section.title}
+                        section={section}
                         onEdit={() => setModalState({ type: 'results', section })}
                     />
                 );
