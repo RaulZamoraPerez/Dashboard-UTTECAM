@@ -42,7 +42,7 @@ export const FooterSection = ({ id, data, onEdit }: FooterSectionProps) => {
             </button>
 
             {/* Header */}
-            <h2 className="text-2xl md:text-3xl font-bold text-[#0a9782] dark:text-[#0ebda2] mb-3">
+            <h2 className="text-2xl md:text-3xl font-bold text-[#00a499] dark:text-[#0ebda2] mb-3">
                 {content.title}
             </h2>
             <p className="text-gray-500 dark:text-gray-400 mb-8">
@@ -54,9 +54,9 @@ export const FooterSection = ({ id, data, onEdit }: FooterSectionProps) => {
                 {content.email && (
                     <a
                         href={`mailto:${content.email}`}
-                        className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full text-gray-700 dark:text-gray-200 hover:shadow-md hover:border-[#0a9782] dark:hover:border-[#0ebda2] hover:text-[#0a9782] dark:hover:text-[#0ebda2] transition-all duration-300 group"
+                        className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full text-gray-700 dark:text-gray-200 hover:shadow-md hover:border-[#00a499] dark:hover:border-[#0ebda2] hover:text-[#00a499] dark:hover:text-[#0ebda2] transition-all duration-300 group"
                     >
-                        <Mail className="text-gray-400 group-hover:text-[#0a9782] dark:group-hover:text-[#0ebda2] transition-colors" size={20} />
+                        <Mail className="text-gray-400 group-hover:text-[#00a499] dark:group-hover:text-[#0ebda2] transition-colors" size={20} />
                         <span className="font-semibold">{content.email}</span>
                     </a>
                 )}
@@ -64,9 +64,9 @@ export const FooterSection = ({ id, data, onEdit }: FooterSectionProps) => {
                 {content.phone && (
                     <a
                         href={`tel:${content.phone.replace(/[^0-9]/g, '')}`}
-                        className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full text-gray-700 dark:text-gray-200 hover:shadow-md hover:border-[#0a9782] dark:hover:border-[#0ebda2] hover:text-[#0a9782] dark:hover:text-[#0ebda2] transition-all duration-300 group"
+                        className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full text-gray-700 dark:text-gray-200 hover:shadow-md hover:border-[#00a499] dark:hover:border-[#0ebda2] hover:text-[#00a499] dark:hover:text-[#0ebda2] transition-all duration-300 group"
                     >
-                        <Phone className="text-gray-400 group-hover:text-[#0a9782] dark:group-hover:text-[#0ebda2] transition-colors" size={20} />
+                        <Phone className="text-gray-400 group-hover:text-[#00a499] dark:group-hover:text-[#0ebda2] transition-colors" size={20} />
                         <span className="font-semibold">{content.phone}</span>
                     </a>
                 )}
@@ -81,7 +81,7 @@ export const FooterSection = ({ id, data, onEdit }: FooterSectionProps) => {
                             href={link.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-[#0a9782] dark:hover:text-[#0ebda2] transition-colors text-sm font-medium flex items-center gap-1"
+                            className="text-gray-400 hover:text-[#00a499] dark:hover:text-[#0ebda2] transition-colors text-sm font-medium flex items-center gap-1"
                         >
                             {link.text}
                             <ExternalLink size={12} />

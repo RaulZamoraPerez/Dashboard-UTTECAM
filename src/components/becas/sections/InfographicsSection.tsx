@@ -41,7 +41,7 @@ export const InfographicsSection = ({ title, items, onEdit }: InfographicsSectio
                     <h2 className="text-3xl md:text-4xl font-black text-[#008f39] dark:text-[#4ade80] tracking-tight uppercase leading-tight mb-4">
                         {title}
                     </h2>
-                    <div className="w-24 h-1.5 bg-[#0a9782] rounded-full"></div>
+                    <div className="w-24 h-1.5 bg-[#00a499] rounded-full"></div>
                 </div>
             )}
 

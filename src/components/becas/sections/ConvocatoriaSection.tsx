@@ -30,7 +30,7 @@ const getVariantStyles = (variant: string = 'default') => {
                 card: 'bg-[#FFF9E6] border-[#FFEeba] hover:border-orange-300 dark:bg-yellow-900/10 dark:border-yellow-900/30',
                 icon: 'bg-[#FFE0B2] text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
                 text: 'text-gray-900 dark:text-gray-100 text-lg',
-                subtext: 'text-[#0a9782] dark:text-[#2dd4bf] font-medium',
+                subtext: 'text-[#00a499] dark:text-[#2dd4bf] font-medium',
                 action: 'text-gray-900 font-semibold dark:text-gray-200',
                 span: 'md:col-span-2'
             };
@@ -40,7 +40,7 @@ const getVariantStyles = (variant: string = 'default') => {
                 icon: 'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400',
                 text: 'text-gray-900 dark:text-gray-100',
                 subtext: 'text-gray-500 dark:text-gray-400',
-                action: 'text-[#0a9782] dark:text-[#2dd4bf]',
+                action: 'text-[#00a499] dark:text-[#2dd4bf]',
                 span: 'md:col-span-1'
             };
         case 'info': // Blue (Casos Especiales) - Half Width
@@ -49,7 +49,7 @@ const getVariantStyles = (variant: string = 'default') => {
                 icon: 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400',
                 text: 'text-gray-900 dark:text-gray-100',
                 subtext: 'text-gray-500 dark:text-gray-400',
-                action: 'text-[#0a9782] dark:text-[#2dd4bf]',
+                action: 'text-[#00a499] dark:text-[#2dd4bf]',
                 span: 'md:col-span-1'
             };
         case 'danger': // Red (Peligro) - Half Width
@@ -58,7 +58,7 @@ const getVariantStyles = (variant: string = 'default') => {
                 icon: 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400',
                 text: 'text-gray-900 dark:text-gray-100',
                 subtext: 'text-gray-500 dark:text-gray-400',
-                action: 'text-[#0a9782] dark:text-[#2dd4bf]',
+                action: 'text-[#00a499] dark:text-[#2dd4bf]',
                 span: 'md:col-span-1'
             };
         case 'outline': // Outline (Carta Compromiso) - Full Width
@@ -72,11 +72,11 @@ const getVariantStyles = (variant: string = 'default') => {
             };
         default: // Default Gray - Half Width
             return {
-                card: 'bg-gray-50 border-gray-200 hover:border-[#0a9782] dark:bg-gray-800/50 dark:border-gray-700',
+                card: 'bg-gray-50 border-gray-200 hover:border-[#00a499] dark:bg-gray-800/50 dark:border-gray-700',
                 icon: 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
                 text: 'text-gray-900 dark:text-white',
                 subtext: 'text-gray-500 dark:text-gray-400',
-                action: 'text-gray-500 group-hover:text-[#0a9782]',
+                action: 'text-gray-500 group-hover:text-[#00a499]',
                 span: 'md:col-span-1'
             };
     }

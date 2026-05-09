@@ -92,7 +92,7 @@ export const ResultsSection = ({ section, onEdit }: ResultsSectionProps) => {
             <div className="absolute top-4 right-4 z-20">
                 <button
                     onClick={onEdit}
-                    className="p-3 bg-white text-slate-400 hover:text-[#0a9782] hover:bg-green-50 rounded-2xl border border-slate-100 shadow-sm opacity-0 group-hover:opacity-100 transition-all flex items-center gap-2 group/btn"
+                    className="p-3 bg-white text-slate-400 hover:text-[#00a499] hover:bg-green-50 rounded-2xl border border-slate-100 shadow-sm opacity-0 group-hover:opacity-100 transition-all flex items-center gap-2 group/btn"
                 >
                     <Edit size={20} className="group-hover/btn:scale-110 transition-transform" />
                     <span className="text-[10px] font-black uppercase tracking-widest pr-1">Configurar Diseño</span>
@@ -103,10 +103,10 @@ export const ResultsSection = ({ section, onEdit }: ResultsSectionProps) => {
             <div className="flex items-center gap-6 mb-10">
                 <div className="flex items-center gap-4 flex-1 text-left">
                     {/* Barra de acento vertical */}
-                    <div className="w-1.5 h-10 bg-[#0A9782] rounded-full hidden md:block" />
+                    <div className="w-1.5 h-10 bg-[#00a499] rounded-full hidden md:block" />
 
                     <div className="flex items-center gap-4">
-                        <div className="p-2.5 bg-green-50 rounded-xl text-[#0A9782]">
+                        <div className="p-2.5 bg-green-50 rounded-xl text-[#00a499]">
                             <Bell size={28} strokeWidth={2.5} />
                         </div>
                         <div className="flex flex-col">
@@ -184,7 +184,7 @@ export const ResultsSection = ({ section, onEdit }: ResultsSectionProps) => {
                                     href={getFullUrl(documents[0].url)}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="w-full bg-[#0A9782] hover:bg-[#087a69] text-white py-4 rounded-xl flex items-center justify-center gap-3 font-bold text-sm shadow-md transition-all active:scale-[0.98]"
+                                    className="w-full bg-[#00a499] hover:bg-[#087a69] text-white py-4 rounded-xl flex items-center justify-center gap-3 font-bold text-sm shadow-md transition-all active:scale-[0.98]"
                                 >
                                     <Download size={18} strokeWidth={2.5} />
                                     DESCARGAR RESULTADOS
@@ -250,10 +250,10 @@ export const ResultsSection = ({ section, onEdit }: ResultsSectionProps) => {
                         </ul>
                         {/* Para mayores informes dentro de columna derecha */}
                         {infobox && (
-                            <div className="mt-2 rounded-xl border border-[#0A9782]/20 bg-[#f0faf8] p-4">
+                            <div className="mt-2 rounded-xl border border-[#00a499]/20 bg-[#f0faf8] p-4">
                                 <div className="flex items-center gap-2 mb-2 text-slate-800">
-                                    <Info size={16} className="text-[#0A9782]" />
-                                    <h5 className="font-bold text-sm text-[#0A9782]">Para mayores informes</h5>
+                                    <Info size={16} className="text-[#00a499]" />
+                                    <h5 className="font-bold text-sm text-[#00a499]">Para mayores informes</h5>
                                 </div>
                                 <div className="text-slate-600 text-xs leading-relaxed">
                                     {renderTextWithBold(infobox)}

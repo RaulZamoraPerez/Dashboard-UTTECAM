@@ -77,7 +77,8 @@ export const ModalEditarNotices = ({ isOpen, onClose, section, onSave }: ModalEd
                 </div>
 
                 <div className="p-6 space-y-6">
-                    {/* Título de la Sección */}
+                    {/* Título de la Sección - Hidden per user request */}
+                    {/* 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Título de la Sección</label>
                         <input
@@ -88,6 +89,7 @@ export const ModalEditarNotices = ({ isOpen, onClose, section, onSave }: ModalEd
                             placeholder="Ej: Avisos Importantes"
                         />
                     </div>
+                    */}
 
                     {/* Lista de Avisos */}
                     <div>

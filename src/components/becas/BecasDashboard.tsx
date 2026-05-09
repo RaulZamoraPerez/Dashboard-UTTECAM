@@ -243,7 +243,7 @@ export const BecasDashboard = ({ module = 'becas' }: { module?: 'becas' | 'estad
                 };
                 break;
             case 'avisos':
-                defaultTitle = 'Avisos y Calendarios';
+                defaultTitle = 'Avisos';
                 defaultData = {
                     cards: []
                 };
@@ -382,7 +382,7 @@ export const BecasDashboard = ({ module = 'becas' }: { module?: 'becas' | 'estad
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0a9782] mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00a499] mx-auto mb-4"></div>
                     <p className="text-gray-500 dark:text-gray-400">Cargando becas...</p>
                 </div>
             </div>
@@ -390,7 +390,7 @@ export const BecasDashboard = ({ module = 'becas' }: { module?: 'becas' | 'estad
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-[#0a9782]/5 to-gray-50 dark:from-[#0a9782]/10 dark:to-gray-900 p-6">
+        <div className="min-h-screen bg-gradient-to-b from-[#00a499]/5 to-gray-50 dark:from-[#00a499]/10 dark:to-gray-900 p-6">
             <div className="max-w-7xl mx-auto space-y-6">
 
                 {/* Error Message */}
@@ -412,10 +412,10 @@ export const BecasDashboard = ({ module = 'becas' }: { module?: 'becas' | 'estad
                 )}
 
                 {/* Header Dashboard */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border-b-4 border-[#0a9782]">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border-b-4 border-[#00a499]">
                     <div className="flex justify-between items-center">
                         <div>
-                            <h1 className="text-3xl font-bold text-[#0a9782] dark:text-[#0a9782]">Gestión de Becas</h1>
+                            <h1 className="text-3xl font-bold text-[#00a499] dark:text-[#00a499]">Gestión de Becas</h1>
                             <p className="text-gray-600 dark:text-gray-400 mt-1">Administra las convocatorias y documentos</p>
                         </div>
                         <div className="flex gap-3">
@@ -442,7 +442,7 @@ export const BecasDashboard = ({ module = 'becas' }: { module?: 'becas' | 'estad
                             ) : (
                                 <button
                                     onClick={() => setIsEditing(true)}
-                                    className="px-4 py-2 text-[#0a9782] dark:text-[#0a9782] border border-[#0a9782]/30 hover:bg-[#0a9782]/10 dark:hover:bg-[#0a9782]/20 rounded-lg transition flex items-center gap-2"
+                                    className="px-4 py-2 text-[#00a499] dark:text-[#00a499] border border-[#00a499]/30 hover:bg-[#00a499]/10 dark:hover:bg-[#00a499]/20 rounded-lg transition flex items-center gap-2"
                                 >
                                     <Edit size={18} />
                                     Organizar
@@ -453,14 +453,14 @@ export const BecasDashboard = ({ module = 'becas' }: { module?: 'becas' | 'estad
 
                             <button
                                 onClick={loadSections}
-                                className="px-4 py-2 text-[#0a9782] dark:text-[#0a9782] hover:bg-[#0a9782]/10 dark:hover:bg-[#0a9782]/20 rounded-lg transition flex items-center gap-2"
+                                className="px-4 py-2 text-[#00a499] dark:text-[#00a499] hover:bg-[#00a499]/10 dark:hover:bg-[#00a499]/20 rounded-lg transition flex items-center gap-2"
                                 title="Recargar datos"
                             >
                                 <RotateCcw size={20} />
                             </button>
                             <button
                                 onClick={() => setModalState({ type: 'create' })}
-                                className="px-6 py-3 bg-[#0a9782] text-white rounded-lg font-semibold hover:bg-[#088c75] transition flex items-center gap-2 shadow-lg hover:shadow-xl"
+                                className="px-6 py-3 bg-[#00a499] text-white rounded-lg font-semibold hover:bg-[#088c75] transition flex items-center gap-2 shadow-lg hover:shadow-xl"
                             >
                                 <Plus size={20} />
                                 Nueva Sección
@@ -476,7 +476,7 @@ export const BecasDashboard = ({ module = 'becas' }: { module?: 'becas' | 'estad
                             <p className="text-gray-500 dark:text-gray-400 text-lg">No hay secciones creadas.</p>
                             <button
                                 onClick={() => setModalState({ type: 'create' })}
-                                className="mt-4 text-[#0a9782] font-medium hover:underline"
+                                className="mt-4 text-[#00a499] font-medium hover:underline"
                             >
                                 Crear la primera sección
                             </button>
@@ -492,7 +492,7 @@ export const BecasDashboard = ({ module = 'becas' }: { module?: 'becas' | 'estad
                                     <button
                                         onClick={() => moveSection(section.id, 'up')}
                                         disabled={idx === 0}
-                                        className={`p-2 rounded-full shadow-md transition ${idx === 0 ? 'bg-gray-100 dark:bg-gray-700 text-gray-300 dark:text-gray-600' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-[#0a9782] hover:bg-[#0a9782]/10 dark:hover:bg-[#0a9782]/20'
+                                        className={`p-2 rounded-full shadow-md transition ${idx === 0 ? 'bg-gray-100 dark:bg-gray-700 text-gray-300 dark:text-gray-600' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-[#00a499] hover:bg-[#00a499]/10 dark:hover:bg-[#00a499]/20'
                                             }`}
                                         title="Mover arriba"
                                     >
@@ -502,7 +502,7 @@ export const BecasDashboard = ({ module = 'becas' }: { module?: 'becas' | 'estad
                                     <button
                                         onClick={() => moveSection(section.id, 'down')}
                                         disabled={idx === sections.length - 1}
-                                        className={`p-2 rounded-full shadow-md transition ${idx === sections.length - 1 ? 'bg-gray-100 dark:bg-gray-700 text-gray-300 dark:text-gray-600' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-[#0a9782] hover:bg-[#0a9782]/10 dark:hover:bg-[#0a9782]/20'
+                                        className={`p-2 rounded-full shadow-md transition ${idx === sections.length - 1 ? 'bg-gray-100 dark:bg-gray-700 text-gray-300 dark:text-gray-600' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-[#00a499] hover:bg-[#00a499]/10 dark:hover:bg-[#00a499]/20'
                                             }`}
                                         title="Mover abajo"
                                     >
@@ -525,7 +525,7 @@ export const BecasDashboard = ({ module = 'becas' }: { module?: 'becas' | 'estad
                             )}
 
                             {/* Contenido de la Sección */}
-                            <div className={`${['banner', 'avisos', 'results', 'infographics', 'convocatoria'].includes(section.type) ? '' : 'bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700'} transition-shadow duration-300 overflow-hidden ${isEditing ? 'border-[#0a9782]/30 border-dashed border-2' : ''}`}>
+                            <div className={`${['banner', 'avisos', 'results', 'infographics', 'convocatoria'].includes(section.type) ? '' : 'bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700'} transition-shadow duration-300 overflow-hidden ${isEditing ? 'border-[#00a499]/30 border-dashed border-2' : ''}`}>
                                 {renderSection(section)}
                             </div>
                         </div>

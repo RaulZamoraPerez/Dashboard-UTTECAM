@@ -64,7 +64,7 @@ export const BannerSection = ({
                                                 if (part.startsWith('*') && part.endsWith('*')) {
                                                     const content = part.slice(1, -1);
                                                     return (
-                                                        <span key={index} className="text-[#0a9782]">
+                                                        <span key={index} className="text-[#00a499]">
                                                             {content}
                                                         </span>
                                                     );

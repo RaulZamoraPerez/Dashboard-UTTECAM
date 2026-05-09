@@ -22,7 +22,7 @@ export const HeaderSection = ({ title, description, variant = 'default', onEdit 
                             // Es un bloque destacado: quitar asteriscos y poner color
                             const content = part.slice(1, -1);
                             return (
-                                <span key={index} className="text-[#0a9782] dark:text-[#2dd4bf]">
+                                <span key={index} className="text-[#00a499] dark:text-[#2dd4bf]">
                                     {content}
                                 </span>
                             );
@@ -38,7 +38,7 @@ export const HeaderSection = ({ title, description, variant = 'default', onEdit 
             <div className="bg-white dark:bg-gray-800 rounded-xl p-8 relative overflow-hidden text-center">
                 <button
                     onClick={onEdit}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-[#0a9782] p-2 rounded-lg transition"
+                    className="absolute top-4 right-4 text-gray-400 hover:text-[#00a499] p-2 rounded-lg transition"
                     title="Editar sección"
                 >
                     <Edit size={18} />
@@ -60,7 +60,7 @@ export const HeaderSection = ({ title, description, variant = 'default', onEdit 
                         {description}
                     </p>
 
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-gradient-to-r from-[#0a9782]/5 to-blue-500/5 blur-3xl rounded-full -z-10 pointer-events-none"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-gradient-to-r from-[#00a499]/5 to-blue-500/5 blur-3xl rounded-full -z-10 pointer-events-none"></div>
                 </div>
             </div>
         );

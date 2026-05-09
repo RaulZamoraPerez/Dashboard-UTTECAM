@@ -90,13 +90,13 @@ const getVariantStyles = (variant: string) => {
     }
 };
 
-const getIcon = (iconName?: string) => {
+const getIcon = (iconName?: string, size: number = 32) => {
     switch (iconName) {
-        case 'alert': return <AlertTriangle size={32} strokeWidth={1.5} />;
-        case 'info': return <Info size={32} strokeWidth={1.5} />;
-        case 'check': return <CheckCircle size={32} strokeWidth={1.5} />;
-        case 'calendar': return <Calendar size={32} strokeWidth={1.5} />;
-        default: return <Info size={32} strokeWidth={1.5} />;
+        case 'alert': return <AlertTriangle size={size} strokeWidth={1.5} />;
+        case 'info': return <Info size={size} strokeWidth={1.5} />;
+        case 'check': return <CheckCircle size={size} strokeWidth={1.5} />;
+        case 'calendar': return <Calendar size={size} strokeWidth={1.5} />;
+        default: return <Info size={size} strokeWidth={1.5} />;
     }
 };
 
@@ -227,7 +227,7 @@ export const AvisosSection = ({ id, title, cards = [], onEdit }: AvisosSectionPr
             >
                 <div className={`px-6 py-4 border-b flex items-center gap-3 ${styles.bg} ${styles.border}`}>
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${styles.iconBg} ${styles.icon} shadow-sm`}>
-                        {getIcon(card.icon)}
+                        {getIcon(card.icon, 20)}
                     </div>
                     <h3 className={`text-lg font-black ${styles.text}`}>
                         {card.title}
@@ -243,7 +243,7 @@ export const AvisosSection = ({ id, title, cards = [], onEdit }: AvisosSectionPr
                         {card.description}
                     </p>
                     {card.actionText && (
-                        <div className="text-[#0a9782] text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all mt-auto">
+                        <div className="text-[#00a499] text-xs font-bold flex items-center gap-1 group-hover:gap-2 transition-all mt-auto">
                             {card.actionText}
                             <ArrowRight size={14} />
                         </div>
