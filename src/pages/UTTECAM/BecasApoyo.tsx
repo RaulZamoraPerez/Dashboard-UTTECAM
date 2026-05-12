@@ -217,14 +217,8 @@ const BecasApoyo = () => {
 
         {/* Header */}
         <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <div>
-            <h4 className="text-xl font-semibold text-black dark:text-white">
-              🎓 Servicios Escolares - Becas y Apoyo
-            </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Gestiona programas de becas, requisitos y recursos para estudiantes - Cuatrimestre Sep-Dic 2025
-            </p>
-          </div>
+          <div />
+
           <button
             onClick={() => {
               setMostrarFormulario(true);

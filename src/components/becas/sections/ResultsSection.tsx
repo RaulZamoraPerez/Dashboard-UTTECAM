@@ -116,13 +116,8 @@ export const ResultsSection = ({ section, onEdit }: ResultsSectionProps) => {
                                 </span>
                             )}
                             <h2 className="text-2xl md:text-3xl font-bold text-slate-800 uppercase tracking-tight leading-tight">
-                                {mainTitle || "RESULTADOS"}
+                                {mainTitle}
                             </h2>
-                            {title && (
-                                <p className="text-sm font-bold text-slate-400 uppercase tracking-[0.2em] mt-0.5">
-                                    {title}
-                                </p>
-                            )}
                         </div>
                     </div>
                 </div>
@@ -130,6 +125,14 @@ export const ResultsSection = ({ section, onEdit }: ResultsSectionProps) => {
 
             {/* Contenedor Principal - Estilo Oficial UTTECAM */}
             <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-8 md:p-12 space-y-12 text-left">
+                {/* Scholarship Name - Moved Inside Card */}
+                {title && (
+                    <div className="border-b border-slate-100 pb-8">
+                        <h3 className="text-3xl md:text-4xl font-black text-[#012d48] tracking-tight leading-tight uppercase">
+                            {renderTextWithBold(title)}
+                        </h3>
+                    </div>
+                )}
 
                 {/* Intro text */}
                 {beneficiadosText && (

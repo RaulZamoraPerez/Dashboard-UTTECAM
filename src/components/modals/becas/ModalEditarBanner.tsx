@@ -13,6 +13,7 @@ interface ModalEditarBannerProps {
 
 export const ModalEditarBanner = ({ isOpen, onClose, section, onSave }: ModalEditarBannerProps) => {
     const [formData, setFormData] = useState<BannerData>({
+        mainTitle: '',
         title: '',
         subtitle: '',
         description: '',
@@ -42,6 +43,7 @@ export const ModalEditarBanner = ({ isOpen, onClose, section, onSave }: ModalEdi
             const mergedData = { ...section, ...rawData };
 
             setFormData({
+                mainTitle: mergedData.mainTitle || '',
                 title: section.title || '',
                 subtitle: mergedData.subtitle || '',
                 description: mergedData.description || '',
@@ -59,6 +61,7 @@ export const ModalEditarBanner = ({ isOpen, onClose, section, onSave }: ModalEdi
                 title: formData.title,
                 type: 'banner' as const,
                 data: {
+                    mainTitle: formData.mainTitle,
                     subtitle: formData.subtitle,
                     description: formData.description,
                     imageUrl: formData.imageUrl,

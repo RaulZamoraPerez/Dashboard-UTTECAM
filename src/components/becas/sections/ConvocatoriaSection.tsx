@@ -117,39 +117,61 @@ export const ConvocatoriaSection = ({
     const [isImageExpanded, setIsImageExpanded] = useState(false);
 
     return (
-        <section className="py-12 px-4 max-w-6xl mx-auto relative group/section">
-            <div className="bg-white dark:bg-gray-800 rounded-[2rem] p-8 lg:p-12 shadow-sm border border-gray-100 relative">
-                {/* Edit Button */}
-                <button
-                    onClick={onEdit}
-                    className="absolute top-6 right-6 z-10 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition"
-                    title="Editar sección"
-                >
-                    <Edit size={20} />
-                </button>
+        <section className="py-16 px-4 max-w-6xl mx-auto relative group/section font-sans">
+            {/* Botón de Edición flotante - Estilo Oficial Dashboard */}
+            {onEdit && (
+                <div className="absolute top-4 right-4 z-20">
+                    <button
+                        onClick={onEdit}
+                        className="p-3 bg-white text-slate-400 hover:text-[#00a499] hover:bg-green-50 rounded-2xl border border-slate-100 shadow-sm opacity-0 group-hover/section:opacity-100 transition-all flex items-center gap-2 group/btn"
+                    >
+                        <Edit size={20} className="group-hover/btn:scale-110 transition-transform" />
+                        <span className="text-[10px] font-black uppercase tracking-widest pr-1">Configurar Diseño</span>
+                    </button>
+                </div>
+            )}
 
+            {/* Header del Componente - Estilo Oficial UTTECAM (Sección) */}
+            <div className="flex items-center gap-6 mb-10">
+                <div className="flex items-center gap-4 flex-1 text-left">
+                    {/* Barra de acento vertical */}
+                    <div className="w-1.5 h-10 bg-[#00a499] rounded-full hidden md:block" />
+
+                    <div className="flex items-center gap-4">
+                        <div className="p-2.5 bg-green-50 rounded-xl text-[#00a499]">
+                            <FileText size={28} strokeWidth={2.5} />
+                        </div>
+                        <div className="flex flex-col text-left">
+                            {badge && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black bg-green-100 text-green-700 uppercase tracking-widest mb-1 w-fit">
+                                    {badge}
+                                </span>
+                            )}
+                            <h2 className="text-2xl md:text-3xl font-bold text-slate-800 uppercase tracking-tight leading-tight">
+                                {mainTitle}
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 rounded-[2rem] p-8 lg:p-12 shadow-sm border border-gray-100 relative text-left">
                 <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
                     {/* Left Column: Content & Documents */}
                     <div className="flex-1 space-y-8">
-                        {/* Header */}
+                        {/* Title and Subtitle inside the card */}
                         <div className="space-y-4">
-                            {(badge || mainTitle) && (
-                                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300 text-[10px] font-bold tracking-widest uppercase border border-amber-100 dark:border-amber-900/50">
-                                    <Calendar size={12} />
-                                    {badge || mainTitle}
-                                </div>
-                            )}
                             <div>
-                                <h2 className="text-3xl lg:text-4xl font-extrabold text-[#002B49] dark:text-white mb-2 tracking-tight leading-tight">
+                                <h3 className="text-3xl lg:text-4xl font-extrabold text-[#002B49] dark:text-white mb-2 tracking-tight leading-tight">
                                     {title}
-                                </h2>
+                                </h3>
                                 {subtitle && (
-                                    <p className="text-gray-800 dark:text-gray-100 text-base font-bold leading-relaxed max-w-2xl mt-1">
+                                    <p className="text-gray-800 dark:text-gray-100 text-lg font-bold leading-relaxed max-w-2xl mt-1">
                                         {subtitle}
                                     </p>
                                 )}
                                 {description && (
-                                    <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed max-w-2xl mt-2">
+                                    <p className="text-gray-500 dark:text-gray-400 text-base leading-relaxed max-w-2xl mt-4">
                                         {description}
                                     </p>
                                 )}
@@ -188,23 +210,23 @@ export const ConvocatoriaSection = ({
                                         </div>
                                     </a>
                                 );
-            })}
+                            })}
                         </div>
                     </div>
 
                     {/* Right Column: Poster Image */}
                     {imageUrl && (
                         <div className="lg:w-[300px] xl:w-[340px] flex-shrink-0 flex flex-col items-center justify-start">
-                            <div 
+                            <div
                                 className="relative rounded-[2rem] overflow-hidden w-full group cursor-pointer"
-                                style={{maxHeight: '380px'}}
+                                style={{ maxHeight: '380px' }}
                                 onClick={() => setIsImageExpanded(true)}
                             >
                                 <img
                                     src={imageUrl}
                                     alt={imageCaption || title}
                                     className="w-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
-                                    style={{maxHeight: '380px'}}
+                                    style={{ maxHeight: '380px' }}
                                 />
                                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur text-gray-800 dark:text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">

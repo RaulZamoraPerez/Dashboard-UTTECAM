@@ -17,6 +17,7 @@ interface AvisoCard {
 interface AvisosSectionProps {
     id: number;
     title?: string;
+    mainTitle?: string;
     cards?: AvisoCard[];
     onEdit: () => void;
 }
@@ -100,7 +101,7 @@ const getIcon = (iconName?: string, size: number = 32) => {
     }
 };
 
-export const AvisosSection = ({ id, title, cards = [], onEdit }: AvisosSectionProps) => {
+export const AvisosSection = ({ id, title, mainTitle, cards = [], onEdit }: AvisosSectionProps) => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3002';
@@ -263,6 +264,32 @@ export const AvisosSection = ({ id, title, cards = [], onEdit }: AvisosSectionPr
             >
                 <Edit size={16} />
             </button>
+
+            {/* Header del Componente - Estilo Oficial UTTECAM (Sección) */}
+            {mainTitle && (
+                <div className="flex items-center gap-6 mb-10">
+                    <div className="flex items-center gap-4 flex-1 text-left">
+                        {/* Barra de acento vertical */}
+                        <div className="w-1.5 h-10 bg-[#00a499] rounded-full hidden md:block" />
+
+                        <div className="flex items-center gap-4">
+                            <div className="p-2.5 bg-green-50 rounded-xl text-[#00a499]">
+                                <Calendar size={28} strokeWidth={2.5} />
+                            </div>
+                            <div className="flex flex-col text-left">
+                                {title && (
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black bg-green-100 text-green-700 uppercase tracking-widest mb-1 w-fit">
+                                        {title}
+                                    </span>
+                                )}
+                                <h2 className="text-2xl md:text-3xl font-bold text-slate-800 uppercase tracking-tight leading-tight">
+                                    {mainTitle}
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Grid Principal (Alertas y Posters) - 2 Columnas */}
             {featuredCards.length > 0 && (

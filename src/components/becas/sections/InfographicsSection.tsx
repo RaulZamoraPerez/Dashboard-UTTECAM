@@ -5,12 +5,13 @@ import { InfographicItem } from '../../modals/becas/InfographicsForm';
 
 interface InfographicsSectionProps {
     id: number;
+    mainTitle?: string;
     title: string;
     items: InfographicItem[];
     onEdit?: () => void;
 }
 
-export const InfographicsSection = ({ title, items, onEdit }: InfographicsSectionProps) => {
+export const InfographicsSection = ({ mainTitle, title, items, onEdit }: InfographicsSectionProps) => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3002';
@@ -22,26 +23,43 @@ export const InfographicsSection = ({ title, items, onEdit }: InfographicsSectio
     };
 
     return (
-        <section className="py-12 px-6 max-w-6xl mx-auto relative group/section font-sans">
-            {/* Edit Overlay */}
+        <section className="py-16 px-4 max-w-6xl mx-auto relative group/section font-sans">
+            {/* Botón de Edición flotante - Estilo Oficial */}
             {onEdit && (
-                <div className="absolute top-4 right-4 z-20 opacity-0 group-hover/section:opacity-100 transition-opacity">
+                <div className="absolute top-4 right-4 z-20">
                     <button
                         onClick={onEdit}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-2xl text-sm font-black shadow-xl hover:bg-blue-700 transition-all transform hover:scale-105 uppercase tracking-tight"
+                        className="p-3 bg-white text-slate-400 hover:text-[#00a499] hover:bg-green-50 rounded-2xl border border-slate-100 shadow-sm opacity-0 group-hover/section:opacity-100 transition-all flex items-center gap-2 group/btn"
                     >
-                        <Edit size={16} />
-                        Configurar Galería
+                        <Edit size={20} className="group-hover/btn:scale-110 transition-transform" />
+                        <span className="text-[10px] font-black uppercase tracking-widest pr-1">Configurar Galería</span>
                     </button>
                 </div>
             )}
 
-            {title && (
-                <div className="flex flex-col items-center mb-12 text-center">
-                    <h2 className="text-3xl md:text-4xl font-black text-[#008f39] dark:text-[#4ade80] tracking-tight uppercase leading-tight mb-4">
-                        {title}
-                    </h2>
-                    <div className="w-24 h-1.5 bg-[#00a499] rounded-full"></div>
+            {/* Header del Componente - Estilo Oficial UTTECAM */}
+            {mainTitle && (
+                <div className="flex items-center gap-6 mb-10">
+                    <div className="flex items-center gap-4 flex-1 text-left">
+                        {/* Barra de acento vertical */}
+                        <div className="w-1.5 h-10 bg-[#00a499] rounded-full hidden md:block" />
+
+                        <div className="flex items-center gap-4">
+                            <div className="p-2.5 bg-green-50 rounded-xl text-[#00a499]">
+                                <ImageIcon size={28} strokeWidth={2.5} />
+                            </div>
+                            <div className="flex flex-col text-left">
+                                {title && (
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black bg-green-100 text-green-700 uppercase tracking-widest mb-1 w-fit">
+                                        {title}
+                                    </span>
+                                )}
+                                <h2 className="text-2xl md:text-3xl font-bold text-slate-800 uppercase tracking-tight leading-tight">
+                                    {mainTitle}
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
 

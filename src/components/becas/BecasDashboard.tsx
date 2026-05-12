@@ -336,7 +336,8 @@ export const BecasDashboard = ({ module = 'becas' }: { module?: 'becas' | 'estad
                 return (
                     <AvisosSection
                         id={section.id}
-                        title={section.title}
+                        title={section.data?.title}
+                        mainTitle={section.data?.mainTitle}
                         cards={section.data?.cards || []}
                         onEdit={() => setModalState({ type: 'avisos', section })}
                     />
@@ -352,7 +353,8 @@ export const BecasDashboard = ({ module = 'becas' }: { module?: 'becas' | 'estad
                 return (
                     <InfographicsSection
                         id={section.id}
-                        title={section.title}
+                        title={section.data?.title || section.title}
+                        mainTitle={section.data?.mainTitle}
                         items={section.data?.items || []}
                         onEdit={() => setModalState({ type: 'infographics', section })}
                     />

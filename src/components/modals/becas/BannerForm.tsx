@@ -4,6 +4,7 @@ import becasService from '../../../services/becasService';
 import { toastError, toastSuccess, confirmDialog } from '../../../utils/alert';
 
 export interface BannerData {
+    mainTitle?: string;
     title: string;
     subtitle: string;
     description: string;
@@ -18,6 +19,7 @@ interface BannerFormProps {
 }
 
 export const BannerForm = ({ initialData, onChange }: BannerFormProps) => {
+    const [mainTitle, setMainTitle] = useState(initialData.mainTitle || '');
     const [title, setTitle] = useState(initialData.title || '');
     const [subtitle, setSubtitle] = useState(initialData.subtitle || '');
     const [description, setDescription] = useState(initialData.description || '');
@@ -29,6 +31,7 @@ export const BannerForm = ({ initialData, onChange }: BannerFormProps) => {
 
     // Sync internal state with prop changes
     useEffect(() => {
+        setMainTitle(initialData.mainTitle || '');
         setTitle(initialData.title || '');
         setSubtitle(initialData.subtitle || '');
         setDescription(initialData.description || '');
@@ -40,6 +43,7 @@ export const BannerForm = ({ initialData, onChange }: BannerFormProps) => {
     // Notificar cambios al padre cuando cualquier estado cambie
     useEffect(() => {
         onChange({
+            mainTitle,
             title,
             subtitle,
             description,
@@ -47,7 +51,7 @@ export const BannerForm = ({ initialData, onChange }: BannerFormProps) => {
             footerNote,
             buttons
         });
-    }, [title, subtitle, description, imageUrl, footerNote, buttons]);
+    }, [mainTitle, title, subtitle, description, imageUrl, footerNote, buttons]);
 
     const addButton = () => {
         setButtons([...buttons, { text: 'Nuevo Botón', url: '#', type: 'primary', icon: 'eye' }]);
@@ -146,6 +150,7 @@ export const BannerForm = ({ initialData, onChange }: BannerFormProps) => {
 
         if (confirmed) {
             setTitle('Beca de Exención de Pago\nEnero - Abril 2026');
+            setMainTitle('CONVOCATORIA DE BECAS: ENERO - ABRIL 2026');
             setSubtitle('CONVOCATORIA ABIERTA');
             setDescription('Convocatoria oficial para el proceso de selección de becas del periodo Enero - Abril 2026.');
             setFooterNote('Lectura obligatoria para todos los solicitantes.');
@@ -190,6 +195,19 @@ export const BannerForm = ({ initialData, onChange }: BannerFormProps) => {
 
     return (
         <div className="space-y-6">
+            {/* Título de Periodo Superior */}
+            <div className="bg-gray-50 dark:bg-gray-900/40 p-4 rounded-xl border border-gray-200 dark:border-gray-700 space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Título de Periodo (Superior)</label>
+                <input
+                    type="text"
+                    value={mainTitle}
+                    onChange={(e) => setMainTitle(e.target.value)}
+                    className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    placeholder="Ej: ESTADÍA PROFESIONAL: MAYO - AGOSTO 2026"
+                />
+                <p className="text-[10px] text-gray-400">Este título aparece centrado arriba de la tarjeta principal.</p>
+            </div>
+
             {/* Título Principal */}
             {/* Título Principal y Botón Mágico */}
             <div className="flex justify-between items-end gap-4">

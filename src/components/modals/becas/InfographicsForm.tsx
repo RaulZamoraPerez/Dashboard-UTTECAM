@@ -118,21 +118,21 @@ export const InfographicsForm = ({ initialData, onChange }: InfographicsFormProp
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Título de la Sección</label>
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Título de la Sección (Principal)</label>
                         <input
                             type="text"
-                            value={initialData.title}
-                            onChange={(e) => handleUpdate('title', e.target.value)}
+                            value={initialData.mainTitle || ''}
+                            onChange={(e) => handleUpdate('mainTitle', e.target.value)}
                             placeholder="Ej: AVISOS IMPORTANTES"
                             className="w-full p-3 bg-white dark:bg-gray-800 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-bold shadow-sm transition-all"
                         />
                     </div>
                     <div className="space-y-1">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Título de Periodo (Superior)</label>
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Título de Periodo / Etiqueta (Superior)</label>
                         <input
                             type="text"
-                            value={initialData.mainTitle || ''}
-                            onChange={(e) => handleUpdate('mainTitle', e.target.value)}
+                            value={initialData.title}
+                            onChange={(e) => handleUpdate('title', e.target.value)}
                             placeholder="Ej: MAYO - AGOSTO 2026"
                             className="w-full p-3 bg-white dark:bg-gray-800 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-bold shadow-sm transition-all"
                         />

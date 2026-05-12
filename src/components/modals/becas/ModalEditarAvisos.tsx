@@ -25,6 +25,7 @@ interface ModalEditarAvisosProps {
 
 export const ModalEditarAvisos = ({ isOpen, onClose, section, onSave }: ModalEditarAvisosProps) => {
     const [mainTitle, setMainTitle] = useState('');
+    const [title, setTitle] = useState('');
     const [cards, setCards] = useState<AvisoCard[]>([]);
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -37,6 +38,7 @@ export const ModalEditarAvisos = ({ isOpen, onClose, section, onSave }: ModalEdi
                 try { rawData = JSON.parse(rawData); } catch (e) { rawData = {}; }
             }
             setMainTitle(rawData.mainTitle || '');
+            setTitle(rawData.title || '');
             setCards(rawData.cards || []);
         }
     }, [section]);
@@ -105,6 +107,7 @@ export const ModalEditarAvisos = ({ isOpen, onClose, section, onSave }: ModalEdi
                 type: 'avisos' as const,
                 data: {
                     mainTitle,
+                    title,
                     cards
                 }
             };
@@ -144,15 +147,29 @@ export const ModalEditarAvisos = ({ isOpen, onClose, section, onSave }: ModalEdi
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-900/50 space-y-6">
                     {/* Period Title */}
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
-                        <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Título de Periodo (Superior)</label>
-                        <input
-                            type="text"
-                            value={mainTitle}
-                            onChange={(e) => setMainTitle(e.target.value)}
-                            placeholder="Ej: MAYO - AGOSTO 2026"
-                            className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:ring-2 focus:ring-[#0a9782]"
-                        />
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Título de la Sección</label>
+                            <input
+                                type="text"
+                                value={mainTitle}
+                                onChange={(e) => setMainTitle(e.target.value)}
+                                placeholder="Ej: AVISOS Y NOVEDADES"
+                                className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:ring-2 focus:ring-[#0a9782]"
+                            />
+                            <p className="text-[10px] text-gray-400 mt-1">Aparece en grande como encabezado principal.</p>
+                        </div>
+                        <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Título de Periodo (Superior)</label>
+                            <input
+                                type="text"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder="Ej: MAYO - AGOSTO 2026"
+                                className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 outline-none focus:ring-2 focus:ring-[#0a9782]"
+                            />
+                            <p className="text-[10px] text-gray-400 mt-1">Aparece como una pequeña etiqueta verde arriba del título.</p>
+                        </div>
                     </div>
 
                     {/* Toolbar */}
